@@ -15,6 +15,10 @@ var handler;
 function setPlotType (plotType) {
   Plotly.purge(plot);
 
+  if (handler && handler.teardown) {
+    handler.teardown();
+  }
+
   var newPlot = document.createElement('div');
   newPlot.id = 'plot';
 
