@@ -15,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "d3": "^3.5.17",
     "parameterize": "0.0.7",
     "plotly.js": "file:../plotly.js"
   }

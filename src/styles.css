@@ -22,3 +22,29 @@ html, body {
   padding: 10px;
   background-color: white;
 }
+
+.axis line,
+.axis path {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+#debug {
+  color: #a00;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1000;
+  pointer-events: none;
+  margin: 0;
+  padding: 10px;
+}
+
+#plot-controls {
+}
+
+#plot-controls .input-field {
+  margin-top: 10px;
+}
+

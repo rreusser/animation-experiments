@@ -3,7 +3,7 @@
 var Plotly = require('plotly.js');
 
 module.exports = {
-  name: 'Animated Scatter',
+  name: 'Keyed Scatter',
 
   n: 31,
   x1: [],
@@ -41,7 +41,8 @@ module.exports = {
         mode: 'markers+lines',
       }
     ], {}, {scrollZoom: true});
- },
+
+  },
 
   actionLabel: 'Animate',
 
