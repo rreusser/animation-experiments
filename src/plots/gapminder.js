@@ -25,7 +25,7 @@ module.exports = {
   },
 
   loadData: function (onload) {
-    d3.tsv('../data/gapminder-five-year.csv', onload)
+    d3.tsv('data/gapminder-five-year.csv', onload)
       .row(function (d) {
         d.gdpPercap = parseFloat(d.gdpPercap);
         d.lifeExp = parseFloat(d.lifeExp);
