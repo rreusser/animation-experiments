@@ -34,10 +34,12 @@ module.exports = {
 
     Plotly.plot(gd, [
       {
-        x: this.x1, y: this.y1,
+        x: this.x1,
+        y: this.y1,
         mode: 'markers+lines',
       }, {
-        x: this.x2, y: this.y2,
+        x: this.x2,
+        y: this.y2,
         mode: 'markers+lines',
       }
     ], {}, {scrollZoom: true});
