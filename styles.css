@@ -23,6 +23,12 @@ html, body {
   background-color: white;
 }
 
+.repo-link img {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+}
+
 .axis line,
 .axis path {
   fill: none;
