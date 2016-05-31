@@ -2,6 +2,7 @@
 
 var Plotly = require('plotly.js');
 var d3 = require('d3');
+var clone = require('clone');
 
 module.exports = {
   name: 'Gapminder',
@@ -24,7 +25,7 @@ module.exports = {
     hovermode: 'closest'
   },
 
-  loadData: function (onload) {
+  loadAndConvertToJSON: function (onload) {
     d3.tsv('data/gapminder-five-year.csv', onload)
       .row(function (d) {
         d.gdpPercap = parseFloat(d.gdpPercap);
@@ -61,21 +62,22 @@ module.exports = {
       console.error(err);
       return;
     }
-    this.doPlot('2007');
+    this.doPlot('1952');
   },
 
   doPlot: function (year) {
     Plotly.plot(
       this.gd,
-      this.byYear[year],
+      clone(this.byYear[year]),
       this.layout,
       { scrollZoom: true }
     );
   },
 
   plot: function (gd) {
+    this.byYear = {};
     window.gd = this.gd = gd;
-    this.loadData(this.onload.bind(this));
+    this.loadAndConvertToJSON(this.onload.bind(this));
   },
 
   actionLabel: 'Next year',

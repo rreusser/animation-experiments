@@ -17,8 +17,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "clone": "^1.0.2",
     "d3": "^3.5.17",
     "parameterize": "0.0.7",
-    "plotly.js": "file:../plotly.js"
+    "plotly.js": "file:../plotly.js",
+    "stats.js": "^0.16.0"
   }
 }
