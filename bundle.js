@@ -77792,7 +77792,6 @@ Plotly.animate = function animate (gd, newData, transitionOpts, traces) {
         traces = gd._fullData.map(function (v,i) {return i;});
     }
 
-
     cloneTraceDefinitions(gd);
 
     for (i = 0; i < traces.length; i++) {
@@ -79472,6 +79471,7 @@ function cloneTraceDefinitions (gd) {
         type = gd._fullData[i].type;
         schema = Plotly.PlotSchema.get().traces[type]
         gd.data[i] = Lib.deepCloneTrace(gd.data[i], schema);
+        gd.data[i][isClonedFlag] = true;
     }
 }
 
