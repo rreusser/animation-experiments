@@ -62,13 +62,15 @@ module.exports = {
       console.error(err);
       return;
     }
-    this.doPlot('1952');
+    this.createPlot('1952');
   },
 
-  doPlot: function (year) {
+  createPlot: function (year) {
+    console.log('year =', year)
+
     Plotly.plot(
       this.gd,
-      clone(this.byYear[year]),
+      this.byYear[year],
       this.layout,
       { scrollZoom: true }
     );
@@ -86,6 +88,7 @@ module.exports = {
     var years = Object.keys(this.byYear);
     this.idx = (this.idx + 1) % years.length;
     var year = years[this.idx];
+    console.log('year =', year)
 
     Plotly.animate(this.gd, this.byYear[year], {duration: 500, easing: 'cubic-in-out'});
   }

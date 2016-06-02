@@ -9,4 +9,5 @@ module.exports = [
   require('./plots/subplot-scatter'),
   require('./plots/box-plot'),
   require('./plots/gapminder'),
+  require('./plots/toggle-frames'),
 ];
