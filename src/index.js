@@ -35,23 +35,28 @@ function setPlotType (plotType) {
     console.error('Plot handler not found for plot type:', plotType);
   }
 
-  var button = document.getElementById('action');
   if (handler.action) {
-    button.style.display = 'inline-block';
-    button.textContent = handler.actionLabel || 'Perform action';
-  } else {
-    button.style.display = 'none';
+    handler.actions = [handler.action];
+    handler.actionLabels = [handler.actionLabel];
   }
-}
 
-function performAction () {
-  if (handler.action) {
-    handler.action(document.getElementById(plot.id));
+  var actions = document.getElementById('actions');
+  actions.innerHTML = '';
+
+  if (handler.actions) {
+    for (var i = 0; i < handler.actions.length; i++) {
+        var button = document.createElement('button');
+        (function (ii) {
+          button.addEventListener('click', function () {
+              handler.actions[ii].bind(handler)(plot);
+          });
+        }(i));
+        actions.appendChild(button);
+
+        button.style.display = 'inline-block';
+        button.textContent = handler.actionLabels[i] || 'Perform action';
+    }
   }
-}
-
-function attachAction () {
-  document.getElementById('action').addEventListener('click', performAction);
 }
 
 function createSelector () {
@@ -76,7 +81,6 @@ function createSelector () {
 }
 
 window.onload = function () {
-  attachAction();
   createSelector();
 
   if (window.location.hash) {
