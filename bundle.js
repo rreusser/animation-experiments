@@ -11878,6 +11878,24 @@ if (typeof module === 'object' && module.exports) {
   if (typeof define === "function" && define.amd) this.d3 = d3, define(d3); else if (typeof module === "object" && module.exports) module.exports = d3; else this.d3 = d3;
 }();
 },{}],9:[function(require,module,exports){
+module.exports = function shuffleInplace (array, rng) {
+  rng = rng || Math.random
+
+  var k = array.length
+
+  while (k) {
+    var i = Math.floor(rng() * k)
+    k--
+
+    var temp = array[k]
+    array[k] = array[i]
+    array[i] = temp
+  }
+
+  return array
+}
+
+},{}],10:[function(require,module,exports){
 var LATIN_MAP = {
     'À': 'A', 'Á': 'A', 'Â': 'A', 'Ã': 'A', 'Ä': 'A', 'Å': 'A', 'Æ': 'AE', 'Ç':
     'C', 'È': 'E', 'É': 'E', 'Ê': 'E', 'Ë': 'E', 'Ì': 'I', 'Í': 'I', 'Î': 'I',
@@ -12012,7 +12030,7 @@ module.exports = function(s, num_chars) {
     s = s.toLowerCase();             // convert to lowercase
     return s.substring(0, num_chars);// trim to first num_chars chars
 }
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 'use strict';
 
 var body = document.getElementsByTagName('body')[0];
@@ -12050,23 +12068,28 @@ function setPlotType (plotType) {
     console.error('Plot handler not found for plot type:', plotType);
   }
 
-  var button = document.getElementById('action');
   if (handler.action) {
-    button.style.display = 'inline-block';
-    button.textContent = handler.actionLabel || 'Perform action';
-  } else {
-    button.style.display = 'none';
+    handler.actions = [handler.action];
+    handler.actionLabels = [handler.actionLabel];
   }
-}
 
-function performAction () {
-  if (handler.action) {
-    handler.action(document.getElementById(plot.id));
+  var actions = document.getElementById('actions');
+  actions.innerHTML = '';
+
+  if (handler.actions) {
+    for (var i = 0; i < handler.actions.length; i++) {
+        var button = document.createElement('button');
+        (function (ii) {
+          button.addEventListener('click', function () {
+              handler.actions[ii].bind(handler)(plot);
+          });
+        }(i));
+        actions.appendChild(button);
+
+        button.style.display = 'inline-block';
+        button.textContent = handler.actionLabels[i] || 'Perform action';
+    }
   }
-}
-
-function attachAction () {
-  document.getElementById('action').addEventListener('click', performAction);
 }
 
 function createSelector () {
@@ -12091,7 +12114,6 @@ function createSelector () {
 }
 
 window.onload = function () {
-  attachAction();
   createSelector();
 
   if (window.location.hash) {
@@ -12110,7 +12132,7 @@ selector.addEventListener('change', function () {
   setPlotType(option);
 });
 
-},{"./plots":15,"parameterize":9,"plotly.js":35}],11:[function(require,module,exports){
+},{"./plots":16,"parameterize":10,"plotly.js":37}],12:[function(require,module,exports){
 'use strict';
 
 var d3 = require('d3');
@@ -12386,7 +12408,7 @@ function Plotter () {
   return plotter;
 }
 
-},{"d3":8}],12:[function(require,module,exports){
+},{"d3":8}],13:[function(require,module,exports){
 'use strict';
 
 var d3 = require('d3');
@@ -12431,7 +12453,7 @@ function Debugger () {
   };
 }
 
-},{"d3":8}],13:[function(require,module,exports){
+},{"d3":8}],14:[function(require,module,exports){
 'use strict';
 
 module.exports = Lorenz;
@@ -12495,7 +12517,7 @@ function Lorenz () {
   };
 }
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 'use strict';
 
 module.exports = Timer;
@@ -12541,7 +12563,7 @@ Timer.prototype.stop = function () {
   return this;
 };
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 'use strict';
 
 module.exports = [
@@ -12549,14 +12571,14 @@ module.exports = [
   require('./plots/lorenz-attractor-d3'),
   require('./plots/lorenz-attractor-plotly'),
   require('./plots/simulation'),
-  //require('./plots/keyed-scatter'),
+  require('./plots/keyed-scatter'),
   require('./plots/subplot-scatter'),
   require('./plots/box-plot'),
   require('./plots/gapminder'),
-  require('./plots/toggle-frames'),
+  require('./plots/object-constancy'),
 ];
 
-},{"./plots/animated-scatter":16,"./plots/box-plot":17,"./plots/gapminder":18,"./plots/lorenz-attractor-d3":19,"./plots/lorenz-attractor-plotly":20,"./plots/simulation":21,"./plots/subplot-scatter":22,"./plots/toggle-frames":23}],16:[function(require,module,exports){
+},{"./plots/animated-scatter":17,"./plots/box-plot":18,"./plots/gapminder":19,"./plots/keyed-scatter":20,"./plots/lorenz-attractor-d3":21,"./plots/lorenz-attractor-plotly":22,"./plots/object-constancy":23,"./plots/simulation":24,"./plots/subplot-scatter":25}],17:[function(require,module,exports){
 'use strict';
 
 var Plotly = require('plotly.js');
@@ -12614,7 +12636,7 @@ module.exports = {
   }
 }
 
-},{"plotly.js":35}],17:[function(require,module,exports){
+},{"plotly.js":37}],18:[function(require,module,exports){
 'use strict';
 
 var Plotly = require('plotly.js');
@@ -12643,7 +12665,7 @@ module.exports = {
   }
 };
 
-},{"plotly.js":35}],18:[function(require,module,exports){
+},{"plotly.js":37}],19:[function(require,module,exports){
 'use strict';
 
 var Plotly = require('plotly.js');
@@ -12740,7 +12762,64 @@ module.exports = {
   }
 }
 
-},{"clone":7,"d3":8,"plotly.js":35}],19:[function(require,module,exports){
+},{"clone":7,"d3":8,"plotly.js":37}],20:[function(require,module,exports){
+'use strict';
+
+var Plotly = require('plotly.js');
+
+module.exports = {
+  name: 'Keyed Scatter',
+
+  n: 31,
+  x1: [],
+  x2: [],
+  y1: [],
+  y2: [],
+
+  randomizeData (output) {
+    var phase = Math.random() * Math.PI * 2;
+
+    for (var i = 0; i < this.n; i++) {
+      var t = i / (this.n - 1);
+      output[i] = Math.sin(Math.PI * t + phase) + 0.2 * Math.sin(Math.PI * 4 * t) + (Math.random() - 1) * 0.2;
+    }
+  },
+
+  initializeX () {
+    for (var i = 0; i < this.n; i++) {
+      var t = i / (this.n - 1);
+      this.x1[i] = this.x2[i] = t;
+    }
+  },
+
+  plot: function (gd) {
+    this.initializeX();
+    this.randomizeData(this.y1)
+    this.randomizeData(this.y2)
+
+    Plotly.plot(gd, [
+      {
+        x: this.x1, y: this.y1,
+        mode: 'markers+lines',
+      }, {
+        x: this.x2, y: this.y2,
+        mode: 'markers+lines',
+      }
+    ], {}, {scrollZoom: true});
+
+  },
+
+  actionLabel: 'Animate',
+
+  action: function (gd) {
+    this.randomizeData(this.y1)
+    this.randomizeData(this.y2)
+
+    Plotly.animate(gd, [{y: this.y2}], {duration: 500, easing: 'cubic-in-out'}, [1]);
+  }
+}
+
+},{"plotly.js":37}],21:[function(require,module,exports){
 'use strict';
 
 var plotter = require('../lib/d3-plotter');
@@ -12834,7 +12913,7 @@ module.exports = {
   }
 }
 
-},{"../lib/d3-plotter":11,"../lib/debug":12,"../lib/lorenz":13,"../lib/timer":14}],20:[function(require,module,exports){
+},{"../lib/d3-plotter":12,"../lib/debug":13,"../lib/lorenz":14,"../lib/timer":15}],22:[function(require,module,exports){
 'use strict';
 
 var Plotly = require('plotly.js');
@@ -12930,7 +13009,63 @@ module.exports = {
   }
 }
 
-},{"../lib/debug":12,"../lib/lorenz":13,"../lib/timer":14,"plotly.js":35}],21:[function(require,module,exports){
+},{"../lib/debug":13,"../lib/lorenz":14,"../lib/timer":15,"plotly.js":37}],23:[function(require,module,exports){
+'use strict';
+
+var Plotly = require('plotly.js');
+var shuffle = require('fisher-yates/inplace');
+
+module.exports = {
+  name: 'Object Constancy',
+
+  n: 4,
+  x: [],
+  y: [],
+  keys: [],
+
+  plot: function (gd) {
+    Plotly.plot(gd, this.getFrame(), this.layout);
+  },
+
+  getFrame: function (ndiff) {
+    this.n = Math.max(4, this.n + (ndiff || 0));
+
+    // Truncate arrays if removing:
+    if (ndiff < 0) {
+      this.x = this.x.slice(0, this.n);
+      this.y = this.y.slice(0, this.n);
+      this.keys = this.keys.slice(0,this.n);
+    }
+
+    // Randomize existing points:
+    shuffle(this.keys);
+
+    // Re-circle:
+    for (var i = 0; i < this.n; i++) {
+      var t = i / this.n * 2 * Math.PI;
+      this.x[i] = Math.cos(t);
+      this.y[i] = Math.sin(t);
+      this.keys[i] = this.keys[i] === undefined ? i : this.keys[i];
+    }
+
+    // The new trace:
+    return [{
+      x: this.x,
+      y: this.y,
+      key: this.keys,
+      mode: 'markers',
+    }]
+  },
+
+  actionLabels: ['Shuffle and append', 'Shuffle and remove'],
+
+  actions: [
+    function (gd) {Plotly.animate(gd, this.getFrame(1), {duration: 500});},
+    function (gd) {Plotly.animate(gd, this.getFrame(-1), {duration: 500});}
+  ]
+}
+
+},{"fisher-yates/inplace":9,"plotly.js":37}],24:[function(require,module,exports){
 'use strict';
 
 var Plotly = require('plotly.js');
@@ -13020,7 +13155,7 @@ module.exports = {
   }
 }
 
-},{"plotly.js":35}],22:[function(require,module,exports){
+},{"plotly.js":37}],25:[function(require,module,exports){
 'use strict';
 
 var Plotly = require('plotly.js');
@@ -13074,32 +13209,7 @@ module.exports = {
   }
 }
 
-},{"plotly.js":35}],23:[function(require,module,exports){
-'use strict';
-
-var Plotly = require('plotly.js');
-
-module.exports = {
-  name: 'Toggle frames',
-
-  frame1: [{x: [1, 2], y: [1, 1], key: ['a', 'b'], mode: 'markers', line: {color: 'red'}}],
-  frame2: [{x: [1, 2], y: [1.5, 1.5], key: ['b', 'a'], mode: 'markers', line: {color: 'red'}}],
-
-  plot: function (gd) {
-    this.selected = this.frame1;
-    Plotly.plot(gd, this.frame1, this.layout);
-  },
-
-  actionLabel: 'Toggle',
-
-  action: function (gd) {
-    this.selected = this.selected === this.frame1 ? this.frame2 : this.frame1;
-
-    Plotly.animate(gd, this.selected, {duration: 500});
-  }
-}
-
-},{"plotly.js":35}],24:[function(require,module,exports){
+},{"plotly.js":37}],26:[function(require,module,exports){
 'use strict';
 
 var Plotly = require('../src/plotly');
@@ -13163,7 +13273,7 @@ for(var selector in rules) {
     Plotly.Lib.addStyleRule(fullSelector, rules[selector]);
 }
 
-},{"../src/plotly":1163}],25:[function(require,module,exports){
+},{"../src/plotly":1165}],27:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -13283,7 +13393,7 @@ module.exports = {
     }
 };
 
-},{}],26:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -13294,7 +13404,7 @@ module.exports = {
 
 module.exports = require('../src/traces/bar');
 
-},{"../src/traces/bar":1241}],27:[function(require,module,exports){
+},{"../src/traces/bar":1243}],29:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -13305,7 +13415,7 @@ module.exports = require('../src/traces/bar');
 
 module.exports = require('../src/traces/box');
 
-},{"../src/traces/box":1252}],28:[function(require,module,exports){
+},{"../src/traces/box":1254}],30:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -13316,7 +13426,7 @@ module.exports = require('../src/traces/box');
 
 module.exports = require('../src/traces/choropleth');
 
-},{"../src/traces/choropleth":1261}],29:[function(require,module,exports){
+},{"../src/traces/choropleth":1263}],31:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -13327,7 +13437,7 @@ module.exports = require('../src/traces/choropleth');
 
 module.exports = require('../src/traces/contour');
 
-},{"../src/traces/contour":1268}],30:[function(require,module,exports){
+},{"../src/traces/contour":1270}],32:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -13338,7 +13448,7 @@ module.exports = require('../src/traces/contour');
 
 module.exports = require('../src/core');
 
-},{"../src/core":1132}],31:[function(require,module,exports){
+},{"../src/core":1134}],33:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -13349,7 +13459,7 @@ module.exports = require('../src/core');
 
 module.exports = require('../src/traces/heatmap');
 
-},{"../src/traces/heatmap":1280}],32:[function(require,module,exports){
+},{"../src/traces/heatmap":1282}],34:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -13360,7 +13470,7 @@ module.exports = require('../src/traces/heatmap');
 
 module.exports = require('../src/traces/histogram');
 
-},{"../src/traces/histogram":1291}],33:[function(require,module,exports){
+},{"../src/traces/histogram":1293}],35:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -13371,7 +13481,7 @@ module.exports = require('../src/traces/histogram');
 
 module.exports = require('../src/traces/histogram2d');
 
-},{"../src/traces/histogram2d":1296}],34:[function(require,module,exports){
+},{"../src/traces/histogram2d":1298}],36:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -13382,7 +13492,7 @@ module.exports = require('../src/traces/histogram2d');
 
 module.exports = require('../src/traces/histogram2dcontour');
 
-},{"../src/traces/histogram2dcontour":1300}],35:[function(require,module,exports){
+},{"../src/traces/histogram2dcontour":1302}],37:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -13420,7 +13530,7 @@ Core.register([
 
 module.exports = Core;
 
-},{"./bar":26,"./box":27,"./choropleth":28,"./contour":29,"./core":30,"./heatmap":31,"./histogram":32,"./histogram2d":33,"./histogram2dcontour":34,"./mesh3d":36,"./pie":37,"./scatter3d":38,"./scattergeo":39,"./scattergl":40,"./scatterternary":41,"./surface":42}],36:[function(require,module,exports){
+},{"./bar":28,"./box":29,"./choropleth":30,"./contour":31,"./core":32,"./heatmap":33,"./histogram":34,"./histogram2d":35,"./histogram2dcontour":36,"./mesh3d":38,"./pie":39,"./scatter3d":40,"./scattergeo":41,"./scattergl":42,"./scatterternary":43,"./surface":44}],38:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -13431,7 +13541,7 @@ module.exports = Core;
 
 module.exports = require('../src/traces/mesh3d');
 
-},{"../src/traces/mesh3d":1304}],37:[function(require,module,exports){
+},{"../src/traces/mesh3d":1306}],39:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -13442,7 +13552,7 @@ module.exports = require('../src/traces/mesh3d');
 
 module.exports = require('../src/traces/pie');
 
-},{"../src/traces/pie":1310}],38:[function(require,module,exports){
+},{"../src/traces/pie":1312}],40:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -13453,7 +13563,7 @@ module.exports = require('../src/traces/pie');
 
 module.exports = require('../src/traces/scatter3d');
 
-},{"../src/traces/scatter3d":1345}],39:[function(require,module,exports){
+},{"../src/traces/scatter3d":1347}],41:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -13464,7 +13574,7 @@ module.exports = require('../src/traces/scatter3d');
 
 module.exports = require('../src/traces/scattergeo');
 
-},{"../src/traces/scattergeo":1349}],40:[function(require,module,exports){
+},{"../src/traces/scattergeo":1351}],42:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -13475,7 +13585,7 @@ module.exports = require('../src/traces/scattergeo');
 
 module.exports = require('../src/traces/scattergl');
 
-},{"../src/traces/scattergl":1354}],41:[function(require,module,exports){
+},{"../src/traces/scattergl":1356}],43:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -13486,7 +13596,7 @@ module.exports = require('../src/traces/scattergl');
 
 module.exports = require('../src/traces/scatterternary');
 
-},{"../src/traces/scatterternary":1359}],42:[function(require,module,exports){
+},{"../src/traces/scatterternary":1361}],44:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -13497,7 +13607,7 @@ module.exports = require('../src/traces/scatterternary');
 
 module.exports = require('../src/traces/surface');
 
-},{"../src/traces/surface":1368}],43:[function(require,module,exports){
+},{"../src/traces/surface":1370}],45:[function(require,module,exports){
 'use strict'
 
 var bsearch   = require('binary-search-bounds')
@@ -13696,7 +13806,7 @@ function createMatrixCameraController(options) {
                0,0,0,1]
   return new MatrixCameraController(matrix)
 }
-},{"binary-search-bounds":44,"gl-mat4/invert":257,"gl-mat4/lookAt":258,"gl-mat4/rotateX":262,"gl-mat4/rotateY":263,"gl-mat4/rotateZ":264,"gl-mat4/scale":265,"gl-mat4/translate":266,"gl-vec3/normalize":49,"mat4-interpolate":50}],44:[function(require,module,exports){
+},{"binary-search-bounds":46,"gl-mat4/invert":259,"gl-mat4/lookAt":260,"gl-mat4/rotateX":264,"gl-mat4/rotateY":265,"gl-mat4/rotateZ":266,"gl-mat4/scale":267,"gl-mat4/translate":268,"gl-vec3/normalize":51,"mat4-interpolate":52}],46:[function(require,module,exports){
 "use strict"
 
 function compileSearch(funcName, predicate, reversed, extraArgs, useNdarray, earlyOut) {
@@ -13758,7 +13868,7 @@ module.exports = {
   eq: compileBoundsSearch("-", true, "EQ", true)
 }
 
-},{}],45:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 module.exports = cross;
 
 /**
@@ -13778,7 +13888,7 @@ function cross(out, a, b) {
     out[2] = ax * by - ay * bx
     return out
 }
-},{}],46:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 module.exports = dot;
 
 /**
@@ -13791,7 +13901,7 @@ module.exports = dot;
 function dot(a, b) {
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
 }
-},{}],47:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 module.exports = length;
 
 /**
@@ -13806,7 +13916,7 @@ function length(a) {
         z = a[2]
     return Math.sqrt(x*x + y*y + z*z)
 }
-},{}],48:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 module.exports = lerp;
 
 /**
@@ -13827,7 +13937,7 @@ function lerp(out, a, b, t) {
     out[2] = az + t * (b[2] - az)
     return out
 }
-},{}],49:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 module.exports = normalize;
 
 /**
@@ -13851,7 +13961,7 @@ function normalize(out, a) {
     }
     return out
 }
-},{}],50:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 var lerp = require('gl-vec3/lerp')
 
 var recompose = require('mat4-recompose')
@@ -13904,7 +14014,7 @@ function vec3(n) {
 function vec4() {
     return [0,0,0,1]
 }
-},{"gl-mat4/determinant":253,"gl-vec3/lerp":48,"mat4-decompose":51,"mat4-recompose":53,"quat-slerp":54}],51:[function(require,module,exports){
+},{"gl-mat4/determinant":255,"gl-vec3/lerp":50,"mat4-decompose":53,"mat4-recompose":55,"quat-slerp":56}],53:[function(require,module,exports){
 /*jshint unused:true*/
 /*
 Input:  matrix      ; a 4x4 matrix
@@ -14084,7 +14194,7 @@ function combine(out, a, b, scale1, scale2) {
     out[1] = a[1] * scale1 + b[1] * scale2
     out[2] = a[2] * scale1 + b[2] * scale2
 }
-},{"./normalize":52,"gl-mat4/clone":251,"gl-mat4/create":252,"gl-mat4/determinant":253,"gl-mat4/invert":257,"gl-mat4/transpose":267,"gl-vec3/cross":45,"gl-vec3/dot":46,"gl-vec3/length":47,"gl-vec3/normalize":49}],52:[function(require,module,exports){
+},{"./normalize":54,"gl-mat4/clone":253,"gl-mat4/create":254,"gl-mat4/determinant":255,"gl-mat4/invert":259,"gl-mat4/transpose":269,"gl-vec3/cross":47,"gl-vec3/dot":48,"gl-vec3/length":49,"gl-vec3/normalize":51}],54:[function(require,module,exports){
 module.exports = function normalize(out, mat) {
     var m44 = mat[15]
     // Cannot normalize.
@@ -14095,7 +14205,7 @@ module.exports = function normalize(out, mat) {
         out[i] = mat[i] * scale
     return true
 }
-},{}],53:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 /*
 Input:  translation ; a 3 component vector
         scale       ; a 3 component vector
@@ -14156,9 +14266,9 @@ module.exports = function recomposeMat4(matrix, translation, scale, skew, perspe
     mat4.scale(matrix, matrix, scale)
     return matrix
 }
-},{"gl-mat4/create":252,"gl-mat4/fromRotationTranslation":255,"gl-mat4/identity":256,"gl-mat4/multiply":259,"gl-mat4/scale":265,"gl-mat4/translate":266}],54:[function(require,module,exports){
+},{"gl-mat4/create":254,"gl-mat4/fromRotationTranslation":257,"gl-mat4/identity":258,"gl-mat4/multiply":261,"gl-mat4/scale":267,"gl-mat4/translate":268}],56:[function(require,module,exports){
 module.exports = require('gl-quat/slerp')
-},{"gl-quat/slerp":55}],55:[function(require,module,exports){
+},{"gl-quat/slerp":57}],57:[function(require,module,exports){
 module.exports = slerp
 
 /**
@@ -14211,7 +14321,7 @@ function slerp (out, a, b, t) {
   return out
 }
 
-},{}],56:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 'use strict'
 
 module.exports = quatFromFrame
@@ -14253,7 +14363,7 @@ function quatFromFrame(
   }
   return out
 }
-},{}],57:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 'use strict'
 
 module.exports = createFilteredVector
@@ -14546,9 +14656,9 @@ function createFilteredVector(initState, initVelocity, initTime) {
   }
 }
 
-},{"binary-search-bounds":58,"cubic-hermite":59}],58:[function(require,module,exports){
-arguments[4][44][0].apply(exports,arguments)
-},{"dup":44}],59:[function(require,module,exports){
+},{"binary-search-bounds":60,"cubic-hermite":61}],60:[function(require,module,exports){
+arguments[4][46][0].apply(exports,arguments)
+},{"dup":46}],61:[function(require,module,exports){
 "use strict"
 
 function dcubicHermite(p0, v0, p1, v1, t, f) {
@@ -14588,7 +14698,7 @@ function cubicHermite(p0, v0, p1, v1, t, f) {
 
 module.exports = cubicHermite
 module.exports.derivative = dcubicHermite
-},{}],60:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 'use strict'
 
 module.exports = createOrbitController
@@ -14982,19 +15092,19 @@ function createOrbitController(options) {
 
   return result
 }
-},{"./lib/quatFromFrame":56,"filtered-vector":57,"gl-mat4/fromQuat":254,"gl-mat4/invert":257,"gl-mat4/lookAt":258}],61:[function(require,module,exports){
-arguments[4][57][0].apply(exports,arguments)
-},{"binary-search-bounds":62,"cubic-hermite":63,"dup":57}],62:[function(require,module,exports){
-arguments[4][44][0].apply(exports,arguments)
-},{"dup":44}],63:[function(require,module,exports){
+},{"./lib/quatFromFrame":58,"filtered-vector":59,"gl-mat4/fromQuat":256,"gl-mat4/invert":259,"gl-mat4/lookAt":260}],63:[function(require,module,exports){
 arguments[4][59][0].apply(exports,arguments)
-},{"dup":59}],64:[function(require,module,exports){
-arguments[4][45][0].apply(exports,arguments)
-},{"dup":45}],65:[function(require,module,exports){
+},{"binary-search-bounds":64,"cubic-hermite":65,"dup":59}],64:[function(require,module,exports){
 arguments[4][46][0].apply(exports,arguments)
-},{"dup":46}],66:[function(require,module,exports){
-arguments[4][49][0].apply(exports,arguments)
-},{"dup":49}],67:[function(require,module,exports){
+},{"dup":46}],65:[function(require,module,exports){
+arguments[4][61][0].apply(exports,arguments)
+},{"dup":61}],66:[function(require,module,exports){
+arguments[4][47][0].apply(exports,arguments)
+},{"dup":47}],67:[function(require,module,exports){
+arguments[4][48][0].apply(exports,arguments)
+},{"dup":48}],68:[function(require,module,exports){
+arguments[4][51][0].apply(exports,arguments)
+},{"dup":51}],69:[function(require,module,exports){
 'use strict'
 
 module.exports = createTurntableController
@@ -15567,7 +15677,7 @@ function createTurntableController(options) {
     theta,
     phi)
 }
-},{"filtered-vector":61,"gl-mat4/invert":257,"gl-mat4/rotate":261,"gl-vec3/cross":64,"gl-vec3/dot":65,"gl-vec3/normalize":66}],68:[function(require,module,exports){
+},{"filtered-vector":63,"gl-mat4/invert":259,"gl-mat4/rotate":263,"gl-vec3/cross":66,"gl-vec3/dot":67,"gl-vec3/normalize":68}],70:[function(require,module,exports){
 'use strict'
 
 module.exports = createViewController
@@ -15690,7 +15800,7 @@ function createViewController(options) {
     matrix: matrix
   }, mode)
 }
-},{"matrix-camera-controller":43,"orbit-camera-controller":60,"turntable-camera-controller":67}],69:[function(require,module,exports){
+},{"matrix-camera-controller":45,"orbit-camera-controller":62,"turntable-camera-controller":69}],71:[function(require,module,exports){
 module.exports = alphaShape
 
 var ac = require('alpha-complex')
@@ -15699,7 +15809,7 @@ var bnd = require('simplicial-complex-boundary')
 function alphaShape(alpha, points) {
   return bnd(ac(alpha, points))
 }
-},{"alpha-complex":70,"simplicial-complex-boundary":81}],70:[function(require,module,exports){
+},{"alpha-complex":72,"simplicial-complex-boundary":83}],72:[function(require,module,exports){
 'use strict'
 
 module.exports = alphaComplex
@@ -15716,7 +15826,7 @@ function alphaComplex(alpha, points) {
     return circumradius(simplex) * alpha < 1
   })
 }
-},{"circumradius":71,"delaunay-triangulate":105}],71:[function(require,module,exports){
+},{"circumradius":73,"delaunay-triangulate":107}],73:[function(require,module,exports){
 module.exports = circumradius
 
 var circumcenter = require('circumcenter')
@@ -15732,7 +15842,7 @@ function circumradius(points) {
   }
   return Math.sqrt(avgDist / points.length)
 }
-},{"circumcenter":72}],72:[function(require,module,exports){
+},{"circumcenter":74}],74:[function(require,module,exports){
 "use strict"
 
 var dup = require("dup")
@@ -15801,7 +15911,7 @@ function circumcenter(points) {
 
 circumcenter.barycenetric = barycentricCircumcenter
 module.exports = circumcenter
-},{"dup":73,"robust-linear-solve":74}],73:[function(require,module,exports){
+},{"dup":75,"robust-linear-solve":76}],75:[function(require,module,exports){
 "use strict"
 
 function dupe_array(count, value, i) {
@@ -15851,7 +15961,7 @@ function dupe(count, value) {
 }
 
 module.exports = dupe
-},{}],74:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 "use strict"
 
 var determinant = require("robust-determinant")
@@ -15923,7 +16033,7 @@ function generateDispatch() {
 }
 
 generateDispatch()
-},{"robust-determinant":80}],75:[function(require,module,exports){
+},{"robust-determinant":82}],77:[function(require,module,exports){
 "use strict"
 
 module.exports = compressExpansion
@@ -15958,7 +16068,7 @@ function compressExpansion(e) {
   e.length = top
   return e
 }
-},{}],76:[function(require,module,exports){
+},{}],78:[function(require,module,exports){
 "use strict"
 
 module.exports = fastTwoSum
@@ -15976,7 +16086,7 @@ function fastTwoSum(a, b, result) {
 	}
 	return [ar+br, x]
 }
-},{}],77:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
 "use strict"
 
 var twoProduct = require("two-product")
@@ -16027,7 +16137,7 @@ function scaleLinearExpansion(e, scale) {
   g.length = count
   return g
 }
-},{"two-product":79,"two-sum":76}],78:[function(require,module,exports){
+},{"two-product":81,"two-sum":78}],80:[function(require,module,exports){
 "use strict"
 
 module.exports = linearExpansionSum
@@ -16184,7 +16294,7 @@ function linearExpansionSum(e, f) {
   g.length = count
   return g
 }
-},{}],79:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 "use strict"
 
 module.exports = twoProduct
@@ -16218,7 +16328,7 @@ function twoProduct(a, b, result) {
 
   return [ y, x ]
 }
-},{}],80:[function(require,module,exports){
+},{}],82:[function(require,module,exports){
 "use strict"
 
 var twoProduct = require("two-product")
@@ -16322,7 +16432,7 @@ return robustDeterminant")
 }
 
 generateDispatch()
-},{"robust-compress":75,"robust-scale":77,"robust-sum":78,"two-product":79}],81:[function(require,module,exports){
+},{"robust-compress":77,"robust-scale":79,"robust-sum":80,"two-product":81}],83:[function(require,module,exports){
 'use strict'
 
 module.exports = boundary
@@ -16334,7 +16444,7 @@ function boundary(cells) {
   return reduce(bnd(cells))
 }
 
-},{"boundary-cells":82,"reduce-simplicial-complex":86}],82:[function(require,module,exports){
+},{"boundary-cells":84,"reduce-simplicial-complex":88}],84:[function(require,module,exports){
 "use strict"
 
 module.exports = boundary
@@ -16360,7 +16470,7 @@ function boundary(cells) {
   return result
 }
 
-},{}],83:[function(require,module,exports){
+},{}],85:[function(require,module,exports){
 'use strict'
 
 module.exports = orientation
@@ -16379,7 +16489,7 @@ function orientation(s) {
   return p
 }
 
-},{}],84:[function(require,module,exports){
+},{}],86:[function(require,module,exports){
 module.exports = compareCells
 
 var min = Math.min
@@ -16435,7 +16545,7 @@ function compareCells(a, b) {
   }
 }
 
-},{}],85:[function(require,module,exports){
+},{}],87:[function(require,module,exports){
 'use strict'
 
 var compareCells = require('compare-cell')
@@ -16447,7 +16557,7 @@ function compareOrientedCells(a, b) {
   return compareCells(a, b) || parity(a) - parity(b)
 }
 
-},{"cell-orientation":83,"compare-cell":84}],86:[function(require,module,exports){
+},{"cell-orientation":85,"compare-cell":86}],88:[function(require,module,exports){
 'use strict'
 
 var compareCell = require('compare-cell')
@@ -16480,7 +16590,7 @@ function reduceCellComplex(cells) {
   return cells
 }
 
-},{"cell-orientation":83,"compare-cell":84,"compare-oriented-cell":85}],87:[function(require,module,exports){
+},{"cell-orientation":85,"compare-cell":86,"compare-oriented-cell":87}],89:[function(require,module,exports){
 'use strict';
 
 var arraytools  = function () {
@@ -16669,7 +16779,7 @@ var arraytools  = function () {
 
 module.exports = arraytools();
 
-},{}],88:[function(require,module,exports){
+},{}],90:[function(require,module,exports){
 "use strict"
 
 var convexHull1d = require('./lib/ch1d')
@@ -16695,7 +16805,7 @@ function convexHull(points) {
   }
   return convexHullnd(points, d)
 }
-},{"./lib/ch1d":89,"./lib/ch2d":90,"./lib/chnd":91}],89:[function(require,module,exports){
+},{"./lib/ch1d":91,"./lib/ch2d":92,"./lib/chnd":93}],91:[function(require,module,exports){
 "use strict"
 
 module.exports = convexHull1d
@@ -16719,7 +16829,7 @@ function convexHull1d(points) {
     return [[lo]]
   }
 }
-},{}],90:[function(require,module,exports){
+},{}],92:[function(require,module,exports){
 'use strict'
 
 module.exports = convexHull2D
@@ -16742,7 +16852,7 @@ function convexHull2D(points) {
   return edges
 }
 
-},{"monotone-convex-hull-2d":97}],91:[function(require,module,exports){
+},{"monotone-convex-hull-2d":99}],93:[function(require,module,exports){
 'use strict'
 
 module.exports = convexHullnD
@@ -16803,7 +16913,7 @@ function convexHullnD(points, d) {
     return invPermute(nhull, ah)
   }
 }
-},{"affine-hull":92,"incremental-convex-hull":93}],92:[function(require,module,exports){
+},{"affine-hull":94,"incremental-convex-hull":95}],94:[function(require,module,exports){
 'use strict'
 
 module.exports = affineHull
@@ -16855,7 +16965,7 @@ function affineHull(points) {
   }
   return index
 }
-},{"robust-orientation":1057}],93:[function(require,module,exports){
+},{"robust-orientation":1059}],95:[function(require,module,exports){
 "use strict"
 
 //High level idea:
@@ -17302,7 +17412,7 @@ function incrementalConvexHull(points, randomSearch) {
   //Extract boundary cells
   return triangles.boundary()
 }
-},{"robust-orientation":1057,"simplicial-complex":96}],94:[function(require,module,exports){
+},{"robust-orientation":1059,"simplicial-complex":98}],96:[function(require,module,exports){
 /**
  * Bit twiddling hacks for JavaScript.
  *
@@ -17508,7 +17618,7 @@ exports.nextCombination = function(v) {
 }
 
 
-},{}],95:[function(require,module,exports){
+},{}],97:[function(require,module,exports){
 "use strict"; "use restrict";
 
 module.exports = UnionFind;
@@ -17571,7 +17681,7 @@ proto.link = function(x, y) {
     ++ranks[xr];
   }
 }
-},{}],96:[function(require,module,exports){
+},{}],98:[function(require,module,exports){
 "use strict"; "use restrict";
 
 var bits      = require("bit-twiddle")
@@ -17915,7 +18025,7 @@ function connectedComponents(cells, vertex_count) {
 }
 exports.connectedComponents = connectedComponents
 
-},{"bit-twiddle":94,"union-find":95}],97:[function(require,module,exports){
+},{"bit-twiddle":96,"union-find":97}],99:[function(require,module,exports){
 'use strict'
 
 module.exports = monotoneConvexHull2D
@@ -17997,7 +18107,7 @@ function monotoneConvexHull2D(points) {
   //Return result
   return result
 }
-},{"robust-orientation":1057}],98:[function(require,module,exports){
+},{"robust-orientation":1059}],100:[function(require,module,exports){
 module.exports = {
   AFG: "afghan",
   ALA: "\\b\\wland",
@@ -18256,7 +18366,7 @@ module.exports = {
   ZWE: "zimbabwe|^(?!.*northern).*rhodesia"
 };
 
-},{}],99:[function(require,module,exports){
+},{}],101:[function(require,module,exports){
 !function() {
   var d3 = {
     version: "3.5.16"
@@ -27811,15 +27921,15 @@ module.exports = {
   });
   if (typeof define === "function" && define.amd) this.d3 = d3, define(d3); else if (typeof module === "object" && module.exports) module.exports = d3; else this.d3 = d3;
 }();
-},{}],100:[function(require,module,exports){
-arguments[4][93][0].apply(exports,arguments)
-},{"dup":93,"robust-orientation":1057,"simplicial-complex":103}],101:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],102:[function(require,module,exports){
+},{}],102:[function(require,module,exports){
 arguments[4][95][0].apply(exports,arguments)
-},{"dup":95}],103:[function(require,module,exports){
+},{"dup":95,"robust-orientation":1059,"simplicial-complex":105}],103:[function(require,module,exports){
 arguments[4][96][0].apply(exports,arguments)
-},{"bit-twiddle":101,"dup":96,"union-find":102}],104:[function(require,module,exports){
+},{"dup":96}],104:[function(require,module,exports){
+arguments[4][97][0].apply(exports,arguments)
+},{"dup":97}],105:[function(require,module,exports){
+arguments[4][98][0].apply(exports,arguments)
+},{"bit-twiddle":103,"dup":98,"union-find":104}],106:[function(require,module,exports){
 "use strict"
 
 function unique_pred(list, compare) {
@@ -27878,7 +27988,7 @@ function unique(list, compare, sorted) {
 
 module.exports = unique
 
-},{}],105:[function(require,module,exports){
+},{}],107:[function(require,module,exports){
 "use strict"
 
 var ch = require("incremental-convex-hull")
@@ -28038,7 +28148,7 @@ function triangulate(points, includePointAtInfinity) {
 
   return hull
 }
-},{"incremental-convex-hull":100,"uniq":104}],106:[function(require,module,exports){
+},{"incremental-convex-hull":102,"uniq":106}],108:[function(require,module,exports){
 (function (process,global){
 /*!
  * @overview es6-promise - a tiny implementation of Promises/A+.
@@ -28996,7 +29106,7 @@ function triangulate(points, includePointAtInfinity) {
 
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":6}],107:[function(require,module,exports){
+},{"_process":6}],109:[function(require,module,exports){
 /**
  * inspired by is-number <https://github.com/jonschlinkert/is-number>
  * but significantly simplified and sped up by ignoring number and string constructors
@@ -29053,7 +29163,7 @@ module.exports = function(n) {
     return n - n < 1;
 };
 
-},{}],108:[function(require,module,exports){
+},{}],110:[function(require,module,exports){
 'use strict'
 
 var createShader = require('gl-shader')
@@ -29303,7 +29413,7 @@ function createError2D (plot, options) {
   return errorbars
 }
 
-},{"./lib/shaders":109,"gl-buffer":110,"gl-shader":111,"typedarray-pool":139}],109:[function(require,module,exports){
+},{"./lib/shaders":111,"gl-buffer":112,"gl-shader":113,"typedarray-pool":141}],111:[function(require,module,exports){
 
 
 module.exports = {
@@ -29311,7 +29421,7 @@ module.exports = {
   fragment: "precision mediump float;\n#define GLSLIFY 1\n\nuniform vec4 color;\n\nvoid main() {\n  gl_FragColor = vec4(color.rgb * color.a, color.a);\n}\n"
 }
 
-},{}],110:[function(require,module,exports){
+},{}],112:[function(require,module,exports){
 "use strict"
 
 var pool = require("typedarray-pool")
@@ -29465,7 +29575,7 @@ function createBuffer(gl, data, type, usage) {
 
 module.exports = createBuffer
 
-},{"ndarray":1048,"ndarray-ops":1043,"typedarray-pool":139}],111:[function(require,module,exports){
+},{"ndarray":1050,"ndarray-ops":1045,"typedarray-pool":141}],113:[function(require,module,exports){
 'use strict'
 
 var createUniformWrapper   = require('./lib/create-uniforms')
@@ -29701,7 +29811,7 @@ function createShader(
 
 module.exports = createShader
 
-},{"./lib/GLError":112,"./lib/create-attributes":113,"./lib/create-uniforms":114,"./lib/reflect":115,"./lib/runtime-reflect":116,"./lib/shader-cache":117}],112:[function(require,module,exports){
+},{"./lib/GLError":114,"./lib/create-attributes":115,"./lib/create-uniforms":116,"./lib/reflect":117,"./lib/runtime-reflect":118,"./lib/shader-cache":119}],114:[function(require,module,exports){
 function GLError (rawError, shortMessage, longMessage) {
     this.shortMessage = shortMessage || ''
     this.longMessage = longMessage || ''
@@ -29716,7 +29826,7 @@ GLError.prototype.name = 'GLError'
 GLError.prototype.constructor = GLError
 module.exports = GLError
 
-},{}],113:[function(require,module,exports){
+},{}],115:[function(require,module,exports){
 'use strict'
 
 module.exports = createAttributeWrapper
@@ -29981,7 +30091,7 @@ function createAttributeWrapper(
   return obj
 }
 
-},{"./GLError":112}],114:[function(require,module,exports){
+},{"./GLError":114}],116:[function(require,module,exports){
 'use strict'
 
 var coallesceUniforms = require('./reflect')
@@ -30174,7 +30284,7 @@ function createUniformWrapper(gl, wrapper, uniforms, locations) {
   }
 }
 
-},{"./GLError":112,"./reflect":115}],115:[function(require,module,exports){
+},{"./GLError":114,"./reflect":117}],117:[function(require,module,exports){
 'use strict'
 
 module.exports = makeReflectTypes
@@ -30232,7 +30342,7 @@ function makeReflectTypes(uniforms, useIndex) {
   }
   return obj
 }
-},{}],116:[function(require,module,exports){
+},{}],118:[function(require,module,exports){
 'use strict'
 
 exports.uniforms    = runtimeUniforms
@@ -30312,7 +30422,7 @@ function runtimeAttributes(gl, program) {
   return result
 }
 
-},{}],117:[function(require,module,exports){
+},{}],119:[function(require,module,exports){
 'use strict'
 
 exports.shader   = getShaderReference
@@ -30450,7 +30560,7 @@ function createProgram(gl, vref, fref, attribs, locations) {
   return getCache(gl).getProgram(vref, fref, attribs, locations)
 }
 
-},{"./GLError":112,"gl-format-compiler-error":118,"weakmap-shim":136}],118:[function(require,module,exports){
+},{"./GLError":114,"gl-format-compiler-error":120,"weakmap-shim":138}],120:[function(require,module,exports){
 
 var sprintf = require('sprintf-js').sprintf;
 var glConstants = require('gl-constants/lookup');
@@ -30505,7 +30615,7 @@ function formatCompilerError(errLog, src, type) {
 }
 
 
-},{"add-line-numbers":119,"gl-constants/lookup":123,"glsl-shader-name":124,"sprintf-js":133}],119:[function(require,module,exports){
+},{"add-line-numbers":121,"gl-constants/lookup":125,"glsl-shader-name":126,"sprintf-js":135}],121:[function(require,module,exports){
 var padLeft = require('pad-left')
 
 module.exports = addLineNumbers
@@ -30523,7 +30633,7 @@ function addLineNumbers (string, start, delim) {
   }).join('\n')
 }
 
-},{"pad-left":120}],120:[function(require,module,exports){
+},{"pad-left":122}],122:[function(require,module,exports){
 /*!
  * pad-left <https://github.com/jonschlinkert/pad-left>
  *
@@ -30539,7 +30649,7 @@ module.exports = function padLeft(str, num, ch) {
   ch = typeof ch !== 'undefined' ? (ch + '') : ' ';
   return repeat(ch, num) + str;
 };
-},{"repeat-string":121}],121:[function(require,module,exports){
+},{"repeat-string":123}],123:[function(require,module,exports){
 /*!
  * repeat-string <https://github.com/jonschlinkert/repeat-string>
  *
@@ -30609,7 +30719,7 @@ function repeat(str, num) {
 }
 
 
-},{}],122:[function(require,module,exports){
+},{}],124:[function(require,module,exports){
 module.exports = {
   0: 'NONE',
   1: 'ONE',
@@ -30909,14 +31019,14 @@ module.exports = {
   37444: 'BROWSER_DEFAULT_WEBGL'
 }
 
-},{}],123:[function(require,module,exports){
+},{}],125:[function(require,module,exports){
 var gl10 = require('./1.0/numbers')
 
 module.exports = function lookupConstant (number) {
   return gl10[number]
 }
 
-},{"./1.0/numbers":122}],124:[function(require,module,exports){
+},{"./1.0/numbers":124}],126:[function(require,module,exports){
 var tokenize = require('glsl-tokenizer')
 var atob     = require('atob-lite')
 
@@ -30941,12 +31051,12 @@ function getName(src) {
   }
 }
 
-},{"atob-lite":125,"glsl-tokenizer":132}],125:[function(require,module,exports){
+},{"atob-lite":127,"glsl-tokenizer":134}],127:[function(require,module,exports){
 module.exports = function _atob(str) {
   return atob(str)
 }
 
-},{}],126:[function(require,module,exports){
+},{}],128:[function(require,module,exports){
 module.exports = tokenize
 
 var literals100 = require('./lib/literals')
@@ -31310,7 +31420,7 @@ function tokenize(opt) {
   }
 }
 
-},{"./lib/builtins":128,"./lib/builtins-300es":127,"./lib/literals":130,"./lib/literals-300es":129,"./lib/operators":131}],127:[function(require,module,exports){
+},{"./lib/builtins":130,"./lib/builtins-300es":129,"./lib/literals":132,"./lib/literals-300es":131,"./lib/operators":133}],129:[function(require,module,exports){
 // 300es builtins/reserved words that were previously valid in v100
 var v100 = require('./builtins')
 
@@ -31381,7 +31491,7 @@ module.exports = v100.concat([
   , 'textureProjGradOffset'
 ])
 
-},{"./builtins":128}],128:[function(require,module,exports){
+},{"./builtins":130}],130:[function(require,module,exports){
 module.exports = [
   // Keep this list sorted
   'abs'
@@ -31533,7 +31643,7 @@ module.exports = [
   , 'textureCubeGradEXT'
 ]
 
-},{}],129:[function(require,module,exports){
+},{}],131:[function(require,module,exports){
 var v100 = require('./literals')
 
 module.exports = v100.slice().concat([
@@ -31623,7 +31733,7 @@ module.exports = v100.slice().concat([
   , 'usampler2DMSArray'
 ])
 
-},{"./literals":130}],130:[function(require,module,exports){
+},{"./literals":132}],132:[function(require,module,exports){
 module.exports = [
   // current
     'precision'
@@ -31718,7 +31828,7 @@ module.exports = [
   , 'using'
 ]
 
-},{}],131:[function(require,module,exports){
+},{}],133:[function(require,module,exports){
 module.exports = [
     '<<='
   , '>>='
@@ -31767,7 +31877,7 @@ module.exports = [
   , '}'
 ]
 
-},{}],132:[function(require,module,exports){
+},{}],134:[function(require,module,exports){
 var tokenize = require('./index')
 
 module.exports = tokenizeString
@@ -31782,7 +31892,7 @@ function tokenizeString(str, opt) {
   return tokens
 }
 
-},{"./index":126}],133:[function(require,module,exports){
+},{"./index":128}],135:[function(require,module,exports){
 (function(window) {
     var re = {
         not_string: /[^s]/,
@@ -31992,7 +32102,7 @@ function tokenizeString(str, opt) {
     }
 })(typeof window === "undefined" ? this : window);
 
-},{}],134:[function(require,module,exports){
+},{}],136:[function(require,module,exports){
 var hiddenStore = require('./hidden-store.js');
 
 module.exports = createStore;
@@ -32013,7 +32123,7 @@ function createStore() {
     };
 }
 
-},{"./hidden-store.js":135}],135:[function(require,module,exports){
+},{"./hidden-store.js":137}],137:[function(require,module,exports){
 module.exports = hiddenStore;
 
 function hiddenStore(obj, key) {
@@ -32031,7 +32141,7 @@ function hiddenStore(obj, key) {
     return store;
 }
 
-},{}],136:[function(require,module,exports){
+},{}],138:[function(require,module,exports){
 // Original - @Gozola. 
 // https://gist.github.com/Gozala/1269991
 // This is a reimplemented version (with a few bug fixes).
@@ -32061,11 +32171,11 @@ function weakMap() {
     }
 }
 
-},{"./create-store.js":134}],137:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],138:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],139:[function(require,module,exports){
+},{"./create-store.js":136}],139:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],140:[function(require,module,exports){
+arguments[4][75][0].apply(exports,arguments)
+},{"dup":75}],141:[function(require,module,exports){
 (function (global,Buffer){
 'use strict'
 
@@ -32282,7 +32392,7 @@ exports.clearCache = function clearCache() {
   }
 }
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"bit-twiddle":137,"buffer":1,"dup":138}],140:[function(require,module,exports){
+},{"bit-twiddle":139,"buffer":1,"dup":140}],142:[function(require,module,exports){
 'use strict'
 
 module.exports = createErrorBars
@@ -32519,67 +32629,67 @@ function createErrorBars(options) {
   return result
 }
 
-},{"./shaders/index":175,"gl-buffer":141,"gl-vao":174}],141:[function(require,module,exports){
-arguments[4][110][0].apply(exports,arguments)
-},{"dup":110,"ndarray":1048,"ndarray-ops":1043,"typedarray-pool":144}],142:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],143:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],144:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":142,"buffer":1,"dup":139}],145:[function(require,module,exports){
-arguments[4][111][0].apply(exports,arguments)
-},{"./lib/GLError":146,"./lib/create-attributes":147,"./lib/create-uniforms":148,"./lib/reflect":149,"./lib/runtime-reflect":150,"./lib/shader-cache":151,"dup":111}],146:[function(require,module,exports){
+},{"./shaders/index":177,"gl-buffer":143,"gl-vao":176}],143:[function(require,module,exports){
 arguments[4][112][0].apply(exports,arguments)
-},{"dup":112}],147:[function(require,module,exports){
+},{"dup":112,"ndarray":1050,"ndarray-ops":1045,"typedarray-pool":146}],144:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],145:[function(require,module,exports){
+arguments[4][75][0].apply(exports,arguments)
+},{"dup":75}],146:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":144,"buffer":1,"dup":141}],147:[function(require,module,exports){
 arguments[4][113][0].apply(exports,arguments)
-},{"./GLError":146,"dup":113}],148:[function(require,module,exports){
+},{"./lib/GLError":148,"./lib/create-attributes":149,"./lib/create-uniforms":150,"./lib/reflect":151,"./lib/runtime-reflect":152,"./lib/shader-cache":153,"dup":113}],148:[function(require,module,exports){
 arguments[4][114][0].apply(exports,arguments)
-},{"./GLError":146,"./reflect":149,"dup":114}],149:[function(require,module,exports){
+},{"dup":114}],149:[function(require,module,exports){
 arguments[4][115][0].apply(exports,arguments)
-},{"dup":115}],150:[function(require,module,exports){
+},{"./GLError":148,"dup":115}],150:[function(require,module,exports){
 arguments[4][116][0].apply(exports,arguments)
-},{"dup":116}],151:[function(require,module,exports){
+},{"./GLError":148,"./reflect":151,"dup":116}],151:[function(require,module,exports){
 arguments[4][117][0].apply(exports,arguments)
-},{"./GLError":146,"dup":117,"gl-format-compiler-error":152,"weakmap-shim":170}],152:[function(require,module,exports){
+},{"dup":117}],152:[function(require,module,exports){
 arguments[4][118][0].apply(exports,arguments)
-},{"add-line-numbers":153,"dup":118,"gl-constants/lookup":157,"glsl-shader-name":158,"sprintf-js":167}],153:[function(require,module,exports){
+},{"dup":118}],153:[function(require,module,exports){
 arguments[4][119][0].apply(exports,arguments)
-},{"dup":119,"pad-left":154}],154:[function(require,module,exports){
+},{"./GLError":148,"dup":119,"gl-format-compiler-error":154,"weakmap-shim":172}],154:[function(require,module,exports){
 arguments[4][120][0].apply(exports,arguments)
-},{"dup":120,"repeat-string":155}],155:[function(require,module,exports){
+},{"add-line-numbers":155,"dup":120,"gl-constants/lookup":159,"glsl-shader-name":160,"sprintf-js":169}],155:[function(require,module,exports){
 arguments[4][121][0].apply(exports,arguments)
-},{"dup":121}],156:[function(require,module,exports){
+},{"dup":121,"pad-left":156}],156:[function(require,module,exports){
 arguments[4][122][0].apply(exports,arguments)
-},{"dup":122}],157:[function(require,module,exports){
+},{"dup":122,"repeat-string":157}],157:[function(require,module,exports){
 arguments[4][123][0].apply(exports,arguments)
-},{"./1.0/numbers":156,"dup":123}],158:[function(require,module,exports){
+},{"dup":123}],158:[function(require,module,exports){
 arguments[4][124][0].apply(exports,arguments)
-},{"atob-lite":159,"dup":124,"glsl-tokenizer":166}],159:[function(require,module,exports){
+},{"dup":124}],159:[function(require,module,exports){
 arguments[4][125][0].apply(exports,arguments)
-},{"dup":125}],160:[function(require,module,exports){
+},{"./1.0/numbers":158,"dup":125}],160:[function(require,module,exports){
 arguments[4][126][0].apply(exports,arguments)
-},{"./lib/builtins":162,"./lib/builtins-300es":161,"./lib/literals":164,"./lib/literals-300es":163,"./lib/operators":165,"dup":126}],161:[function(require,module,exports){
+},{"atob-lite":161,"dup":126,"glsl-tokenizer":168}],161:[function(require,module,exports){
 arguments[4][127][0].apply(exports,arguments)
-},{"./builtins":162,"dup":127}],162:[function(require,module,exports){
+},{"dup":127}],162:[function(require,module,exports){
 arguments[4][128][0].apply(exports,arguments)
-},{"dup":128}],163:[function(require,module,exports){
+},{"./lib/builtins":164,"./lib/builtins-300es":163,"./lib/literals":166,"./lib/literals-300es":165,"./lib/operators":167,"dup":128}],163:[function(require,module,exports){
 arguments[4][129][0].apply(exports,arguments)
-},{"./literals":164,"dup":129}],164:[function(require,module,exports){
+},{"./builtins":164,"dup":129}],164:[function(require,module,exports){
 arguments[4][130][0].apply(exports,arguments)
 },{"dup":130}],165:[function(require,module,exports){
 arguments[4][131][0].apply(exports,arguments)
-},{"dup":131}],166:[function(require,module,exports){
+},{"./literals":166,"dup":131}],166:[function(require,module,exports){
 arguments[4][132][0].apply(exports,arguments)
-},{"./index":160,"dup":132}],167:[function(require,module,exports){
+},{"dup":132}],167:[function(require,module,exports){
 arguments[4][133][0].apply(exports,arguments)
 },{"dup":133}],168:[function(require,module,exports){
 arguments[4][134][0].apply(exports,arguments)
-},{"./hidden-store.js":169,"dup":134}],169:[function(require,module,exports){
+},{"./index":162,"dup":134}],169:[function(require,module,exports){
 arguments[4][135][0].apply(exports,arguments)
 },{"dup":135}],170:[function(require,module,exports){
 arguments[4][136][0].apply(exports,arguments)
-},{"./create-store.js":168,"dup":136}],171:[function(require,module,exports){
+},{"./hidden-store.js":171,"dup":136}],171:[function(require,module,exports){
+arguments[4][137][0].apply(exports,arguments)
+},{"dup":137}],172:[function(require,module,exports){
+arguments[4][138][0].apply(exports,arguments)
+},{"./create-store.js":170,"dup":138}],173:[function(require,module,exports){
 "use strict"
 
 function doBind(gl, elements, attributes) {
@@ -32634,7 +32744,7 @@ function doBind(gl, elements, attributes) {
 }
 
 module.exports = doBind
-},{}],172:[function(require,module,exports){
+},{}],174:[function(require,module,exports){
 "use strict"
 
 var bindAttribs = require("./do-bind.js")
@@ -32674,7 +32784,7 @@ function createVAOEmulated(gl) {
 }
 
 module.exports = createVAOEmulated
-},{"./do-bind.js":171}],173:[function(require,module,exports){
+},{"./do-bind.js":173}],175:[function(require,module,exports){
 "use strict"
 
 var bindAttribs = require("./do-bind.js")
@@ -32762,7 +32872,7 @@ function createVAONative(gl, ext) {
 }
 
 module.exports = createVAONative
-},{"./do-bind.js":171}],174:[function(require,module,exports){
+},{"./do-bind.js":173}],176:[function(require,module,exports){
 "use strict"
 
 var createVAONative = require("./lib/vao-native.js")
@@ -32782,7 +32892,7 @@ function createVAO(gl, attributes, elements, elementsType) {
 
 module.exports = createVAO
 
-},{"./lib/vao-emulated.js":172,"./lib/vao-native.js":173}],175:[function(require,module,exports){
+},{"./lib/vao-emulated.js":174,"./lib/vao-native.js":175}],177:[function(require,module,exports){
 'use strict'
 
 
@@ -32799,7 +32909,7 @@ module.exports = function(gl) {
   ])
 }
 
-},{"gl-shader":145}],176:[function(require,module,exports){
+},{"gl-shader":147}],178:[function(require,module,exports){
 
 
 exports.lineVertex    = "precision mediump float;\n#define GLSLIFY 1\n\nfloat inverse_1_0(float m) {\n  return 1.0 / m;\n}\n\nmat2 inverse_1_0(mat2 m) {\n  return mat2(m[1][1],-m[0][1],\n             -m[1][0], m[0][0]) / (m[0][0]*m[1][1] - m[0][1]*m[1][0]);\n}\n\nmat3 inverse_1_0(mat3 m) {\n  float a00 = m[0][0], a01 = m[0][1], a02 = m[0][2];\n  float a10 = m[1][0], a11 = m[1][1], a12 = m[1][2];\n  float a20 = m[2][0], a21 = m[2][1], a22 = m[2][2];\n\n  float b01 = a22 * a11 - a12 * a21;\n  float b11 = -a22 * a10 + a12 * a20;\n  float b21 = a21 * a10 - a11 * a20;\n\n  float det = a00 * b01 + a01 * b11 + a02 * b21;\n\n  return mat3(b01, (-a22 * a01 + a02 * a21), (a12 * a01 - a02 * a11),\n              b11, (a22 * a00 - a02 * a20), (-a12 * a00 + a02 * a10),\n              b21, (-a21 * a00 + a01 * a20), (a11 * a00 - a01 * a10)) / det;\n}\n\nmat4 inverse_1_0(mat4 m) {\n  float\n      a00 = m[0][0], a01 = m[0][1], a02 = m[0][2], a03 = m[0][3],\n      a10 = m[1][0], a11 = m[1][1], a12 = m[1][2], a13 = m[1][3],\n      a20 = m[2][0], a21 = m[2][1], a22 = m[2][2], a23 = m[2][3],\n      a30 = m[3][0], a31 = m[3][1], a32 = m[3][2], a33 = m[3][3],\n\n      b00 = a00 * a11 - a01 * a10,\n      b01 = a00 * a12 - a02 * a10,\n      b02 = a00 * a13 - a03 * a10,\n      b03 = a01 * a12 - a02 * a11,\n      b04 = a01 * a13 - a03 * a11,\n      b05 = a02 * a13 - a03 * a12,\n      b06 = a20 * a31 - a21 * a30,\n      b07 = a20 * a32 - a22 * a30,\n      b08 = a20 * a33 - a23 * a30,\n      b09 = a21 * a32 - a22 * a31,\n      b10 = a21 * a33 - a23 * a31,\n      b11 = a22 * a33 - a23 * a32,\n\n      det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;\n\n  return mat4(\n      a11 * b11 - a12 * b10 + a13 * b09,\n      a02 * b10 - a01 * b11 - a03 * b09,\n      a31 * b05 - a32 * b04 + a33 * b03,\n      a22 * b04 - a21 * b05 - a23 * b03,\n      a12 * b08 - a10 * b11 - a13 * b07,\n      a00 * b11 - a02 * b08 + a03 * b07,\n      a32 * b02 - a30 * b05 - a33 * b01,\n      a20 * b05 - a22 * b02 + a23 * b01,\n      a10 * b10 - a11 * b08 + a13 * b06,\n      a01 * b08 - a00 * b10 - a03 * b06,\n      a30 * b04 - a31 * b02 + a33 * b00,\n      a21 * b02 - a20 * b04 - a23 * b00,\n      a11 * b07 - a10 * b09 - a12 * b06,\n      a00 * b09 - a01 * b07 + a02 * b06,\n      a31 * b01 - a30 * b03 - a32 * b00,\n      a20 * b03 - a21 * b01 + a22 * b00) / det;\n}\n\n\n\nattribute vec2 a, d;\n\nuniform mat3 matrix;\nuniform vec2 screenShape;\nuniform float width;\n\nvarying vec2 direction;\n\nvoid main() {\n  vec2 dir = (matrix * vec3(d, 0)).xy;\n  vec3 base = matrix * vec3(a, 1);\n  vec2 n = 0.5 * width *\n    normalize(screenShape.yx * vec2(dir.y, -dir.x)) / screenShape.xy;\n  vec2 tangent = normalize(screenShape.xy * dir);\n  if(dir.x < 0.0 || (dir.x == 0.0 && dir.y < 0.0)) {\n    direction = -tangent;\n  } else {\n    direction = tangent;\n  }\n  gl_Position = vec4(base.xy/base.z + n, 0, 1);\n}\n"
@@ -32811,7 +32921,7 @@ exports.pickFragment  = "precision mediump float;\n#define GLSLIFY 1\n\nuniform 
 exports.fillVertex    = "precision mediump float;\n#define GLSLIFY 1\n\nattribute vec2 a, d;\n\nuniform mat3 matrix;\nuniform vec2 projectAxis;\nuniform float projectValue;\nuniform float depth;\n\nvoid main() {\n  vec3 base = matrix * vec3(a, 1);\n  vec2 p = base.xy / base.z;\n  if(d.y < 0.0 || (d.y == 0.0 && d.x < 0.0)) {\n    if(dot(p, projectAxis) < projectValue) {\n      p = p * (1.0 - abs(projectAxis)) + projectAxis * projectValue;\n    }\n  }\n  gl_Position = vec4(p, depth, 1);\n}\n"
 exports.fillFragment  = "precision mediump float;\n#define GLSLIFY 1\n\nuniform vec4 color;\n\nvoid main() {\n  gl_FragColor = vec4(color.rgb * color.a, color.a);\n}\n"
 
-},{}],177:[function(require,module,exports){
+},{}],179:[function(require,module,exports){
 'use strict'
 
 module.exports = createLinePlot
@@ -33284,61 +33394,61 @@ function createLinePlot(plot, options) {
   return linePlot
 }
 
-},{"./lib/shaders":176,"gl-buffer":178,"gl-shader":179,"gl-texture2d":205,"ndarray":1048,"typedarray-pool":208}],178:[function(require,module,exports){
-arguments[4][110][0].apply(exports,arguments)
-},{"dup":110,"ndarray":1048,"ndarray-ops":1043,"typedarray-pool":208}],179:[function(require,module,exports){
-arguments[4][111][0].apply(exports,arguments)
-},{"./lib/GLError":180,"./lib/create-attributes":181,"./lib/create-uniforms":182,"./lib/reflect":183,"./lib/runtime-reflect":184,"./lib/shader-cache":185,"dup":111}],180:[function(require,module,exports){
+},{"./lib/shaders":178,"gl-buffer":180,"gl-shader":181,"gl-texture2d":207,"ndarray":1050,"typedarray-pool":210}],180:[function(require,module,exports){
 arguments[4][112][0].apply(exports,arguments)
-},{"dup":112}],181:[function(require,module,exports){
+},{"dup":112,"ndarray":1050,"ndarray-ops":1045,"typedarray-pool":210}],181:[function(require,module,exports){
 arguments[4][113][0].apply(exports,arguments)
-},{"./GLError":180,"dup":113}],182:[function(require,module,exports){
+},{"./lib/GLError":182,"./lib/create-attributes":183,"./lib/create-uniforms":184,"./lib/reflect":185,"./lib/runtime-reflect":186,"./lib/shader-cache":187,"dup":113}],182:[function(require,module,exports){
 arguments[4][114][0].apply(exports,arguments)
-},{"./GLError":180,"./reflect":183,"dup":114}],183:[function(require,module,exports){
+},{"dup":114}],183:[function(require,module,exports){
 arguments[4][115][0].apply(exports,arguments)
-},{"dup":115}],184:[function(require,module,exports){
+},{"./GLError":182,"dup":115}],184:[function(require,module,exports){
 arguments[4][116][0].apply(exports,arguments)
-},{"dup":116}],185:[function(require,module,exports){
+},{"./GLError":182,"./reflect":185,"dup":116}],185:[function(require,module,exports){
 arguments[4][117][0].apply(exports,arguments)
-},{"./GLError":180,"dup":117,"gl-format-compiler-error":186,"weakmap-shim":204}],186:[function(require,module,exports){
+},{"dup":117}],186:[function(require,module,exports){
 arguments[4][118][0].apply(exports,arguments)
-},{"add-line-numbers":187,"dup":118,"gl-constants/lookup":191,"glsl-shader-name":192,"sprintf-js":201}],187:[function(require,module,exports){
+},{"dup":118}],187:[function(require,module,exports){
 arguments[4][119][0].apply(exports,arguments)
-},{"dup":119,"pad-left":188}],188:[function(require,module,exports){
+},{"./GLError":182,"dup":119,"gl-format-compiler-error":188,"weakmap-shim":206}],188:[function(require,module,exports){
 arguments[4][120][0].apply(exports,arguments)
-},{"dup":120,"repeat-string":189}],189:[function(require,module,exports){
+},{"add-line-numbers":189,"dup":120,"gl-constants/lookup":193,"glsl-shader-name":194,"sprintf-js":203}],189:[function(require,module,exports){
 arguments[4][121][0].apply(exports,arguments)
-},{"dup":121}],190:[function(require,module,exports){
+},{"dup":121,"pad-left":190}],190:[function(require,module,exports){
 arguments[4][122][0].apply(exports,arguments)
-},{"dup":122}],191:[function(require,module,exports){
+},{"dup":122,"repeat-string":191}],191:[function(require,module,exports){
 arguments[4][123][0].apply(exports,arguments)
-},{"./1.0/numbers":190,"dup":123}],192:[function(require,module,exports){
+},{"dup":123}],192:[function(require,module,exports){
 arguments[4][124][0].apply(exports,arguments)
-},{"atob-lite":193,"dup":124,"glsl-tokenizer":200}],193:[function(require,module,exports){
+},{"dup":124}],193:[function(require,module,exports){
 arguments[4][125][0].apply(exports,arguments)
-},{"dup":125}],194:[function(require,module,exports){
+},{"./1.0/numbers":192,"dup":125}],194:[function(require,module,exports){
 arguments[4][126][0].apply(exports,arguments)
-},{"./lib/builtins":196,"./lib/builtins-300es":195,"./lib/literals":198,"./lib/literals-300es":197,"./lib/operators":199,"dup":126}],195:[function(require,module,exports){
+},{"atob-lite":195,"dup":126,"glsl-tokenizer":202}],195:[function(require,module,exports){
 arguments[4][127][0].apply(exports,arguments)
-},{"./builtins":196,"dup":127}],196:[function(require,module,exports){
+},{"dup":127}],196:[function(require,module,exports){
 arguments[4][128][0].apply(exports,arguments)
-},{"dup":128}],197:[function(require,module,exports){
+},{"./lib/builtins":198,"./lib/builtins-300es":197,"./lib/literals":200,"./lib/literals-300es":199,"./lib/operators":201,"dup":128}],197:[function(require,module,exports){
 arguments[4][129][0].apply(exports,arguments)
-},{"./literals":198,"dup":129}],198:[function(require,module,exports){
+},{"./builtins":198,"dup":129}],198:[function(require,module,exports){
 arguments[4][130][0].apply(exports,arguments)
 },{"dup":130}],199:[function(require,module,exports){
 arguments[4][131][0].apply(exports,arguments)
-},{"dup":131}],200:[function(require,module,exports){
+},{"./literals":200,"dup":131}],200:[function(require,module,exports){
 arguments[4][132][0].apply(exports,arguments)
-},{"./index":194,"dup":132}],201:[function(require,module,exports){
+},{"dup":132}],201:[function(require,module,exports){
 arguments[4][133][0].apply(exports,arguments)
 },{"dup":133}],202:[function(require,module,exports){
 arguments[4][134][0].apply(exports,arguments)
-},{"./hidden-store.js":203,"dup":134}],203:[function(require,module,exports){
+},{"./index":196,"dup":134}],203:[function(require,module,exports){
 arguments[4][135][0].apply(exports,arguments)
 },{"dup":135}],204:[function(require,module,exports){
 arguments[4][136][0].apply(exports,arguments)
-},{"./create-store.js":202,"dup":136}],205:[function(require,module,exports){
+},{"./hidden-store.js":205,"dup":136}],205:[function(require,module,exports){
+arguments[4][137][0].apply(exports,arguments)
+},{"dup":137}],206:[function(require,module,exports){
+arguments[4][138][0].apply(exports,arguments)
+},{"./create-store.js":204,"dup":138}],207:[function(require,module,exports){
 'use strict'
 
 var ndarray = require('ndarray')
@@ -33897,13 +34007,13 @@ function createTexture2D(gl) {
   throw new Error('gl-texture2d: Invalid arguments for texture2d constructor')
 }
 
-},{"ndarray":1048,"ndarray-ops":1043,"typedarray-pool":208}],206:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],207:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],208:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":206,"buffer":1,"dup":139}],209:[function(require,module,exports){
+},{"ndarray":1050,"ndarray-ops":1045,"typedarray-pool":210}],208:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],209:[function(require,module,exports){
+arguments[4][75][0].apply(exports,arguments)
+},{"dup":75}],210:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":208,"buffer":1,"dup":141}],211:[function(require,module,exports){
 
 var createShader  = require('gl-shader')
 
@@ -33927,7 +34037,7 @@ exports.createPickShader = function(gl) {
   return createShader(gl, vertSrc, pickFrag, null, ATTRIBUTES)
 }
 
-},{"gl-shader":216}],210:[function(require,module,exports){
+},{"gl-shader":218}],212:[function(require,module,exports){
 'use strict'
 
 module.exports = createLinePlot
@@ -34297,85 +34407,85 @@ function createLinePlot (options) {
   return linePlot
 }
 
-},{"./lib/shaders":209,"binary-search-bounds":211,"gl-buffer":212,"gl-texture2d":245,"gl-vao":249,"glsl-read-float":250,"ndarray":1048}],211:[function(require,module,exports){
-arguments[4][44][0].apply(exports,arguments)
-},{"dup":44}],212:[function(require,module,exports){
-arguments[4][110][0].apply(exports,arguments)
-},{"dup":110,"ndarray":1048,"ndarray-ops":1043,"typedarray-pool":215}],213:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],214:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],215:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":213,"buffer":1,"dup":139}],216:[function(require,module,exports){
-arguments[4][111][0].apply(exports,arguments)
-},{"./lib/GLError":217,"./lib/create-attributes":218,"./lib/create-uniforms":219,"./lib/reflect":220,"./lib/runtime-reflect":221,"./lib/shader-cache":222,"dup":111}],217:[function(require,module,exports){
+},{"./lib/shaders":211,"binary-search-bounds":213,"gl-buffer":214,"gl-texture2d":247,"gl-vao":251,"glsl-read-float":252,"ndarray":1050}],213:[function(require,module,exports){
+arguments[4][46][0].apply(exports,arguments)
+},{"dup":46}],214:[function(require,module,exports){
 arguments[4][112][0].apply(exports,arguments)
-},{"dup":112}],218:[function(require,module,exports){
+},{"dup":112,"ndarray":1050,"ndarray-ops":1045,"typedarray-pool":217}],215:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],216:[function(require,module,exports){
+arguments[4][75][0].apply(exports,arguments)
+},{"dup":75}],217:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":215,"buffer":1,"dup":141}],218:[function(require,module,exports){
 arguments[4][113][0].apply(exports,arguments)
-},{"./GLError":217,"dup":113}],219:[function(require,module,exports){
+},{"./lib/GLError":219,"./lib/create-attributes":220,"./lib/create-uniforms":221,"./lib/reflect":222,"./lib/runtime-reflect":223,"./lib/shader-cache":224,"dup":113}],219:[function(require,module,exports){
 arguments[4][114][0].apply(exports,arguments)
-},{"./GLError":217,"./reflect":220,"dup":114}],220:[function(require,module,exports){
+},{"dup":114}],220:[function(require,module,exports){
 arguments[4][115][0].apply(exports,arguments)
-},{"dup":115}],221:[function(require,module,exports){
+},{"./GLError":219,"dup":115}],221:[function(require,module,exports){
 arguments[4][116][0].apply(exports,arguments)
-},{"dup":116}],222:[function(require,module,exports){
+},{"./GLError":219,"./reflect":222,"dup":116}],222:[function(require,module,exports){
 arguments[4][117][0].apply(exports,arguments)
-},{"./GLError":217,"dup":117,"gl-format-compiler-error":223,"weakmap-shim":241}],223:[function(require,module,exports){
+},{"dup":117}],223:[function(require,module,exports){
 arguments[4][118][0].apply(exports,arguments)
-},{"add-line-numbers":224,"dup":118,"gl-constants/lookup":228,"glsl-shader-name":229,"sprintf-js":238}],224:[function(require,module,exports){
+},{"dup":118}],224:[function(require,module,exports){
 arguments[4][119][0].apply(exports,arguments)
-},{"dup":119,"pad-left":225}],225:[function(require,module,exports){
+},{"./GLError":219,"dup":119,"gl-format-compiler-error":225,"weakmap-shim":243}],225:[function(require,module,exports){
 arguments[4][120][0].apply(exports,arguments)
-},{"dup":120,"repeat-string":226}],226:[function(require,module,exports){
+},{"add-line-numbers":226,"dup":120,"gl-constants/lookup":230,"glsl-shader-name":231,"sprintf-js":240}],226:[function(require,module,exports){
 arguments[4][121][0].apply(exports,arguments)
-},{"dup":121}],227:[function(require,module,exports){
+},{"dup":121,"pad-left":227}],227:[function(require,module,exports){
 arguments[4][122][0].apply(exports,arguments)
-},{"dup":122}],228:[function(require,module,exports){
+},{"dup":122,"repeat-string":228}],228:[function(require,module,exports){
 arguments[4][123][0].apply(exports,arguments)
-},{"./1.0/numbers":227,"dup":123}],229:[function(require,module,exports){
+},{"dup":123}],229:[function(require,module,exports){
 arguments[4][124][0].apply(exports,arguments)
-},{"atob-lite":230,"dup":124,"glsl-tokenizer":237}],230:[function(require,module,exports){
+},{"dup":124}],230:[function(require,module,exports){
 arguments[4][125][0].apply(exports,arguments)
-},{"dup":125}],231:[function(require,module,exports){
+},{"./1.0/numbers":229,"dup":125}],231:[function(require,module,exports){
 arguments[4][126][0].apply(exports,arguments)
-},{"./lib/builtins":233,"./lib/builtins-300es":232,"./lib/literals":235,"./lib/literals-300es":234,"./lib/operators":236,"dup":126}],232:[function(require,module,exports){
+},{"atob-lite":232,"dup":126,"glsl-tokenizer":239}],232:[function(require,module,exports){
 arguments[4][127][0].apply(exports,arguments)
-},{"./builtins":233,"dup":127}],233:[function(require,module,exports){
+},{"dup":127}],233:[function(require,module,exports){
 arguments[4][128][0].apply(exports,arguments)
-},{"dup":128}],234:[function(require,module,exports){
+},{"./lib/builtins":235,"./lib/builtins-300es":234,"./lib/literals":237,"./lib/literals-300es":236,"./lib/operators":238,"dup":128}],234:[function(require,module,exports){
 arguments[4][129][0].apply(exports,arguments)
-},{"./literals":235,"dup":129}],235:[function(require,module,exports){
+},{"./builtins":235,"dup":129}],235:[function(require,module,exports){
 arguments[4][130][0].apply(exports,arguments)
 },{"dup":130}],236:[function(require,module,exports){
 arguments[4][131][0].apply(exports,arguments)
-},{"dup":131}],237:[function(require,module,exports){
+},{"./literals":237,"dup":131}],237:[function(require,module,exports){
 arguments[4][132][0].apply(exports,arguments)
-},{"./index":231,"dup":132}],238:[function(require,module,exports){
+},{"dup":132}],238:[function(require,module,exports){
 arguments[4][133][0].apply(exports,arguments)
 },{"dup":133}],239:[function(require,module,exports){
 arguments[4][134][0].apply(exports,arguments)
-},{"./hidden-store.js":240,"dup":134}],240:[function(require,module,exports){
+},{"./index":233,"dup":134}],240:[function(require,module,exports){
 arguments[4][135][0].apply(exports,arguments)
 },{"dup":135}],241:[function(require,module,exports){
 arguments[4][136][0].apply(exports,arguments)
-},{"./create-store.js":239,"dup":136}],242:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],243:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],244:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":242,"buffer":1,"dup":139}],245:[function(require,module,exports){
-arguments[4][205][0].apply(exports,arguments)
-},{"dup":205,"ndarray":1048,"ndarray-ops":1043,"typedarray-pool":244}],246:[function(require,module,exports){
-arguments[4][171][0].apply(exports,arguments)
-},{"dup":171}],247:[function(require,module,exports){
-arguments[4][172][0].apply(exports,arguments)
-},{"./do-bind.js":246,"dup":172}],248:[function(require,module,exports){
+},{"./hidden-store.js":242,"dup":136}],242:[function(require,module,exports){
+arguments[4][137][0].apply(exports,arguments)
+},{"dup":137}],243:[function(require,module,exports){
+arguments[4][138][0].apply(exports,arguments)
+},{"./create-store.js":241,"dup":138}],244:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],245:[function(require,module,exports){
+arguments[4][75][0].apply(exports,arguments)
+},{"dup":75}],246:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":244,"buffer":1,"dup":141}],247:[function(require,module,exports){
+arguments[4][207][0].apply(exports,arguments)
+},{"dup":207,"ndarray":1050,"ndarray-ops":1045,"typedarray-pool":246}],248:[function(require,module,exports){
 arguments[4][173][0].apply(exports,arguments)
-},{"./do-bind.js":246,"dup":173}],249:[function(require,module,exports){
+},{"dup":173}],249:[function(require,module,exports){
 arguments[4][174][0].apply(exports,arguments)
-},{"./lib/vao-emulated.js":247,"./lib/vao-native.js":248,"dup":174}],250:[function(require,module,exports){
+},{"./do-bind.js":248,"dup":174}],250:[function(require,module,exports){
+arguments[4][175][0].apply(exports,arguments)
+},{"./do-bind.js":248,"dup":175}],251:[function(require,module,exports){
+arguments[4][176][0].apply(exports,arguments)
+},{"./lib/vao-emulated.js":249,"./lib/vao-native.js":250,"dup":176}],252:[function(require,module,exports){
 module.exports = decodeFloat
 
 var UINT8_VIEW = new Uint8Array(4)
@@ -34389,7 +34499,7 @@ function decodeFloat(x, y, z, w) {
   return FLOAT_VIEW[0]
 }
 
-},{}],251:[function(require,module,exports){
+},{}],253:[function(require,module,exports){
 module.exports = clone;
 
 /**
@@ -34418,7 +34528,7 @@ function clone(a) {
     out[15] = a[15];
     return out;
 };
-},{}],252:[function(require,module,exports){
+},{}],254:[function(require,module,exports){
 module.exports = create;
 
 /**
@@ -34446,7 +34556,7 @@ function create() {
     out[15] = 1;
     return out;
 };
-},{}],253:[function(require,module,exports){
+},{}],255:[function(require,module,exports){
 module.exports = determinant;
 
 /**
@@ -34477,7 +34587,7 @@ function determinant(a) {
     // Calculate the determinant
     return b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
 };
-},{}],254:[function(require,module,exports){
+},{}],256:[function(require,module,exports){
 module.exports = fromQuat;
 
 /**
@@ -34525,7 +34635,7 @@ function fromQuat(out, q) {
 
     return out;
 };
-},{}],255:[function(require,module,exports){
+},{}],257:[function(require,module,exports){
 module.exports = fromRotationTranslation;
 
 /**
@@ -34579,7 +34689,7 @@ function fromRotationTranslation(out, q, v) {
     
     return out;
 };
-},{}],256:[function(require,module,exports){
+},{}],258:[function(require,module,exports){
 module.exports = identity;
 
 /**
@@ -34607,7 +34717,7 @@ function identity(out) {
     out[15] = 1;
     return out;
 };
-},{}],257:[function(require,module,exports){
+},{}],259:[function(require,module,exports){
 module.exports = invert;
 
 /**
@@ -34663,7 +34773,7 @@ function invert(out, a) {
 
     return out;
 };
-},{}],258:[function(require,module,exports){
+},{}],260:[function(require,module,exports){
 var identity = require('./identity');
 
 module.exports = lookAt;
@@ -34754,7 +34864,7 @@ function lookAt(out, eye, center, up) {
 
     return out;
 };
-},{"./identity":256}],259:[function(require,module,exports){
+},{"./identity":258}],261:[function(require,module,exports){
 module.exports = multiply;
 
 /**
@@ -34797,7 +34907,7 @@ function multiply(out, a, b) {
     out[15] = b0*a03 + b1*a13 + b2*a23 + b3*a33;
     return out;
 };
-},{}],260:[function(require,module,exports){
+},{}],262:[function(require,module,exports){
 module.exports = perspective;
 
 /**
@@ -34831,7 +34941,7 @@ function perspective(out, fovy, aspect, near, far) {
     out[15] = 0;
     return out;
 };
-},{}],261:[function(require,module,exports){
+},{}],263:[function(require,module,exports){
 module.exports = rotate;
 
 /**
@@ -34896,7 +35006,7 @@ function rotate(out, a, rad, axis) {
     }
     return out;
 };
-},{}],262:[function(require,module,exports){
+},{}],264:[function(require,module,exports){
 module.exports = rotateX;
 
 /**
@@ -34941,7 +35051,7 @@ function rotateX(out, a, rad) {
     out[11] = a23 * c - a13 * s;
     return out;
 };
-},{}],263:[function(require,module,exports){
+},{}],265:[function(require,module,exports){
 module.exports = rotateY;
 
 /**
@@ -34986,7 +35096,7 @@ function rotateY(out, a, rad) {
     out[11] = a03 * s + a23 * c;
     return out;
 };
-},{}],264:[function(require,module,exports){
+},{}],266:[function(require,module,exports){
 module.exports = rotateZ;
 
 /**
@@ -35031,7 +35141,7 @@ function rotateZ(out, a, rad) {
     out[7] = a13 * c - a03 * s;
     return out;
 };
-},{}],265:[function(require,module,exports){
+},{}],267:[function(require,module,exports){
 module.exports = scale;
 
 /**
@@ -35063,7 +35173,7 @@ function scale(out, a, v) {
     out[15] = a[15];
     return out;
 };
-},{}],266:[function(require,module,exports){
+},{}],268:[function(require,module,exports){
 module.exports = translate;
 
 /**
@@ -35102,7 +35212,7 @@ function translate(out, a, v) {
 
     return out;
 };
-},{}],267:[function(require,module,exports){
+},{}],269:[function(require,module,exports){
 module.exports = transpose;
 
 /**
@@ -35152,7 +35262,7 @@ function transpose(out, a) {
     
     return out;
 };
-},{}],268:[function(require,module,exports){
+},{}],270:[function(require,module,exports){
 'use strict'
 
 var barycentric            = require('barycentric')
@@ -35250,7 +35360,7 @@ function closestPointToPickLocation(simplex, pixelCoord, model, view, projection
   }
   return [closestIndex, interpolate(simplex, weights), weights]
 }
-},{"barycentric":271,"polytope-closest-point/lib/closest_point_2d.js":315}],269:[function(require,module,exports){
+},{"barycentric":273,"polytope-closest-point/lib/closest_point_2d.js":317}],271:[function(require,module,exports){
 
 
 var triVertSrc = "precision mediump float;\n#define GLSLIFY 1\n\nattribute vec3 position, normal;\nattribute vec4 color;\nattribute vec2 uv;\n\nuniform mat4 model\n           , view\n           , projection;\nuniform vec3 eyePosition\n           , lightPosition;\n\nvarying vec3 f_normal\n           , f_lightDirection\n           , f_eyeDirection\n           , f_data;\nvarying vec4 f_color;\nvarying vec2 f_uv;\n\nvoid main() {\n  vec4 m_position  = model * vec4(position, 1.0);\n  vec4 t_position  = view * m_position;\n  gl_Position      = projection * t_position;\n  f_color          = color;\n  f_normal         = normal;\n  f_data           = position;\n  f_eyeDirection   = eyePosition   - position;\n  f_lightDirection = lightPosition - position;\n  f_uv             = uv;\n}"
@@ -35319,7 +35429,7 @@ exports.contourShader = {
   ]
 }
 
-},{}],270:[function(require,module,exports){
+},{}],272:[function(require,module,exports){
 'use strict'
 
 var createShader  = require('gl-shader')
@@ -36311,7 +36421,7 @@ function createSimplicialMesh(params) {
 
 module.exports = createSimplicialMesh
 
-},{"./lib/closest-point":268,"./lib/shaders":269,"colormap":280,"gl-buffer":282,"gl-mat4/invert":257,"gl-mat4/multiply":259,"gl-shader":283,"gl-texture2d":309,"gl-vao":313,"ndarray":1048,"normals":314,"simplicial-complex-contour":316,"typedarray-pool":323}],271:[function(require,module,exports){
+},{"./lib/closest-point":270,"./lib/shaders":271,"colormap":282,"gl-buffer":284,"gl-mat4/invert":259,"gl-mat4/multiply":261,"gl-shader":285,"gl-texture2d":311,"gl-vao":315,"ndarray":1050,"normals":316,"simplicial-complex-contour":318,"typedarray-pool":325}],273:[function(require,module,exports){
 'use strict'
 
 module.exports = barycentric
@@ -36359,24 +36469,24 @@ function barycentric(simplex, point) {
   }
   return y
 }
-},{"robust-linear-solve":272}],272:[function(require,module,exports){
-arguments[4][74][0].apply(exports,arguments)
-},{"dup":74,"robust-determinant":278}],273:[function(require,module,exports){
-arguments[4][75][0].apply(exports,arguments)
-},{"dup":75}],274:[function(require,module,exports){
+},{"robust-linear-solve":274}],274:[function(require,module,exports){
 arguments[4][76][0].apply(exports,arguments)
-},{"dup":76}],275:[function(require,module,exports){
+},{"dup":76,"robust-determinant":280}],275:[function(require,module,exports){
 arguments[4][77][0].apply(exports,arguments)
-},{"dup":77,"two-product":277,"two-sum":274}],276:[function(require,module,exports){
+},{"dup":77}],276:[function(require,module,exports){
 arguments[4][78][0].apply(exports,arguments)
 },{"dup":78}],277:[function(require,module,exports){
 arguments[4][79][0].apply(exports,arguments)
-},{"dup":79}],278:[function(require,module,exports){
+},{"dup":79,"two-product":279,"two-sum":276}],278:[function(require,module,exports){
 arguments[4][80][0].apply(exports,arguments)
-},{"dup":80,"robust-compress":273,"robust-scale":275,"robust-sum":276,"two-product":277}],279:[function(require,module,exports){
+},{"dup":80}],279:[function(require,module,exports){
+arguments[4][81][0].apply(exports,arguments)
+},{"dup":81}],280:[function(require,module,exports){
+arguments[4][82][0].apply(exports,arguments)
+},{"dup":82,"robust-compress":275,"robust-scale":277,"robust-sum":278,"two-product":279}],281:[function(require,module,exports){
 module.exports={"jet":[{"index":0,"rgb":[0,0,131]},{"index":0.125,"rgb":[0,60,170]},{"index":0.375,"rgb":[5,255,255]},{"index":0.625,"rgb":[255,255,0]},{"index":0.875,"rgb":[250,0,0]},{"index":1,"rgb":[128,0,0]}],"hsv":[{"index":0,"rgb":[255,0,0]},{"index":0.169,"rgb":[253,255,2]},{"index":0.173,"rgb":[247,255,2]},{"index":0.337,"rgb":[0,252,4]},{"index":0.341,"rgb":[0,252,10]},{"index":0.506,"rgb":[1,249,255]},{"index":0.671,"rgb":[2,0,253]},{"index":0.675,"rgb":[8,0,253]},{"index":0.839,"rgb":[255,0,251]},{"index":0.843,"rgb":[255,0,245]},{"index":1,"rgb":[255,0,6]}],"hot":[{"index":0,"rgb":[0,0,0]},{"index":0.3,"rgb":[230,0,0]},{"index":0.6,"rgb":[255,210,0]},{"index":1,"rgb":[255,255,255]}],"cool":[{"index":0,"rgb":[0,255,255]},{"index":1,"rgb":[255,0,255]}],"spring":[{"index":0,"rgb":[255,0,255]},{"index":1,"rgb":[255,255,0]}],"summer":[{"index":0,"rgb":[0,128,102]},{"index":1,"rgb":[255,255,102]}],"autumn":[{"index":0,"rgb":[255,0,0]},{"index":1,"rgb":[255,255,0]}],"winter":[{"index":0,"rgb":[0,0,255]},{"index":1,"rgb":[0,255,128]}],"bone":[{"index":0,"rgb":[0,0,0]},{"index":0.376,"rgb":[84,84,116]},{"index":0.753,"rgb":[169,200,200]},{"index":1,"rgb":[255,255,255]}],"copper":[{"index":0,"rgb":[0,0,0]},{"index":0.804,"rgb":[255,160,102]},{"index":1,"rgb":[255,199,127]}],"greys":[{"index":0,"rgb":[0,0,0]},{"index":1,"rgb":[255,255,255]}],"yignbu":[{"index":0,"rgb":[8,29,88]},{"index":0.125,"rgb":[37,52,148]},{"index":0.25,"rgb":[34,94,168]},{"index":0.375,"rgb":[29,145,192]},{"index":0.5,"rgb":[65,182,196]},{"index":0.625,"rgb":[127,205,187]},{"index":0.75,"rgb":[199,233,180]},{"index":0.875,"rgb":[237,248,217]},{"index":1,"rgb":[255,255,217]}],"greens":[{"index":0,"rgb":[0,68,27]},{"index":0.125,"rgb":[0,109,44]},{"index":0.25,"rgb":[35,139,69]},{"index":0.375,"rgb":[65,171,93]},{"index":0.5,"rgb":[116,196,118]},{"index":0.625,"rgb":[161,217,155]},{"index":0.75,"rgb":[199,233,192]},{"index":0.875,"rgb":[229,245,224]},{"index":1,"rgb":[247,252,245]}],"yiorrd":[{"index":0,"rgb":[128,0,38]},{"index":0.125,"rgb":[189,0,38]},{"index":0.25,"rgb":[227,26,28]},{"index":0.375,"rgb":[252,78,42]},{"index":0.5,"rgb":[253,141,60]},{"index":0.625,"rgb":[254,178,76]},{"index":0.75,"rgb":[254,217,118]},{"index":0.875,"rgb":[255,237,160]},{"index":1,"rgb":[255,255,204]}],"bluered":[{"index":0,"rgb":[0,0,255]},{"index":1,"rgb":[255,0,0]}],"rdbu":[{"index":0,"rgb":[5,10,172]},{"index":0.35,"rgb":[106,137,247]},{"index":0.5,"rgb":[190,190,190]},{"index":0.6,"rgb":[220,170,132]},{"index":0.7,"rgb":[230,145,90]},{"index":1,"rgb":[178,10,28]}],"picnic":[{"index":0,"rgb":[0,0,255]},{"index":0.1,"rgb":[51,153,255]},{"index":0.2,"rgb":[102,204,255]},{"index":0.3,"rgb":[153,204,255]},{"index":0.4,"rgb":[204,204,255]},{"index":0.5,"rgb":[255,255,255]},{"index":0.6,"rgb":[255,204,255]},{"index":0.7,"rgb":[255,153,255]},{"index":0.8,"rgb":[255,102,204]},{"index":0.9,"rgb":[255,102,102]},{"index":1,"rgb":[255,0,0]}],"rainbow":[{"index":0,"rgb":[150,0,90]},{"index":0.125,"rgb":[0,0,200]},{"index":0.25,"rgb":[0,25,255]},{"index":0.375,"rgb":[0,152,255]},{"index":0.5,"rgb":[44,255,150]},{"index":0.625,"rgb":[151,255,0]},{"index":0.75,"rgb":[255,234,0]},{"index":0.875,"rgb":[255,111,0]},{"index":1,"rgb":[255,0,0]}],"portland":[{"index":0,"rgb":[12,51,131]},{"index":0.25,"rgb":[10,136,186]},{"index":0.5,"rgb":[242,211,56]},{"index":0.75,"rgb":[242,143,56]},{"index":1,"rgb":[217,30,30]}],"blackbody":[{"index":0,"rgb":[0,0,0]},{"index":0.2,"rgb":[230,0,0]},{"index":0.4,"rgb":[230,210,0]},{"index":0.7,"rgb":[255,255,255]},{"index":1,"rgb":[160,200,255]}],"earth":[{"index":0,"rgb":[0,0,130]},{"index":0.1,"rgb":[0,180,180]},{"index":0.2,"rgb":[40,210,40]},{"index":0.4,"rgb":[230,230,50]},{"index":0.6,"rgb":[120,70,20]},{"index":1,"rgb":[255,255,255]}],"electric":[{"index":0,"rgb":[0,0,0]},{"index":0.15,"rgb":[30,0,100]},{"index":0.4,"rgb":[120,0,100]},{"index":0.6,"rgb":[160,90,0]},{"index":0.8,"rgb":[230,200,0]},{"index":1,"rgb":[255,250,220]}], "alpha": [{"index":0, "rgb": [255,255,255,0]},{"index":0, "rgb": [255,255,255,1]}]};
 
-},{}],280:[function(require,module,exports){
+},{}],282:[function(require,module,exports){
 /*
  * Ben Postlethwaite
  * January 2013
@@ -36512,73 +36622,73 @@ function rgbaStr (rgba) {
     return 'rgba(' + rgba.join(',') + ')';
 }
 
-},{"./colorScales":279,"arraytools":87,"clone":281}],281:[function(require,module,exports){
+},{"./colorScales":281,"arraytools":89,"clone":283}],283:[function(require,module,exports){
 arguments[4][7][0].apply(exports,arguments)
-},{"buffer":1,"dup":7}],282:[function(require,module,exports){
-arguments[4][110][0].apply(exports,arguments)
-},{"dup":110,"ndarray":1048,"ndarray-ops":1043,"typedarray-pool":323}],283:[function(require,module,exports){
-arguments[4][111][0].apply(exports,arguments)
-},{"./lib/GLError":284,"./lib/create-attributes":285,"./lib/create-uniforms":286,"./lib/reflect":287,"./lib/runtime-reflect":288,"./lib/shader-cache":289,"dup":111}],284:[function(require,module,exports){
+},{"buffer":1,"dup":7}],284:[function(require,module,exports){
 arguments[4][112][0].apply(exports,arguments)
-},{"dup":112}],285:[function(require,module,exports){
+},{"dup":112,"ndarray":1050,"ndarray-ops":1045,"typedarray-pool":325}],285:[function(require,module,exports){
 arguments[4][113][0].apply(exports,arguments)
-},{"./GLError":284,"dup":113}],286:[function(require,module,exports){
+},{"./lib/GLError":286,"./lib/create-attributes":287,"./lib/create-uniforms":288,"./lib/reflect":289,"./lib/runtime-reflect":290,"./lib/shader-cache":291,"dup":113}],286:[function(require,module,exports){
 arguments[4][114][0].apply(exports,arguments)
-},{"./GLError":284,"./reflect":287,"dup":114}],287:[function(require,module,exports){
+},{"dup":114}],287:[function(require,module,exports){
 arguments[4][115][0].apply(exports,arguments)
-},{"dup":115}],288:[function(require,module,exports){
+},{"./GLError":286,"dup":115}],288:[function(require,module,exports){
 arguments[4][116][0].apply(exports,arguments)
-},{"dup":116}],289:[function(require,module,exports){
+},{"./GLError":286,"./reflect":289,"dup":116}],289:[function(require,module,exports){
 arguments[4][117][0].apply(exports,arguments)
-},{"./GLError":284,"dup":117,"gl-format-compiler-error":290,"weakmap-shim":308}],290:[function(require,module,exports){
+},{"dup":117}],290:[function(require,module,exports){
 arguments[4][118][0].apply(exports,arguments)
-},{"add-line-numbers":291,"dup":118,"gl-constants/lookup":295,"glsl-shader-name":296,"sprintf-js":305}],291:[function(require,module,exports){
+},{"dup":118}],291:[function(require,module,exports){
 arguments[4][119][0].apply(exports,arguments)
-},{"dup":119,"pad-left":292}],292:[function(require,module,exports){
+},{"./GLError":286,"dup":119,"gl-format-compiler-error":292,"weakmap-shim":310}],292:[function(require,module,exports){
 arguments[4][120][0].apply(exports,arguments)
-},{"dup":120,"repeat-string":293}],293:[function(require,module,exports){
+},{"add-line-numbers":293,"dup":120,"gl-constants/lookup":297,"glsl-shader-name":298,"sprintf-js":307}],293:[function(require,module,exports){
 arguments[4][121][0].apply(exports,arguments)
-},{"dup":121}],294:[function(require,module,exports){
+},{"dup":121,"pad-left":294}],294:[function(require,module,exports){
 arguments[4][122][0].apply(exports,arguments)
-},{"dup":122}],295:[function(require,module,exports){
+},{"dup":122,"repeat-string":295}],295:[function(require,module,exports){
 arguments[4][123][0].apply(exports,arguments)
-},{"./1.0/numbers":294,"dup":123}],296:[function(require,module,exports){
+},{"dup":123}],296:[function(require,module,exports){
 arguments[4][124][0].apply(exports,arguments)
-},{"atob-lite":297,"dup":124,"glsl-tokenizer":304}],297:[function(require,module,exports){
+},{"dup":124}],297:[function(require,module,exports){
 arguments[4][125][0].apply(exports,arguments)
-},{"dup":125}],298:[function(require,module,exports){
+},{"./1.0/numbers":296,"dup":125}],298:[function(require,module,exports){
 arguments[4][126][0].apply(exports,arguments)
-},{"./lib/builtins":300,"./lib/builtins-300es":299,"./lib/literals":302,"./lib/literals-300es":301,"./lib/operators":303,"dup":126}],299:[function(require,module,exports){
+},{"atob-lite":299,"dup":126,"glsl-tokenizer":306}],299:[function(require,module,exports){
 arguments[4][127][0].apply(exports,arguments)
-},{"./builtins":300,"dup":127}],300:[function(require,module,exports){
+},{"dup":127}],300:[function(require,module,exports){
 arguments[4][128][0].apply(exports,arguments)
-},{"dup":128}],301:[function(require,module,exports){
+},{"./lib/builtins":302,"./lib/builtins-300es":301,"./lib/literals":304,"./lib/literals-300es":303,"./lib/operators":305,"dup":128}],301:[function(require,module,exports){
 arguments[4][129][0].apply(exports,arguments)
-},{"./literals":302,"dup":129}],302:[function(require,module,exports){
+},{"./builtins":302,"dup":129}],302:[function(require,module,exports){
 arguments[4][130][0].apply(exports,arguments)
 },{"dup":130}],303:[function(require,module,exports){
 arguments[4][131][0].apply(exports,arguments)
-},{"dup":131}],304:[function(require,module,exports){
+},{"./literals":304,"dup":131}],304:[function(require,module,exports){
 arguments[4][132][0].apply(exports,arguments)
-},{"./index":298,"dup":132}],305:[function(require,module,exports){
+},{"dup":132}],305:[function(require,module,exports){
 arguments[4][133][0].apply(exports,arguments)
 },{"dup":133}],306:[function(require,module,exports){
 arguments[4][134][0].apply(exports,arguments)
-},{"./hidden-store.js":307,"dup":134}],307:[function(require,module,exports){
+},{"./index":300,"dup":134}],307:[function(require,module,exports){
 arguments[4][135][0].apply(exports,arguments)
 },{"dup":135}],308:[function(require,module,exports){
 arguments[4][136][0].apply(exports,arguments)
-},{"./create-store.js":306,"dup":136}],309:[function(require,module,exports){
-arguments[4][205][0].apply(exports,arguments)
-},{"dup":205,"ndarray":1048,"ndarray-ops":1043,"typedarray-pool":323}],310:[function(require,module,exports){
-arguments[4][171][0].apply(exports,arguments)
-},{"dup":171}],311:[function(require,module,exports){
-arguments[4][172][0].apply(exports,arguments)
-},{"./do-bind.js":310,"dup":172}],312:[function(require,module,exports){
+},{"./hidden-store.js":309,"dup":136}],309:[function(require,module,exports){
+arguments[4][137][0].apply(exports,arguments)
+},{"dup":137}],310:[function(require,module,exports){
+arguments[4][138][0].apply(exports,arguments)
+},{"./create-store.js":308,"dup":138}],311:[function(require,module,exports){
+arguments[4][207][0].apply(exports,arguments)
+},{"dup":207,"ndarray":1050,"ndarray-ops":1045,"typedarray-pool":325}],312:[function(require,module,exports){
 arguments[4][173][0].apply(exports,arguments)
-},{"./do-bind.js":310,"dup":173}],313:[function(require,module,exports){
+},{"dup":173}],313:[function(require,module,exports){
 arguments[4][174][0].apply(exports,arguments)
-},{"./lib/vao-emulated.js":311,"./lib/vao-native.js":312,"dup":174}],314:[function(require,module,exports){
+},{"./do-bind.js":312,"dup":174}],314:[function(require,module,exports){
+arguments[4][175][0].apply(exports,arguments)
+},{"./do-bind.js":312,"dup":175}],315:[function(require,module,exports){
+arguments[4][176][0].apply(exports,arguments)
+},{"./lib/vao-emulated.js":313,"./lib/vao-native.js":314,"dup":176}],316:[function(require,module,exports){
 var EPSILON = 1e-6;
 
 //Estimate the vertex normals of a mesh
@@ -36699,7 +36809,7 @@ exports.faceNormals = function(faces, positions) {
 
 
 
-},{}],315:[function(require,module,exports){
+},{}],317:[function(require,module,exports){
 //Optimized version for triangle closest point
 // Based on Eberly's WildMagick codes
 // http://www.geometrictools.com/LibMathematics/Distance/Distance.html
@@ -36897,7 +37007,7 @@ function closestPoint2d(V0, V1, V2, point, result) {
 
 module.exports = closestPoint2d;
 
-},{}],316:[function(require,module,exports){
+},{}],318:[function(require,module,exports){
 'use strict'
 
 module.exports = extractContour
@@ -37060,7 +37170,7 @@ function extractContour(cells, values, level, d) {
     vertexWeights: uweights
   }
 }
-},{"./lib/codegen":317,"ndarray":1048,"ndarray-sort":320,"typedarray-pool":323}],317:[function(require,module,exports){
+},{"./lib/codegen":319,"ndarray":1050,"ndarray-sort":322,"typedarray-pool":325}],319:[function(require,module,exports){
 'use strict'
 
 module.exports = getPolygonizer
@@ -37157,7 +37267,7 @@ function getPolygonizer(d) {
   }
   return alg
 }
-},{"marching-simplex-table":318,"typedarray-pool":323}],318:[function(require,module,exports){
+},{"marching-simplex-table":320,"typedarray-pool":325}],320:[function(require,module,exports){
 'use strict'
 
 module.exports = createTable
@@ -37223,7 +37333,7 @@ function createTable(dimension) {
   }
   return result
 }
-},{"convex-hull":88}],319:[function(require,module,exports){
+},{"convex-hull":90}],321:[function(require,module,exports){
 "use strict"
 
 var pool = require("typedarray-pool")
@@ -37952,7 +38062,7 @@ function compileSort(order, dtype) {
 }
 
 module.exports = compileSort
-},{"typedarray-pool":323}],320:[function(require,module,exports){
+},{"typedarray-pool":325}],322:[function(require,module,exports){
 "use strict"
 
 var compile = require("./lib/compile_sort.js")
@@ -37972,13 +38082,13 @@ function sort(array) {
 }
 
 module.exports = sort
-},{"./lib/compile_sort.js":319}],321:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],322:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],323:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":321,"buffer":1,"dup":139}],324:[function(require,module,exports){
+},{"./lib/compile_sort.js":321}],323:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],324:[function(require,module,exports){
+arguments[4][75][0].apply(exports,arguments)
+},{"dup":75}],325:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":323,"buffer":1,"dup":141}],326:[function(require,module,exports){
 'use strict'
 
 module.exports = createBoxes
@@ -38041,7 +38151,7 @@ function createBoxes(plot) {
   return new Boxes(plot, vbo, shader)
 }
 
-},{"./shaders":327,"gl-buffer":330,"gl-shader":345}],325:[function(require,module,exports){
+},{"./shaders":329,"gl-buffer":332,"gl-shader":347}],327:[function(require,module,exports){
 'use strict'
 
 module.exports = createGrid
@@ -38288,7 +38398,7 @@ function createGrid(plot) {
   return grid
 }
 
-},{"./shaders":327,"binary-search-bounds":329,"gl-buffer":330,"gl-shader":345}],326:[function(require,module,exports){
+},{"./shaders":329,"binary-search-bounds":331,"gl-buffer":332,"gl-shader":347}],328:[function(require,module,exports){
 'use strict'
 
 module.exports = createLines
@@ -38353,7 +38463,7 @@ function createLines(plot) {
   return lines
 }
 
-},{"./shaders":327,"gl-buffer":330,"gl-shader":345}],327:[function(require,module,exports){
+},{"./shaders":329,"gl-buffer":332,"gl-shader":347}],329:[function(require,module,exports){
 'use strict'
 
 
@@ -38371,7 +38481,7 @@ module.exports = {
   tickVert: "precision mediump float;\n#define GLSLIFY 1\n\nattribute vec3 dataCoord;\n\nuniform vec2 dataAxis, dataShift, dataScale, screenOffset, tickScale;\n\nvoid main() {\n  vec2 pos = dataAxis * (dataScale * dataCoord.x + dataShift);\n  gl_Position = vec4(pos + tickScale*dataCoord.yz + screenOffset, 0, 1);\n}\n"
 }
 
-},{}],328:[function(require,module,exports){
+},{}],330:[function(require,module,exports){
 'use strict'
 
 module.exports = createTextElements
@@ -38646,7 +38756,7 @@ function createTextElements(plot) {
   return text
 }
 
-},{"./shaders":327,"binary-search-bounds":329,"gl-buffer":330,"gl-shader":345,"text-cache":468}],329:[function(require,module,exports){
+},{"./shaders":329,"binary-search-bounds":331,"gl-buffer":332,"gl-shader":347,"text-cache":470}],331:[function(require,module,exports){
 "use strict"
 
 function compileSearch(funcName, predicate, reversed, extraArgs, earlyOut) {
@@ -38700,19 +38810,19 @@ module.exports = {
   eq: compileBoundsSearch("-", true, "EQ", true)
 }
 
-},{}],330:[function(require,module,exports){
-arguments[4][110][0].apply(exports,arguments)
-},{"dup":110,"ndarray":1048,"ndarray-ops":1043,"typedarray-pool":333}],331:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],332:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],333:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":331,"buffer":1,"dup":139}],334:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],335:[function(require,module,exports){
+},{}],332:[function(require,module,exports){
+arguments[4][112][0].apply(exports,arguments)
+},{"dup":112,"ndarray":1050,"ndarray-ops":1045,"typedarray-pool":335}],333:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],334:[function(require,module,exports){
+arguments[4][75][0].apply(exports,arguments)
+},{"dup":75}],335:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":333,"buffer":1,"dup":141}],336:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],337:[function(require,module,exports){
 module.exports = require("cwise-compiler")
-},{"cwise-compiler":336}],336:[function(require,module,exports){
+},{"cwise-compiler":338}],338:[function(require,module,exports){
 "use strict"
 
 var createThunk = require("./lib/thunk.js")
@@ -38823,7 +38933,7 @@ function compileCwise(user_args) {
 
 module.exports = compileCwise
 
-},{"./lib/thunk.js":338}],337:[function(require,module,exports){
+},{"./lib/thunk.js":340}],339:[function(require,module,exports){
 "use strict"
 
 var uniq = require("uniq")
@@ -39179,7 +39289,7 @@ function generateCWiseOp(proc, typesig) {
 }
 module.exports = generateCWiseOp
 
-},{"uniq":339}],338:[function(require,module,exports){
+},{"uniq":341}],340:[function(require,module,exports){
 "use strict"
 
 // The function below is called when constructing a cwise function object, and does the following:
@@ -39267,9 +39377,9 @@ function createThunk(proc) {
 
 module.exports = createThunk
 
-},{"./compile.js":337}],339:[function(require,module,exports){
-arguments[4][104][0].apply(exports,arguments)
-},{"dup":104}],340:[function(require,module,exports){
+},{"./compile.js":339}],341:[function(require,module,exports){
+arguments[4][106][0].apply(exports,arguments)
+},{"dup":106}],342:[function(require,module,exports){
 'use strict'
 
 var createTexture = require('gl-texture2d')
@@ -39736,13 +39846,13 @@ function createFBO(gl, width, height, options) {
     WEBGL_draw_buffers)
 }
 
-},{"gl-texture2d":341}],341:[function(require,module,exports){
-arguments[4][205][0].apply(exports,arguments)
-},{"dup":205,"ndarray":1048,"ndarray-ops":1043,"typedarray-pool":343}],342:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],343:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":334,"buffer":1,"dup":139}],344:[function(require,module,exports){
+},{"gl-texture2d":343}],343:[function(require,module,exports){
+arguments[4][207][0].apply(exports,arguments)
+},{"dup":207,"ndarray":1050,"ndarray-ops":1045,"typedarray-pool":345}],344:[function(require,module,exports){
+arguments[4][75][0].apply(exports,arguments)
+},{"dup":75}],345:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":336,"buffer":1,"dup":141}],346:[function(require,module,exports){
 'use strict'
 
 module.exports = createSelectBuffer
@@ -39897,59 +40007,59 @@ function createSelectBuffer(gl, shape) {
   return new SelectBuffer(gl, fbo, buffer)
 }
 
-},{"bit-twiddle":334,"cwise/lib/wrapper":335,"gl-fbo":340,"ndarray":1048,"typedarray-pool":343}],345:[function(require,module,exports){
-arguments[4][111][0].apply(exports,arguments)
-},{"./lib/GLError":346,"./lib/create-attributes":347,"./lib/create-uniforms":348,"./lib/reflect":349,"./lib/runtime-reflect":350,"./lib/shader-cache":351,"dup":111}],346:[function(require,module,exports){
-arguments[4][112][0].apply(exports,arguments)
-},{"dup":112}],347:[function(require,module,exports){
+},{"bit-twiddle":336,"cwise/lib/wrapper":337,"gl-fbo":342,"ndarray":1050,"typedarray-pool":345}],347:[function(require,module,exports){
 arguments[4][113][0].apply(exports,arguments)
-},{"./GLError":346,"dup":113}],348:[function(require,module,exports){
+},{"./lib/GLError":348,"./lib/create-attributes":349,"./lib/create-uniforms":350,"./lib/reflect":351,"./lib/runtime-reflect":352,"./lib/shader-cache":353,"dup":113}],348:[function(require,module,exports){
 arguments[4][114][0].apply(exports,arguments)
-},{"./GLError":346,"./reflect":349,"dup":114}],349:[function(require,module,exports){
+},{"dup":114}],349:[function(require,module,exports){
 arguments[4][115][0].apply(exports,arguments)
-},{"dup":115}],350:[function(require,module,exports){
+},{"./GLError":348,"dup":115}],350:[function(require,module,exports){
 arguments[4][116][0].apply(exports,arguments)
-},{"dup":116}],351:[function(require,module,exports){
+},{"./GLError":348,"./reflect":351,"dup":116}],351:[function(require,module,exports){
 arguments[4][117][0].apply(exports,arguments)
-},{"./GLError":346,"dup":117,"gl-format-compiler-error":352,"weakmap-shim":370}],352:[function(require,module,exports){
+},{"dup":117}],352:[function(require,module,exports){
 arguments[4][118][0].apply(exports,arguments)
-},{"add-line-numbers":353,"dup":118,"gl-constants/lookup":357,"glsl-shader-name":358,"sprintf-js":367}],353:[function(require,module,exports){
+},{"dup":118}],353:[function(require,module,exports){
 arguments[4][119][0].apply(exports,arguments)
-},{"dup":119,"pad-left":354}],354:[function(require,module,exports){
+},{"./GLError":348,"dup":119,"gl-format-compiler-error":354,"weakmap-shim":372}],354:[function(require,module,exports){
 arguments[4][120][0].apply(exports,arguments)
-},{"dup":120,"repeat-string":355}],355:[function(require,module,exports){
+},{"add-line-numbers":355,"dup":120,"gl-constants/lookup":359,"glsl-shader-name":360,"sprintf-js":369}],355:[function(require,module,exports){
 arguments[4][121][0].apply(exports,arguments)
-},{"dup":121}],356:[function(require,module,exports){
+},{"dup":121,"pad-left":356}],356:[function(require,module,exports){
 arguments[4][122][0].apply(exports,arguments)
-},{"dup":122}],357:[function(require,module,exports){
+},{"dup":122,"repeat-string":357}],357:[function(require,module,exports){
 arguments[4][123][0].apply(exports,arguments)
-},{"./1.0/numbers":356,"dup":123}],358:[function(require,module,exports){
+},{"dup":123}],358:[function(require,module,exports){
 arguments[4][124][0].apply(exports,arguments)
-},{"atob-lite":359,"dup":124,"glsl-tokenizer":366}],359:[function(require,module,exports){
+},{"dup":124}],359:[function(require,module,exports){
 arguments[4][125][0].apply(exports,arguments)
-},{"dup":125}],360:[function(require,module,exports){
+},{"./1.0/numbers":358,"dup":125}],360:[function(require,module,exports){
 arguments[4][126][0].apply(exports,arguments)
-},{"./lib/builtins":362,"./lib/builtins-300es":361,"./lib/literals":364,"./lib/literals-300es":363,"./lib/operators":365,"dup":126}],361:[function(require,module,exports){
+},{"atob-lite":361,"dup":126,"glsl-tokenizer":368}],361:[function(require,module,exports){
 arguments[4][127][0].apply(exports,arguments)
-},{"./builtins":362,"dup":127}],362:[function(require,module,exports){
+},{"dup":127}],362:[function(require,module,exports){
 arguments[4][128][0].apply(exports,arguments)
-},{"dup":128}],363:[function(require,module,exports){
+},{"./lib/builtins":364,"./lib/builtins-300es":363,"./lib/literals":366,"./lib/literals-300es":365,"./lib/operators":367,"dup":128}],363:[function(require,module,exports){
 arguments[4][129][0].apply(exports,arguments)
-},{"./literals":364,"dup":129}],364:[function(require,module,exports){
+},{"./builtins":364,"dup":129}],364:[function(require,module,exports){
 arguments[4][130][0].apply(exports,arguments)
 },{"dup":130}],365:[function(require,module,exports){
 arguments[4][131][0].apply(exports,arguments)
-},{"dup":131}],366:[function(require,module,exports){
+},{"./literals":366,"dup":131}],366:[function(require,module,exports){
 arguments[4][132][0].apply(exports,arguments)
-},{"./index":360,"dup":132}],367:[function(require,module,exports){
+},{"dup":132}],367:[function(require,module,exports){
 arguments[4][133][0].apply(exports,arguments)
 },{"dup":133}],368:[function(require,module,exports){
 arguments[4][134][0].apply(exports,arguments)
-},{"./hidden-store.js":369,"dup":134}],369:[function(require,module,exports){
+},{"./index":362,"dup":134}],369:[function(require,module,exports){
 arguments[4][135][0].apply(exports,arguments)
 },{"dup":135}],370:[function(require,module,exports){
 arguments[4][136][0].apply(exports,arguments)
-},{"./create-store.js":368,"dup":136}],371:[function(require,module,exports){
+},{"./hidden-store.js":371,"dup":136}],371:[function(require,module,exports){
+arguments[4][137][0].apply(exports,arguments)
+},{"dup":137}],372:[function(require,module,exports){
+arguments[4][138][0].apply(exports,arguments)
+},{"./create-store.js":370,"dup":138}],373:[function(require,module,exports){
 "use strict"
 
 module.exports = createText
@@ -39976,7 +40086,7 @@ function createText(str, options) {
     options)
 }
 
-},{"./lib/vtext":372}],372:[function(require,module,exports){
+},{"./lib/vtext":374}],374:[function(require,module,exports){
 "use strict"
 
 module.exports = vectorizeText
@@ -40182,7 +40292,7 @@ function vectorizeText(str, canvas, context, options) {
   return processPixels(pixels, options, size)
 }
 
-},{"cdt2d":373,"clean-pslg":384,"ndarray":1048,"planar-graph-to-polyline":441,"simplify-planar-graph":445,"surface-nets":467}],373:[function(require,module,exports){
+},{"cdt2d":375,"clean-pslg":386,"ndarray":1050,"planar-graph-to-polyline":443,"simplify-planar-graph":447,"surface-nets":469}],375:[function(require,module,exports){
 'use strict'
 
 var monotoneTriangulate = require('./lib/monotone')
@@ -40266,7 +40376,7 @@ function cdt2d(points, edges, options) {
   }
 }
 
-},{"./lib/delaunay":374,"./lib/filter":375,"./lib/monotone":376,"./lib/triangulation":377}],374:[function(require,module,exports){
+},{"./lib/delaunay":376,"./lib/filter":377,"./lib/monotone":378,"./lib/triangulation":379}],376:[function(require,module,exports){
 'use strict'
 
 var inCircle = require('robust-in-sphere')[4]
@@ -40383,7 +40493,7 @@ function delaunayRefine(points, triangulation) {
   }
 }
 
-},{"binary-search-bounds":329,"robust-in-sphere":378}],375:[function(require,module,exports){
+},{"binary-search-bounds":331,"robust-in-sphere":380}],377:[function(require,module,exports){
 'use strict'
 
 var bsearch = require('binary-search-bounds')
@@ -40565,7 +40675,7 @@ function classifyFaces(triangulation, target, infinity) {
   return result
 }
 
-},{"binary-search-bounds":329}],376:[function(require,module,exports){
+},{"binary-search-bounds":331}],378:[function(require,module,exports){
 'use strict'
 
 var bsearch = require('binary-search-bounds')
@@ -40754,7 +40864,7 @@ function monotoneTriangulate(points, edges) {
   return cells
 }
 
-},{"binary-search-bounds":329,"robust-orientation":1057}],377:[function(require,module,exports){
+},{"binary-search-bounds":331,"robust-orientation":1059}],379:[function(require,module,exports){
 'use strict'
 
 var bsearch = require('binary-search-bounds')
@@ -40860,7 +40970,7 @@ function createTriangulation(numVerts, edges) {
   return new Triangulation(stars, edges)
 }
 
-},{"binary-search-bounds":329}],378:[function(require,module,exports){
+},{"binary-search-bounds":331}],380:[function(require,module,exports){
 "use strict"
 
 var twoProduct = require("two-product")
@@ -41028,11 +41138,11 @@ function generateInSphereTest() {
 }
 
 generateInSphereTest()
-},{"robust-scale":380,"robust-subtract":381,"robust-sum":382,"two-product":383}],379:[function(require,module,exports){
-arguments[4][76][0].apply(exports,arguments)
-},{"dup":76}],380:[function(require,module,exports){
-arguments[4][77][0].apply(exports,arguments)
-},{"dup":77,"two-product":383,"two-sum":379}],381:[function(require,module,exports){
+},{"robust-scale":382,"robust-subtract":383,"robust-sum":384,"two-product":385}],381:[function(require,module,exports){
+arguments[4][78][0].apply(exports,arguments)
+},{"dup":78}],382:[function(require,module,exports){
+arguments[4][79][0].apply(exports,arguments)
+},{"dup":79,"two-product":385,"two-sum":381}],383:[function(require,module,exports){
 "use strict"
 
 module.exports = robustSubtract
@@ -41189,11 +41299,11 @@ function robustSubtract(e, f) {
   g.length = count
   return g
 }
-},{}],382:[function(require,module,exports){
-arguments[4][78][0].apply(exports,arguments)
-},{"dup":78}],383:[function(require,module,exports){
-arguments[4][79][0].apply(exports,arguments)
-},{"dup":79}],384:[function(require,module,exports){
+},{}],384:[function(require,module,exports){
+arguments[4][80][0].apply(exports,arguments)
+},{"dup":80}],385:[function(require,module,exports){
+arguments[4][81][0].apply(exports,arguments)
+},{"dup":81}],386:[function(require,module,exports){
 'use strict'
 
 module.exports = cleanPSLG
@@ -41555,7 +41665,7 @@ function cleanPSLG(points, edges, colors) {
   return modified
 }
 
-},{"./lib/rat-seg-intersect":385,"big-rat":389,"big-rat/cmp":387,"big-rat/to-float":404,"box-intersect":405,"compare-cell":415,"nextafter":416,"rat-vec":419,"robust-segment-intersect":422,"union-find":423}],385:[function(require,module,exports){
+},{"./lib/rat-seg-intersect":387,"big-rat":391,"big-rat/cmp":389,"big-rat/to-float":406,"box-intersect":407,"compare-cell":417,"nextafter":418,"rat-vec":421,"robust-segment-intersect":424,"union-find":425}],387:[function(require,module,exports){
 'use strict'
 
 //TODO: Move this to a separate module
@@ -41601,7 +41711,7 @@ function solveIntersection(a, b, c, d) {
   return rvAdd(a, rvMuls(ba, t))
 }
 
-},{"big-rat/div":388,"big-rat/mul":398,"big-rat/sign":402,"big-rat/sub":403,"big-rat/to-float":404,"rat-vec/add":418,"rat-vec/muls":420,"rat-vec/sub":421}],386:[function(require,module,exports){
+},{"big-rat/div":390,"big-rat/mul":400,"big-rat/sign":404,"big-rat/sub":405,"big-rat/to-float":406,"rat-vec/add":420,"rat-vec/muls":422,"rat-vec/sub":423}],388:[function(require,module,exports){
 'use strict'
 
 var rationalize = require('./lib/rationalize')
@@ -41614,7 +41724,7 @@ function add(a, b) {
     a[1].mul(b[1]))
 }
 
-},{"./lib/rationalize":396}],387:[function(require,module,exports){
+},{"./lib/rationalize":398}],389:[function(require,module,exports){
 'use strict'
 
 module.exports = cmp
@@ -41623,7 +41733,7 @@ function cmp(a, b) {
     return a[0].mul(b[1]).cmp(b[0].mul(a[1]))
 }
 
-},{}],388:[function(require,module,exports){
+},{}],390:[function(require,module,exports){
 'use strict'
 
 var rationalize = require('./lib/rationalize')
@@ -41634,7 +41744,7 @@ function div(a, b) {
   return rationalize(a[0].mul(b[1]), a[1].mul(b[0]))
 }
 
-},{"./lib/rationalize":396}],389:[function(require,module,exports){
+},{"./lib/rationalize":398}],391:[function(require,module,exports){
 'use strict'
 
 var isRat = require('./is-rat')
@@ -41696,7 +41806,7 @@ function makeRational(numer, denom) {
   return rationalize(a, b)
 }
 
-},{"./div":388,"./is-rat":390,"./lib/is-bn":394,"./lib/num-to-bn":395,"./lib/rationalize":396,"./lib/str-to-bn":397}],390:[function(require,module,exports){
+},{"./div":390,"./is-rat":392,"./lib/is-bn":396,"./lib/num-to-bn":397,"./lib/rationalize":398,"./lib/str-to-bn":399}],392:[function(require,module,exports){
 'use strict'
 
 var isBN = require('./lib/is-bn')
@@ -41707,7 +41817,7 @@ function isRat(x) {
   return Array.isArray(x) && x.length === 2 && isBN(x[0]) && isBN(x[1])
 }
 
-},{"./lib/is-bn":394}],391:[function(require,module,exports){
+},{"./lib/is-bn":396}],393:[function(require,module,exports){
 'use strict'
 
 var bn = require('bn.js')
@@ -41718,7 +41828,7 @@ function sign(x) {
   return x.cmp(new bn(0))
 }
 
-},{"bn.js":400}],392:[function(require,module,exports){
+},{"bn.js":402}],394:[function(require,module,exports){
 'use strict'
 
 module.exports = bn2num
@@ -41742,7 +41852,7 @@ function bn2num(b) {
   return b.sign ? -out : out
 }
 
-},{}],393:[function(require,module,exports){
+},{}],395:[function(require,module,exports){
 'use strict'
 
 var db = require('double-bits')
@@ -41763,7 +41873,7 @@ function ctzNumber(x) {
   return h + 32
 }
 
-},{"bit-twiddle":399,"double-bits":401}],394:[function(require,module,exports){
+},{"bit-twiddle":401,"double-bits":403}],396:[function(require,module,exports){
 'use strict'
 
 var BN = require('bn.js')
@@ -41776,7 +41886,7 @@ function isBN(x) {
   return x && typeof x === 'object' && Boolean(x.words)
 }
 
-},{"bn.js":400}],395:[function(require,module,exports){
+},{"bn.js":402}],397:[function(require,module,exports){
 'use strict'
 
 var BN = require('bn.js')
@@ -41793,7 +41903,7 @@ function num2bn(x) {
   }
 }
 
-},{"bn.js":400,"double-bits":401}],396:[function(require,module,exports){
+},{"bn.js":402,"double-bits":403}],398:[function(require,module,exports){
 'use strict'
 
 var num2bn = require('./num-to-bn')
@@ -41821,7 +41931,7 @@ function rationalize(numer, denom) {
   return [ numer, denom ]
 }
 
-},{"./bn-sign":391,"./num-to-bn":395}],397:[function(require,module,exports){
+},{"./bn-sign":393,"./num-to-bn":397}],399:[function(require,module,exports){
 'use strict'
 
 var BN = require('bn.js')
@@ -41832,7 +41942,7 @@ function str2BN(x) {
   return new BN(x)
 }
 
-},{"bn.js":400}],398:[function(require,module,exports){
+},{"bn.js":402}],400:[function(require,module,exports){
 'use strict'
 
 var rationalize = require('./lib/rationalize')
@@ -41843,9 +41953,9 @@ function mul(a, b) {
   return rationalize(a[0].mul(b[0]), a[1].mul(b[1]))
 }
 
-},{"./lib/rationalize":396}],399:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],400:[function(require,module,exports){
+},{"./lib/rationalize":398}],401:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],402:[function(require,module,exports){
 (function (module, exports) {
 
 'use strict';
@@ -44165,7 +44275,7 @@ Mont.prototype.invm = function invm(a) {
 
 })(typeof module === 'undefined' || module, this);
 
-},{}],401:[function(require,module,exports){
+},{}],403:[function(require,module,exports){
 (function (Buffer){
 var hasTypedArrays = false
 if(typeof Float64Array !== "undefined") {
@@ -44269,7 +44379,7 @@ module.exports.denormalized = function(n) {
   return !(hi & 0x7ff00000)
 }
 }).call(this,require("buffer").Buffer)
-},{"buffer":1}],402:[function(require,module,exports){
+},{"buffer":1}],404:[function(require,module,exports){
 'use strict'
 
 var bnsign = require('./lib/bn-sign')
@@ -44280,7 +44390,7 @@ function sign(x) {
   return bnsign(x[0]) * bnsign(x[1])
 }
 
-},{"./lib/bn-sign":391}],403:[function(require,module,exports){
+},{"./lib/bn-sign":393}],405:[function(require,module,exports){
 'use strict'
 
 var rationalize = require('./lib/rationalize')
@@ -44291,7 +44401,7 @@ function sub(a, b) {
   return rationalize(a[0].mul(b[1]).sub(a[1].mul(b[0])), a[1].mul(b[1]))
 }
 
-},{"./lib/rationalize":396}],404:[function(require,module,exports){
+},{"./lib/rationalize":398}],406:[function(require,module,exports){
 'use strict'
 
 var bn2num = require('./lib/bn-to-num')
@@ -44334,7 +44444,7 @@ function roundRat(f) {
   }
 }
 
-},{"./lib/bn-to-num":392,"./lib/ctz":393}],405:[function(require,module,exports){
+},{"./lib/bn-to-num":394,"./lib/ctz":395}],407:[function(require,module,exports){
 'use strict'
 
 module.exports = boxIntersectWrapper
@@ -44473,7 +44583,7 @@ function boxIntersectWrapper(arg0, arg1, arg2) {
       throw new Error('box-intersect: Invalid arguments')
   }
 }
-},{"./lib/intersect":407,"./lib/sweep":411,"typedarray-pool":414}],406:[function(require,module,exports){
+},{"./lib/intersect":409,"./lib/sweep":413,"typedarray-pool":416}],408:[function(require,module,exports){
 'use strict'
 
 var DIMENSION   = 'd'
@@ -44618,7 +44728,7 @@ function bruteForcePlanner(full) {
 
 exports.partial = bruteForcePlanner(false)
 exports.full    = bruteForcePlanner(true)
-},{}],407:[function(require,module,exports){
+},{}],409:[function(require,module,exports){
 'use strict'
 
 module.exports = boxIntersectIter
@@ -45113,7 +45223,7 @@ function boxIntersectIter(
     }
   }
 }
-},{"./brute":406,"./median":408,"./partition":409,"./sweep":411,"bit-twiddle":412,"typedarray-pool":414}],408:[function(require,module,exports){
+},{"./brute":408,"./median":410,"./partition":411,"./sweep":413,"bit-twiddle":414,"typedarray-pool":416}],410:[function(require,module,exports){
 'use strict'
 
 module.exports = findMedian
@@ -45256,7 +45366,7 @@ function findMedian(d, axis, start, end, boxes, ids) {
     start, mid, boxes, ids,
     boxes[elemSize*mid+axis])
 }
-},{"./partition":409}],409:[function(require,module,exports){
+},{"./partition":411}],411:[function(require,module,exports){
 'use strict'
 
 module.exports = genPartition
@@ -45277,7 +45387,7 @@ function genPartition(predicate, args) {
         .replace('$', predicate))
   return Function.apply(void 0, fargs)
 }
-},{}],410:[function(require,module,exports){
+},{}],412:[function(require,module,exports){
 'use strict';
 
 //This code is extracted from ndarray-sort
@@ -45514,7 +45624,7 @@ function quickSort(left, right, data) {
     quickSort(less, great, data);
   }
 }
-},{}],411:[function(require,module,exports){
+},{}],413:[function(require,module,exports){
 'use strict'
 
 module.exports = {
@@ -45949,15 +46059,15 @@ red_loop:
     }
   }
 }
-},{"./sort":410,"bit-twiddle":412,"typedarray-pool":414}],412:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],413:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],414:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":412,"buffer":1,"dup":139}],415:[function(require,module,exports){
-arguments[4][84][0].apply(exports,arguments)
-},{"dup":84}],416:[function(require,module,exports){
+},{"./sort":412,"bit-twiddle":414,"typedarray-pool":416}],414:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],415:[function(require,module,exports){
+arguments[4][75][0].apply(exports,arguments)
+},{"dup":75}],416:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":414,"buffer":1,"dup":141}],417:[function(require,module,exports){
+arguments[4][86][0].apply(exports,arguments)
+},{"dup":86}],418:[function(require,module,exports){
 "use strict"
 
 var doubleBits = require("double-bits")
@@ -46000,9 +46110,9 @@ function nextafter(x, y) {
   }
   return doubleBits.pack(lo, hi)
 }
-},{"double-bits":417}],417:[function(require,module,exports){
-arguments[4][401][0].apply(exports,arguments)
-},{"buffer":1,"dup":401}],418:[function(require,module,exports){
+},{"double-bits":419}],419:[function(require,module,exports){
+arguments[4][403][0].apply(exports,arguments)
+},{"buffer":1,"dup":403}],420:[function(require,module,exports){
 'use strict'
 
 var bnadd = require('big-rat/add')
@@ -46018,7 +46128,7 @@ function add(a, b) {
   return r
 }
 
-},{"big-rat/add":386}],419:[function(require,module,exports){
+},{"big-rat/add":388}],421:[function(require,module,exports){
 'use strict'
 
 module.exports = float2rat
@@ -46033,7 +46143,7 @@ function float2rat(v) {
   return result
 }
 
-},{"big-rat":389}],420:[function(require,module,exports){
+},{"big-rat":391}],422:[function(require,module,exports){
 'use strict'
 
 var rat = require('big-rat')
@@ -46051,7 +46161,7 @@ function muls(a, x) {
   return r
 }
 
-},{"big-rat":389,"big-rat/mul":398}],421:[function(require,module,exports){
+},{"big-rat":391,"big-rat/mul":400}],423:[function(require,module,exports){
 'use strict'
 
 var bnsub = require('big-rat/sub')
@@ -46067,7 +46177,7 @@ function sub(a, b) {
   return r
 }
 
-},{"big-rat/sub":403}],422:[function(require,module,exports){
+},{"big-rat/sub":405}],424:[function(require,module,exports){
 "use strict"
 
 module.exports = segmentsIntersect
@@ -46115,9 +46225,9 @@ function segmentsIntersect(a0, a1, b0, b1) {
 
   return true
 }
-},{"robust-orientation":1057}],423:[function(require,module,exports){
-arguments[4][95][0].apply(exports,arguments)
-},{"dup":95}],424:[function(require,module,exports){
+},{"robust-orientation":1059}],425:[function(require,module,exports){
+arguments[4][97][0].apply(exports,arguments)
+},{"dup":97}],426:[function(require,module,exports){
 'use strict'
 
 module.exports = trimLeaves
@@ -46173,7 +46283,7 @@ function trimLeaves(edges, positions) {
   
   return [ nedges, npositions ]
 }
-},{"edges-to-adjacency-list":425}],425:[function(require,module,exports){
+},{"edges-to-adjacency-list":427}],427:[function(require,module,exports){
 "use strict"
 
 module.exports = edgeToAdjacency
@@ -46207,7 +46317,7 @@ function edgeToAdjacency(edges, numVertices) {
   }
   return adj
 }
-},{"uniq":440}],426:[function(require,module,exports){
+},{"uniq":442}],428:[function(require,module,exports){
 "use strict"
 
 module.exports = planarDual
@@ -46338,7 +46448,7 @@ function planarDual(cells, positions) {
   //Combine paths and loops together
   return cycles
 }
-},{"compare-angle":427}],427:[function(require,module,exports){
+},{"compare-angle":429}],429:[function(require,module,exports){
 "use strict"
 
 module.exports = compareAngle
@@ -46424,9 +46534,9 @@ function compareAngle(a, b, c, d) {
     }
   }
 }
-},{"robust-orientation":1057,"robust-product":429,"robust-sum":438,"signum":430,"two-sum":431}],428:[function(require,module,exports){
-arguments[4][77][0].apply(exports,arguments)
-},{"dup":77,"two-product":439,"two-sum":431}],429:[function(require,module,exports){
+},{"robust-orientation":1059,"robust-product":431,"robust-sum":440,"signum":432,"two-sum":433}],430:[function(require,module,exports){
+arguments[4][79][0].apply(exports,arguments)
+},{"dup":79,"two-product":441,"two-sum":433}],431:[function(require,module,exports){
 "use strict"
 
 var robustSum = require("robust-sum")
@@ -46456,7 +46566,7 @@ function robustProduct(a, b) {
   }
   return r
 }
-},{"robust-scale":428,"robust-sum":438}],430:[function(require,module,exports){
+},{"robust-scale":430,"robust-sum":440}],432:[function(require,module,exports){
 "use strict"
 
 module.exports = function signum(x) {
@@ -46464,11 +46574,11 @@ module.exports = function signum(x) {
   if(x > 0) { return 1 }
   return 0.0
 }
-},{}],431:[function(require,module,exports){
-arguments[4][76][0].apply(exports,arguments)
-},{"dup":76}],432:[function(require,module,exports){
-arguments[4][44][0].apply(exports,arguments)
-},{"dup":44}],433:[function(require,module,exports){
+},{}],433:[function(require,module,exports){
+arguments[4][78][0].apply(exports,arguments)
+},{"dup":78}],434:[function(require,module,exports){
+arguments[4][46][0].apply(exports,arguments)
+},{"dup":46}],435:[function(require,module,exports){
 "use strict"
 
 var bounds = require("binary-search-bounds")
@@ -46835,7 +46945,7 @@ function createWrapper(intervals) {
   return new IntervalTree(createIntervalTree(intervals))
 }
 
-},{"binary-search-bounds":432}],434:[function(require,module,exports){
+},{"binary-search-bounds":434}],436:[function(require,module,exports){
 "use strict"
 
 module.exports = orderSegments
@@ -46931,7 +47041,7 @@ function orderSegments(b, a) {
   }
   return ar[0] - br[0]
 }
-},{"robust-orientation":1057}],435:[function(require,module,exports){
+},{"robust-orientation":1059}],437:[function(require,module,exports){
 "use strict"
 
 module.exports = createRBTree
@@ -47928,7 +48038,7 @@ function defaultCompare(a, b) {
 function createRBTree(compare) {
   return new RedBlackTree(compare || defaultCompare, null)
 }
-},{}],436:[function(require,module,exports){
+},{}],438:[function(require,module,exports){
 "use strict"
 
 module.exports = createSlabDecomposition
@@ -48159,7 +48269,7 @@ function createSlabDecomposition(segments) {
   }
   return new SlabDecomposition(slabs, lines, horizontal)
 }
-},{"./lib/order-segments":434,"binary-search-bounds":432,"functional-red-black-tree":435,"robust-orientation":1057}],437:[function(require,module,exports){
+},{"./lib/order-segments":436,"binary-search-bounds":434,"functional-red-black-tree":437,"robust-orientation":1059}],439:[function(require,module,exports){
 module.exports = preprocessPolygon
 
 var orient = require('robust-orientation')[3]
@@ -48311,13 +48421,13 @@ function preprocessPolygon(loops) {
       testSlab)
   }
 }
-},{"binary-search-bounds":432,"interval-tree-1d":433,"robust-orientation":1057,"slab-decomposition":436}],438:[function(require,module,exports){
-arguments[4][78][0].apply(exports,arguments)
-},{"dup":78}],439:[function(require,module,exports){
-arguments[4][79][0].apply(exports,arguments)
-},{"dup":79}],440:[function(require,module,exports){
-arguments[4][104][0].apply(exports,arguments)
-},{"dup":104}],441:[function(require,module,exports){
+},{"binary-search-bounds":434,"interval-tree-1d":435,"robust-orientation":1059,"slab-decomposition":438}],440:[function(require,module,exports){
+arguments[4][80][0].apply(exports,arguments)
+},{"dup":80}],441:[function(require,module,exports){
+arguments[4][81][0].apply(exports,arguments)
+},{"dup":81}],442:[function(require,module,exports){
+arguments[4][106][0].apply(exports,arguments)
+},{"dup":106}],443:[function(require,module,exports){
 'use strict'
 
 module.exports = planarGraphToPolyline
@@ -48522,9 +48632,9 @@ function planarGraphToPolyline(edges, positions) {
 
   return result
 }
-},{"./lib/trim-leaves":424,"edges-to-adjacency-list":425,"planar-dual":426,"point-in-big-polygon":437,"robust-sum":438,"two-product":439,"uniq":440}],442:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],443:[function(require,module,exports){
+},{"./lib/trim-leaves":426,"edges-to-adjacency-list":427,"planar-dual":428,"point-in-big-polygon":439,"robust-sum":440,"two-product":441,"uniq":442}],444:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],445:[function(require,module,exports){
 "use strict"; "use restrict";
 
 module.exports = UnionFind;
@@ -48581,9 +48691,9 @@ UnionFind.prototype.link = function(x, y) {
 }
 
 
-},{}],444:[function(require,module,exports){
-arguments[4][96][0].apply(exports,arguments)
-},{"bit-twiddle":442,"dup":96,"union-find":443}],445:[function(require,module,exports){
+},{}],446:[function(require,module,exports){
+arguments[4][98][0].apply(exports,arguments)
+},{"bit-twiddle":444,"dup":98,"union-find":445}],447:[function(require,module,exports){
 "use strict"
 
 module.exports = simplifyPolygon
@@ -48855,7 +48965,7 @@ function simplifyPolygon(cells, positions, minArea) {
     edges: ncells
   }
 }
-},{"robust-orientation":1057,"simplicial-complex":444}],446:[function(require,module,exports){
+},{"robust-orientation":1059,"simplicial-complex":446}],448:[function(require,module,exports){
 "use strict"
 
 var pool = require("typedarray-pool")
@@ -49271,13 +49381,13 @@ function createSurfaceExtractor(args) {
     order,
     typesig)
 }
-},{"typedarray-pool":449}],447:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],448:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],449:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":447,"buffer":1,"dup":139}],450:[function(require,module,exports){
+},{"typedarray-pool":451}],449:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],450:[function(require,module,exports){
+arguments[4][75][0].apply(exports,arguments)
+},{"dup":75}],451:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":449,"buffer":1,"dup":141}],452:[function(require,module,exports){
 // transliterated from the python snippet here:
 // http://en.wikipedia.org/wiki/Lanczos_approximation
 
@@ -49346,13 +49456,13 @@ module.exports = function gamma (z) {
 
 module.exports.log = lngamma;
 
-},{}],451:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],452:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],453:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":451,"buffer":1,"dup":139}],454:[function(require,module,exports){
+},{}],453:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],454:[function(require,module,exports){
+arguments[4][75][0].apply(exports,arguments)
+},{"dup":75}],455:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":453,"buffer":1,"dup":141}],456:[function(require,module,exports){
 "use strict"
 
 module.exports = permutationSign
@@ -49404,7 +49514,7 @@ function permutationSign(p) {
     return sgn
   }
 }
-},{"typedarray-pool":453}],455:[function(require,module,exports){
+},{"typedarray-pool":455}],457:[function(require,module,exports){
 "use strict"
 
 var pool = require("typedarray-pool")
@@ -49491,7 +49601,7 @@ function unrank(n, r, p) {
 exports.rank = rank
 exports.unrank = unrank
 
-},{"invert-permutation":456,"typedarray-pool":459}],456:[function(require,module,exports){
+},{"invert-permutation":458,"typedarray-pool":461}],458:[function(require,module,exports){
 "use strict"
 
 function invertPermutation(pi, result) {
@@ -49503,13 +49613,13 @@ function invertPermutation(pi, result) {
 }
 
 module.exports = invertPermutation
-},{}],457:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],458:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],459:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":457,"buffer":1,"dup":139}],460:[function(require,module,exports){
+},{}],459:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],460:[function(require,module,exports){
+arguments[4][75][0].apply(exports,arguments)
+},{"dup":75}],461:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":459,"buffer":1,"dup":141}],462:[function(require,module,exports){
 "use strict"
 
 module.exports = triangulateCube
@@ -49543,7 +49653,7 @@ function triangulateCube(dimension) {
   }
   return result
 }
-},{"gamma":450,"permutation-parity":454,"permutation-rank":455}],461:[function(require,module,exports){
+},{"gamma":452,"permutation-parity":456,"permutation-rank":457}],463:[function(require,module,exports){
 module.exports = require('cwise-compiler')({
     args: ['array', {
         offset: [1],
@@ -49595,15 +49705,15 @@ module.exports = require('cwise-compiler')({
     funcName: 'zeroCrossings'
 })
 
-},{"cwise-compiler":462}],462:[function(require,module,exports){
-arguments[4][336][0].apply(exports,arguments)
-},{"./lib/thunk.js":464,"dup":336}],463:[function(require,module,exports){
-arguments[4][337][0].apply(exports,arguments)
-},{"dup":337,"uniq":465}],464:[function(require,module,exports){
+},{"cwise-compiler":464}],464:[function(require,module,exports){
 arguments[4][338][0].apply(exports,arguments)
-},{"./compile.js":463,"dup":338}],465:[function(require,module,exports){
-arguments[4][104][0].apply(exports,arguments)
-},{"dup":104}],466:[function(require,module,exports){
+},{"./lib/thunk.js":466,"dup":338}],465:[function(require,module,exports){
+arguments[4][339][0].apply(exports,arguments)
+},{"dup":339,"uniq":467}],466:[function(require,module,exports){
+arguments[4][340][0].apply(exports,arguments)
+},{"./compile.js":465,"dup":340}],467:[function(require,module,exports){
+arguments[4][106][0].apply(exports,arguments)
+},{"dup":106}],468:[function(require,module,exports){
 "use strict"
 
 module.exports = findZeroCrossings
@@ -49616,7 +49726,7 @@ function findZeroCrossings(array, level) {
   core(array.hi(array.shape[0]-1), cross, level)
   return cross
 }
-},{"./lib/zc-core":461}],467:[function(require,module,exports){
+},{"./lib/zc-core":463}],469:[function(require,module,exports){
 "use strict"
 
 module.exports = surfaceNets
@@ -49824,7 +49934,7 @@ function surfaceNets(array,level) {
   }
   return proc(array,level)
 }
-},{"ndarray-extract-contour":446,"triangulate-hypercube":460,"zero-crossings":466}],468:[function(require,module,exports){
+},{"ndarray-extract-contour":448,"triangulate-hypercube":462,"zero-crossings":468}],470:[function(require,module,exports){
 (function (process){
 'use strict'
 
@@ -49913,7 +50023,7 @@ function textGet(font, text) {
 }
 
 }).call(this,require('_process'))
-},{"_process":6,"vectorize-text":371}],469:[function(require,module,exports){
+},{"_process":6,"vectorize-text":373}],471:[function(require,module,exports){
 'use strict'
 
 module.exports = createGLPlot2D
@@ -50486,7 +50596,7 @@ function createGLPlot2D(options) {
   return plot
 }
 
-},{"./lib/box":324,"./lib/grid":325,"./lib/line":326,"./lib/text":328,"gl-select-static":344}],470:[function(require,module,exports){
+},{"./lib/box":326,"./lib/grid":327,"./lib/line":328,"./lib/text":330,"gl-select-static":346}],472:[function(require,module,exports){
 
 var createShader = require('gl-shader')
 
@@ -50497,7 +50607,7 @@ module.exports = function(gl) {
   return createShader(gl, vertSrc, fragSrc, null, [ { name: 'position', type: 'vec2'}])
 }
 
-},{"gl-shader":607}],471:[function(require,module,exports){
+},{"gl-shader":609}],473:[function(require,module,exports){
 'use strict'
 
 module.exports = createCamera
@@ -50706,23 +50816,23 @@ function createCamera(element, options) {
 
   return camera
 }
-},{"3d-view":68,"mouse-change":1021,"mouse-wheel":1025,"right-now":1051}],472:[function(require,module,exports){
-arguments[4][110][0].apply(exports,arguments)
-},{"dup":110,"ndarray":1048,"ndarray-ops":1043,"typedarray-pool":475}],473:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],474:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],475:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":473,"buffer":1,"dup":139}],476:[function(require,module,exports){
-arguments[4][171][0].apply(exports,arguments)
-},{"dup":171}],477:[function(require,module,exports){
-arguments[4][172][0].apply(exports,arguments)
-},{"./do-bind.js":476,"dup":172}],478:[function(require,module,exports){
+},{"3d-view":70,"mouse-change":1023,"mouse-wheel":1027,"right-now":1053}],474:[function(require,module,exports){
+arguments[4][112][0].apply(exports,arguments)
+},{"dup":112,"ndarray":1050,"ndarray-ops":1045,"typedarray-pool":477}],475:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],476:[function(require,module,exports){
+arguments[4][75][0].apply(exports,arguments)
+},{"dup":75}],477:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":475,"buffer":1,"dup":141}],478:[function(require,module,exports){
 arguments[4][173][0].apply(exports,arguments)
-},{"./do-bind.js":476,"dup":173}],479:[function(require,module,exports){
+},{"dup":173}],479:[function(require,module,exports){
 arguments[4][174][0].apply(exports,arguments)
-},{"./lib/vao-emulated.js":477,"./lib/vao-native.js":478,"dup":174}],480:[function(require,module,exports){
+},{"./do-bind.js":478,"dup":174}],480:[function(require,module,exports){
+arguments[4][175][0].apply(exports,arguments)
+},{"./do-bind.js":478,"dup":175}],481:[function(require,module,exports){
+arguments[4][176][0].apply(exports,arguments)
+},{"./lib/vao-emulated.js":479,"./lib/vao-native.js":480,"dup":176}],482:[function(require,module,exports){
 // Copyright (C) 2011 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -51409,7 +51519,7 @@ arguments[4][174][0].apply(exports,arguments)
   }
 })();
 
-},{}],481:[function(require,module,exports){
+},{}],483:[function(require,module,exports){
 'use strict'
 
 var weakMap      = typeof WeakMap === 'undefined' ? require('weak-map') : WeakMap
@@ -51439,7 +51549,7 @@ function createABigTriangle(gl) {
 
 module.exports = createABigTriangle
 
-},{"gl-buffer":472,"gl-vao":479,"weak-map":480}],482:[function(require,module,exports){
+},{"gl-buffer":474,"gl-vao":481,"weak-map":482}],484:[function(require,module,exports){
 'use strict'
 
 module.exports = createAxes
@@ -51962,7 +52072,7 @@ function createAxes(gl, options) {
   return axes
 }
 
-},{"./lib/background.js":483,"./lib/cube.js":484,"./lib/lines.js":485,"./lib/text.js":487,"./lib/ticks.js":488}],483:[function(require,module,exports){
+},{"./lib/background.js":485,"./lib/cube.js":486,"./lib/lines.js":487,"./lib/text.js":489,"./lib/ticks.js":490}],485:[function(require,module,exports){
 'use strict'
 
 module.exports = createBackgroundCube
@@ -52074,7 +52184,7 @@ function createBackgroundCube(gl) {
   return new BackgroundCube(gl, buffer, vao, shader)
 }
 
-},{"./shaders":486,"gl-buffer":492,"gl-vao":497}],484:[function(require,module,exports){
+},{"./shaders":488,"gl-buffer":494,"gl-vao":499}],486:[function(require,module,exports){
 "use strict"
 
 module.exports = getCubeEdges
@@ -52315,7 +52425,7 @@ function getCubeEdges(model, view, projection, bounds) {
   //Return result
   return CUBE_RESULT
 }
-},{"bit-twiddle":489,"gl-mat4/invert":257,"gl-mat4/multiply":259,"robust-orientation":1057,"split-polygon":499}],485:[function(require,module,exports){
+},{"bit-twiddle":491,"gl-mat4/invert":259,"gl-mat4/multiply":261,"robust-orientation":1059,"split-polygon":501}],487:[function(require,module,exports){
 'use strict'
 
 module.exports    = createLines
@@ -52521,7 +52631,7 @@ function createLines(gl, bounds, ticks) {
   return new Lines(gl, vertBuf, vao, shader, tickCount, tickOffset, gridCount, gridOffset)
 }
 
-},{"./shaders":486,"gl-buffer":492,"gl-vao":497}],486:[function(require,module,exports){
+},{"./shaders":488,"gl-buffer":494,"gl-vao":499}],488:[function(require,module,exports){
 'use strict'
 
 
@@ -52552,7 +52662,7 @@ exports.bg = function(gl) {
   ])
 }
 
-},{"gl-shader":607}],487:[function(require,module,exports){
+},{"gl-shader":609}],489:[function(require,module,exports){
 (function (process){
 "use strict"
 
@@ -52754,7 +52864,7 @@ function createTextSprites(
 }
 
 }).call(this,require('_process'))
-},{"./shaders":486,"_process":6,"gl-buffer":492,"gl-vao":497,"vectorize-text":503}],488:[function(require,module,exports){
+},{"./shaders":488,"_process":6,"gl-buffer":494,"gl-vao":499,"vectorize-text":505}],490:[function(require,module,exports){
 'use strict'
 
 exports.create   = defaultTicks
@@ -52827,11 +52937,11 @@ function ticksEqual(ticksA, ticksB) {
   }
   return true
 }
-},{}],489:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],490:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],491:[function(require,module,exports){
+},{}],491:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],492:[function(require,module,exports){
+arguments[4][75][0].apply(exports,arguments)
+},{"dup":75}],493:[function(require,module,exports){
 "use strict"
 
 module.exports = extractPlanes
@@ -52848,19 +52958,19 @@ function extractPlanes(M, zNear, zFar) {
     [ zf*M[12] - M[8], zf*M[13] - M[9], zf*M[14] - M[10], zf*M[15] - M[11] ]
   ]
 }
-},{}],492:[function(require,module,exports){
-arguments[4][110][0].apply(exports,arguments)
-},{"dup":110,"ndarray":1048,"ndarray-ops":1043,"typedarray-pool":493}],493:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":489,"buffer":1,"dup":139}],494:[function(require,module,exports){
-arguments[4][171][0].apply(exports,arguments)
-},{"dup":171}],495:[function(require,module,exports){
-arguments[4][172][0].apply(exports,arguments)
-},{"./do-bind.js":494,"dup":172}],496:[function(require,module,exports){
+},{}],494:[function(require,module,exports){
+arguments[4][112][0].apply(exports,arguments)
+},{"dup":112,"ndarray":1050,"ndarray-ops":1045,"typedarray-pool":495}],495:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":491,"buffer":1,"dup":141}],496:[function(require,module,exports){
 arguments[4][173][0].apply(exports,arguments)
-},{"./do-bind.js":494,"dup":173}],497:[function(require,module,exports){
+},{"dup":173}],497:[function(require,module,exports){
 arguments[4][174][0].apply(exports,arguments)
-},{"./lib/vao-emulated.js":495,"./lib/vao-native.js":496,"dup":174}],498:[function(require,module,exports){
+},{"./do-bind.js":496,"dup":174}],498:[function(require,module,exports){
+arguments[4][175][0].apply(exports,arguments)
+},{"./do-bind.js":496,"dup":175}],499:[function(require,module,exports){
+arguments[4][176][0].apply(exports,arguments)
+},{"./lib/vao-emulated.js":497,"./lib/vao-native.js":498,"dup":176}],500:[function(require,module,exports){
 module.exports = transformMat4
 
 /**
@@ -52880,7 +52990,7 @@ function transformMat4 (out, a, m) {
   return out
 }
 
-},{}],499:[function(require,module,exports){
+},{}],501:[function(require,module,exports){
 "use strict"
 
 var robustDot = require("robust-dot-product")
@@ -52972,7 +53082,7 @@ function negative(points, plane) {
   }
   return neg
 }
-},{"robust-dot-product":500,"robust-sum":502}],500:[function(require,module,exports){
+},{"robust-dot-product":502,"robust-sum":504}],502:[function(require,module,exports){
 "use strict"
 
 var twoProduct = require("two-product")
@@ -52987,189 +53097,189 @@ function robustDotProduct(a, b) {
   }
   return r
 }
-},{"robust-sum":502,"two-product":501}],501:[function(require,module,exports){
-arguments[4][79][0].apply(exports,arguments)
-},{"dup":79}],502:[function(require,module,exports){
-arguments[4][78][0].apply(exports,arguments)
-},{"dup":78}],503:[function(require,module,exports){
-arguments[4][371][0].apply(exports,arguments)
-},{"./lib/vtext":504,"dup":371}],504:[function(require,module,exports){
-arguments[4][372][0].apply(exports,arguments)
-},{"cdt2d":505,"clean-pslg":517,"dup":372,"ndarray":1048,"planar-graph-to-polyline":571,"simplify-planar-graph":575,"surface-nets":591}],505:[function(require,module,exports){
+},{"robust-sum":504,"two-product":503}],503:[function(require,module,exports){
+arguments[4][81][0].apply(exports,arguments)
+},{"dup":81}],504:[function(require,module,exports){
+arguments[4][80][0].apply(exports,arguments)
+},{"dup":80}],505:[function(require,module,exports){
 arguments[4][373][0].apply(exports,arguments)
-},{"./lib/delaunay":506,"./lib/filter":507,"./lib/monotone":508,"./lib/triangulation":509,"dup":373}],506:[function(require,module,exports){
+},{"./lib/vtext":506,"dup":373}],506:[function(require,module,exports){
 arguments[4][374][0].apply(exports,arguments)
-},{"binary-search-bounds":510,"dup":374,"robust-in-sphere":511}],507:[function(require,module,exports){
+},{"cdt2d":507,"clean-pslg":519,"dup":374,"ndarray":1050,"planar-graph-to-polyline":573,"simplify-planar-graph":577,"surface-nets":593}],507:[function(require,module,exports){
 arguments[4][375][0].apply(exports,arguments)
-},{"binary-search-bounds":510,"dup":375}],508:[function(require,module,exports){
+},{"./lib/delaunay":508,"./lib/filter":509,"./lib/monotone":510,"./lib/triangulation":511,"dup":375}],508:[function(require,module,exports){
 arguments[4][376][0].apply(exports,arguments)
-},{"binary-search-bounds":510,"dup":376,"robust-orientation":1057}],509:[function(require,module,exports){
+},{"binary-search-bounds":512,"dup":376,"robust-in-sphere":513}],509:[function(require,module,exports){
 arguments[4][377][0].apply(exports,arguments)
-},{"binary-search-bounds":510,"dup":377}],510:[function(require,module,exports){
-arguments[4][329][0].apply(exports,arguments)
-},{"dup":329}],511:[function(require,module,exports){
+},{"binary-search-bounds":512,"dup":377}],510:[function(require,module,exports){
 arguments[4][378][0].apply(exports,arguments)
-},{"dup":378,"robust-scale":513,"robust-subtract":514,"robust-sum":515,"two-product":516}],512:[function(require,module,exports){
-arguments[4][76][0].apply(exports,arguments)
-},{"dup":76}],513:[function(require,module,exports){
-arguments[4][77][0].apply(exports,arguments)
-},{"dup":77,"two-product":516,"two-sum":512}],514:[function(require,module,exports){
-arguments[4][381][0].apply(exports,arguments)
-},{"dup":381}],515:[function(require,module,exports){
+},{"binary-search-bounds":512,"dup":378,"robust-orientation":1059}],511:[function(require,module,exports){
+arguments[4][379][0].apply(exports,arguments)
+},{"binary-search-bounds":512,"dup":379}],512:[function(require,module,exports){
+arguments[4][331][0].apply(exports,arguments)
+},{"dup":331}],513:[function(require,module,exports){
+arguments[4][380][0].apply(exports,arguments)
+},{"dup":380,"robust-scale":515,"robust-subtract":516,"robust-sum":517,"two-product":518}],514:[function(require,module,exports){
 arguments[4][78][0].apply(exports,arguments)
-},{"dup":78}],516:[function(require,module,exports){
+},{"dup":78}],515:[function(require,module,exports){
 arguments[4][79][0].apply(exports,arguments)
-},{"dup":79}],517:[function(require,module,exports){
-arguments[4][384][0].apply(exports,arguments)
-},{"./lib/rat-seg-intersect":518,"big-rat":522,"big-rat/cmp":520,"big-rat/to-float":536,"box-intersect":537,"compare-cell":545,"dup":384,"nextafter":546,"rat-vec":549,"robust-segment-intersect":552,"union-find":553}],518:[function(require,module,exports){
-arguments[4][385][0].apply(exports,arguments)
-},{"big-rat/div":521,"big-rat/mul":531,"big-rat/sign":534,"big-rat/sub":535,"big-rat/to-float":536,"dup":385,"rat-vec/add":548,"rat-vec/muls":550,"rat-vec/sub":551}],519:[function(require,module,exports){
+},{"dup":79,"two-product":518,"two-sum":514}],516:[function(require,module,exports){
+arguments[4][383][0].apply(exports,arguments)
+},{"dup":383}],517:[function(require,module,exports){
+arguments[4][80][0].apply(exports,arguments)
+},{"dup":80}],518:[function(require,module,exports){
+arguments[4][81][0].apply(exports,arguments)
+},{"dup":81}],519:[function(require,module,exports){
 arguments[4][386][0].apply(exports,arguments)
-},{"./lib/rationalize":529,"dup":386}],520:[function(require,module,exports){
+},{"./lib/rat-seg-intersect":520,"big-rat":524,"big-rat/cmp":522,"big-rat/to-float":538,"box-intersect":539,"compare-cell":547,"dup":386,"nextafter":548,"rat-vec":551,"robust-segment-intersect":554,"union-find":555}],520:[function(require,module,exports){
 arguments[4][387][0].apply(exports,arguments)
-},{"dup":387}],521:[function(require,module,exports){
+},{"big-rat/div":523,"big-rat/mul":533,"big-rat/sign":536,"big-rat/sub":537,"big-rat/to-float":538,"dup":387,"rat-vec/add":550,"rat-vec/muls":552,"rat-vec/sub":553}],521:[function(require,module,exports){
 arguments[4][388][0].apply(exports,arguments)
-},{"./lib/rationalize":529,"dup":388}],522:[function(require,module,exports){
+},{"./lib/rationalize":531,"dup":388}],522:[function(require,module,exports){
 arguments[4][389][0].apply(exports,arguments)
-},{"./div":521,"./is-rat":523,"./lib/is-bn":527,"./lib/num-to-bn":528,"./lib/rationalize":529,"./lib/str-to-bn":530,"dup":389}],523:[function(require,module,exports){
+},{"dup":389}],523:[function(require,module,exports){
 arguments[4][390][0].apply(exports,arguments)
-},{"./lib/is-bn":527,"dup":390}],524:[function(require,module,exports){
+},{"./lib/rationalize":531,"dup":390}],524:[function(require,module,exports){
 arguments[4][391][0].apply(exports,arguments)
-},{"bn.js":532,"dup":391}],525:[function(require,module,exports){
+},{"./div":523,"./is-rat":525,"./lib/is-bn":529,"./lib/num-to-bn":530,"./lib/rationalize":531,"./lib/str-to-bn":532,"dup":391}],525:[function(require,module,exports){
 arguments[4][392][0].apply(exports,arguments)
-},{"dup":392}],526:[function(require,module,exports){
+},{"./lib/is-bn":529,"dup":392}],526:[function(require,module,exports){
 arguments[4][393][0].apply(exports,arguments)
-},{"bit-twiddle":489,"double-bits":533,"dup":393}],527:[function(require,module,exports){
+},{"bn.js":534,"dup":393}],527:[function(require,module,exports){
 arguments[4][394][0].apply(exports,arguments)
-},{"bn.js":532,"dup":394}],528:[function(require,module,exports){
+},{"dup":394}],528:[function(require,module,exports){
 arguments[4][395][0].apply(exports,arguments)
-},{"bn.js":532,"double-bits":533,"dup":395}],529:[function(require,module,exports){
+},{"bit-twiddle":491,"double-bits":535,"dup":395}],529:[function(require,module,exports){
 arguments[4][396][0].apply(exports,arguments)
-},{"./bn-sign":524,"./num-to-bn":528,"dup":396}],530:[function(require,module,exports){
+},{"bn.js":534,"dup":396}],530:[function(require,module,exports){
 arguments[4][397][0].apply(exports,arguments)
-},{"bn.js":532,"dup":397}],531:[function(require,module,exports){
+},{"bn.js":534,"double-bits":535,"dup":397}],531:[function(require,module,exports){
 arguments[4][398][0].apply(exports,arguments)
-},{"./lib/rationalize":529,"dup":398}],532:[function(require,module,exports){
+},{"./bn-sign":526,"./num-to-bn":530,"dup":398}],532:[function(require,module,exports){
+arguments[4][399][0].apply(exports,arguments)
+},{"bn.js":534,"dup":399}],533:[function(require,module,exports){
 arguments[4][400][0].apply(exports,arguments)
-},{"dup":400}],533:[function(require,module,exports){
-arguments[4][401][0].apply(exports,arguments)
-},{"buffer":1,"dup":401}],534:[function(require,module,exports){
+},{"./lib/rationalize":531,"dup":400}],534:[function(require,module,exports){
 arguments[4][402][0].apply(exports,arguments)
-},{"./lib/bn-sign":524,"dup":402}],535:[function(require,module,exports){
+},{"dup":402}],535:[function(require,module,exports){
 arguments[4][403][0].apply(exports,arguments)
-},{"./lib/rationalize":529,"dup":403}],536:[function(require,module,exports){
+},{"buffer":1,"dup":403}],536:[function(require,module,exports){
 arguments[4][404][0].apply(exports,arguments)
-},{"./lib/bn-to-num":525,"./lib/ctz":526,"dup":404}],537:[function(require,module,exports){
+},{"./lib/bn-sign":526,"dup":404}],537:[function(require,module,exports){
 arguments[4][405][0].apply(exports,arguments)
-},{"./lib/intersect":539,"./lib/sweep":543,"dup":405,"typedarray-pool":544}],538:[function(require,module,exports){
+},{"./lib/rationalize":531,"dup":405}],538:[function(require,module,exports){
 arguments[4][406][0].apply(exports,arguments)
-},{"dup":406}],539:[function(require,module,exports){
+},{"./lib/bn-to-num":527,"./lib/ctz":528,"dup":406}],539:[function(require,module,exports){
 arguments[4][407][0].apply(exports,arguments)
-},{"./brute":538,"./median":540,"./partition":541,"./sweep":543,"bit-twiddle":489,"dup":407,"typedarray-pool":544}],540:[function(require,module,exports){
+},{"./lib/intersect":541,"./lib/sweep":545,"dup":407,"typedarray-pool":546}],540:[function(require,module,exports){
 arguments[4][408][0].apply(exports,arguments)
-},{"./partition":541,"dup":408}],541:[function(require,module,exports){
+},{"dup":408}],541:[function(require,module,exports){
 arguments[4][409][0].apply(exports,arguments)
-},{"dup":409}],542:[function(require,module,exports){
+},{"./brute":540,"./median":542,"./partition":543,"./sweep":545,"bit-twiddle":491,"dup":409,"typedarray-pool":546}],542:[function(require,module,exports){
 arguments[4][410][0].apply(exports,arguments)
-},{"dup":410}],543:[function(require,module,exports){
+},{"./partition":543,"dup":410}],543:[function(require,module,exports){
 arguments[4][411][0].apply(exports,arguments)
-},{"./sort":542,"bit-twiddle":489,"dup":411,"typedarray-pool":544}],544:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":489,"buffer":1,"dup":139}],545:[function(require,module,exports){
-arguments[4][84][0].apply(exports,arguments)
-},{"dup":84}],546:[function(require,module,exports){
-arguments[4][416][0].apply(exports,arguments)
-},{"double-bits":547,"dup":416}],547:[function(require,module,exports){
-arguments[4][401][0].apply(exports,arguments)
-},{"buffer":1,"dup":401}],548:[function(require,module,exports){
+},{"dup":411}],544:[function(require,module,exports){
+arguments[4][412][0].apply(exports,arguments)
+},{"dup":412}],545:[function(require,module,exports){
+arguments[4][413][0].apply(exports,arguments)
+},{"./sort":544,"bit-twiddle":491,"dup":413,"typedarray-pool":546}],546:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":491,"buffer":1,"dup":141}],547:[function(require,module,exports){
+arguments[4][86][0].apply(exports,arguments)
+},{"dup":86}],548:[function(require,module,exports){
 arguments[4][418][0].apply(exports,arguments)
-},{"big-rat/add":519,"dup":418}],549:[function(require,module,exports){
-arguments[4][419][0].apply(exports,arguments)
-},{"big-rat":522,"dup":419}],550:[function(require,module,exports){
+},{"double-bits":549,"dup":418}],549:[function(require,module,exports){
+arguments[4][403][0].apply(exports,arguments)
+},{"buffer":1,"dup":403}],550:[function(require,module,exports){
 arguments[4][420][0].apply(exports,arguments)
-},{"big-rat":522,"big-rat/mul":531,"dup":420}],551:[function(require,module,exports){
+},{"big-rat/add":521,"dup":420}],551:[function(require,module,exports){
 arguments[4][421][0].apply(exports,arguments)
-},{"big-rat/sub":535,"dup":421}],552:[function(require,module,exports){
+},{"big-rat":524,"dup":421}],552:[function(require,module,exports){
 arguments[4][422][0].apply(exports,arguments)
-},{"dup":422,"robust-orientation":1057}],553:[function(require,module,exports){
-arguments[4][95][0].apply(exports,arguments)
-},{"dup":95}],554:[function(require,module,exports){
+},{"big-rat":524,"big-rat/mul":533,"dup":422}],553:[function(require,module,exports){
+arguments[4][423][0].apply(exports,arguments)
+},{"big-rat/sub":537,"dup":423}],554:[function(require,module,exports){
 arguments[4][424][0].apply(exports,arguments)
-},{"dup":424,"edges-to-adjacency-list":555}],555:[function(require,module,exports){
-arguments[4][425][0].apply(exports,arguments)
-},{"dup":425,"uniq":570}],556:[function(require,module,exports){
+},{"dup":424,"robust-orientation":1059}],555:[function(require,module,exports){
+arguments[4][97][0].apply(exports,arguments)
+},{"dup":97}],556:[function(require,module,exports){
 arguments[4][426][0].apply(exports,arguments)
-},{"compare-angle":557,"dup":426}],557:[function(require,module,exports){
+},{"dup":426,"edges-to-adjacency-list":557}],557:[function(require,module,exports){
 arguments[4][427][0].apply(exports,arguments)
-},{"dup":427,"robust-orientation":1057,"robust-product":559,"robust-sum":568,"signum":560,"two-sum":561}],558:[function(require,module,exports){
-arguments[4][77][0].apply(exports,arguments)
-},{"dup":77,"two-product":569,"two-sum":561}],559:[function(require,module,exports){
+},{"dup":427,"uniq":572}],558:[function(require,module,exports){
+arguments[4][428][0].apply(exports,arguments)
+},{"compare-angle":559,"dup":428}],559:[function(require,module,exports){
 arguments[4][429][0].apply(exports,arguments)
-},{"dup":429,"robust-scale":558,"robust-sum":568}],560:[function(require,module,exports){
-arguments[4][430][0].apply(exports,arguments)
-},{"dup":430}],561:[function(require,module,exports){
-arguments[4][76][0].apply(exports,arguments)
-},{"dup":76}],562:[function(require,module,exports){
-arguments[4][44][0].apply(exports,arguments)
-},{"dup":44}],563:[function(require,module,exports){
-arguments[4][433][0].apply(exports,arguments)
-},{"binary-search-bounds":562,"dup":433}],564:[function(require,module,exports){
-arguments[4][434][0].apply(exports,arguments)
-},{"dup":434,"robust-orientation":1057}],565:[function(require,module,exports){
-arguments[4][435][0].apply(exports,arguments)
-},{"dup":435}],566:[function(require,module,exports){
-arguments[4][436][0].apply(exports,arguments)
-},{"./lib/order-segments":564,"binary-search-bounds":562,"dup":436,"functional-red-black-tree":565,"robust-orientation":1057}],567:[function(require,module,exports){
-arguments[4][437][0].apply(exports,arguments)
-},{"binary-search-bounds":562,"dup":437,"interval-tree-1d":563,"robust-orientation":1057,"slab-decomposition":566}],568:[function(require,module,exports){
-arguments[4][78][0].apply(exports,arguments)
-},{"dup":78}],569:[function(require,module,exports){
+},{"dup":429,"robust-orientation":1059,"robust-product":561,"robust-sum":570,"signum":562,"two-sum":563}],560:[function(require,module,exports){
 arguments[4][79][0].apply(exports,arguments)
-},{"dup":79}],570:[function(require,module,exports){
-arguments[4][104][0].apply(exports,arguments)
-},{"dup":104}],571:[function(require,module,exports){
-arguments[4][441][0].apply(exports,arguments)
-},{"./lib/trim-leaves":554,"dup":441,"edges-to-adjacency-list":555,"planar-dual":556,"point-in-big-polygon":567,"robust-sum":568,"two-product":569,"uniq":570}],572:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],573:[function(require,module,exports){
+},{"dup":79,"two-product":571,"two-sum":563}],561:[function(require,module,exports){
+arguments[4][431][0].apply(exports,arguments)
+},{"dup":431,"robust-scale":560,"robust-sum":570}],562:[function(require,module,exports){
+arguments[4][432][0].apply(exports,arguments)
+},{"dup":432}],563:[function(require,module,exports){
+arguments[4][78][0].apply(exports,arguments)
+},{"dup":78}],564:[function(require,module,exports){
+arguments[4][46][0].apply(exports,arguments)
+},{"dup":46}],565:[function(require,module,exports){
+arguments[4][435][0].apply(exports,arguments)
+},{"binary-search-bounds":564,"dup":435}],566:[function(require,module,exports){
+arguments[4][436][0].apply(exports,arguments)
+},{"dup":436,"robust-orientation":1059}],567:[function(require,module,exports){
+arguments[4][437][0].apply(exports,arguments)
+},{"dup":437}],568:[function(require,module,exports){
+arguments[4][438][0].apply(exports,arguments)
+},{"./lib/order-segments":566,"binary-search-bounds":564,"dup":438,"functional-red-black-tree":567,"robust-orientation":1059}],569:[function(require,module,exports){
+arguments[4][439][0].apply(exports,arguments)
+},{"binary-search-bounds":564,"dup":439,"interval-tree-1d":565,"robust-orientation":1059,"slab-decomposition":568}],570:[function(require,module,exports){
+arguments[4][80][0].apply(exports,arguments)
+},{"dup":80}],571:[function(require,module,exports){
+arguments[4][81][0].apply(exports,arguments)
+},{"dup":81}],572:[function(require,module,exports){
+arguments[4][106][0].apply(exports,arguments)
+},{"dup":106}],573:[function(require,module,exports){
 arguments[4][443][0].apply(exports,arguments)
-},{"dup":443}],574:[function(require,module,exports){
+},{"./lib/trim-leaves":556,"dup":443,"edges-to-adjacency-list":557,"planar-dual":558,"point-in-big-polygon":569,"robust-sum":570,"two-product":571,"uniq":572}],574:[function(require,module,exports){
 arguments[4][96][0].apply(exports,arguments)
-},{"bit-twiddle":572,"dup":96,"union-find":573}],575:[function(require,module,exports){
+},{"dup":96}],575:[function(require,module,exports){
 arguments[4][445][0].apply(exports,arguments)
-},{"dup":445,"robust-orientation":1057,"simplicial-complex":574}],576:[function(require,module,exports){
-arguments[4][446][0].apply(exports,arguments)
-},{"dup":446,"typedarray-pool":577}],577:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":489,"buffer":1,"dup":139}],578:[function(require,module,exports){
-arguments[4][450][0].apply(exports,arguments)
-},{"dup":450}],579:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":489,"buffer":1,"dup":139}],580:[function(require,module,exports){
-arguments[4][454][0].apply(exports,arguments)
-},{"dup":454,"typedarray-pool":579}],581:[function(require,module,exports){
-arguments[4][455][0].apply(exports,arguments)
-},{"dup":455,"invert-permutation":582,"typedarray-pool":583}],582:[function(require,module,exports){
+},{"dup":445}],576:[function(require,module,exports){
+arguments[4][98][0].apply(exports,arguments)
+},{"bit-twiddle":574,"dup":98,"union-find":575}],577:[function(require,module,exports){
+arguments[4][447][0].apply(exports,arguments)
+},{"dup":447,"robust-orientation":1059,"simplicial-complex":576}],578:[function(require,module,exports){
+arguments[4][448][0].apply(exports,arguments)
+},{"dup":448,"typedarray-pool":579}],579:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":491,"buffer":1,"dup":141}],580:[function(require,module,exports){
+arguments[4][452][0].apply(exports,arguments)
+},{"dup":452}],581:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":491,"buffer":1,"dup":141}],582:[function(require,module,exports){
 arguments[4][456][0].apply(exports,arguments)
-},{"dup":456}],583:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":489,"buffer":1,"dup":139}],584:[function(require,module,exports){
-arguments[4][460][0].apply(exports,arguments)
-},{"dup":460,"gamma":578,"permutation-parity":580,"permutation-rank":581}],585:[function(require,module,exports){
-arguments[4][461][0].apply(exports,arguments)
-},{"cwise-compiler":586,"dup":461}],586:[function(require,module,exports){
-arguments[4][336][0].apply(exports,arguments)
-},{"./lib/thunk.js":588,"dup":336}],587:[function(require,module,exports){
-arguments[4][337][0].apply(exports,arguments)
-},{"dup":337,"uniq":589}],588:[function(require,module,exports){
+},{"dup":456,"typedarray-pool":581}],583:[function(require,module,exports){
+arguments[4][457][0].apply(exports,arguments)
+},{"dup":457,"invert-permutation":584,"typedarray-pool":585}],584:[function(require,module,exports){
+arguments[4][458][0].apply(exports,arguments)
+},{"dup":458}],585:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":491,"buffer":1,"dup":141}],586:[function(require,module,exports){
+arguments[4][462][0].apply(exports,arguments)
+},{"dup":462,"gamma":580,"permutation-parity":582,"permutation-rank":583}],587:[function(require,module,exports){
+arguments[4][463][0].apply(exports,arguments)
+},{"cwise-compiler":588,"dup":463}],588:[function(require,module,exports){
 arguments[4][338][0].apply(exports,arguments)
-},{"./compile.js":587,"dup":338}],589:[function(require,module,exports){
-arguments[4][104][0].apply(exports,arguments)
-},{"dup":104}],590:[function(require,module,exports){
-arguments[4][466][0].apply(exports,arguments)
-},{"./lib/zc-core":585,"dup":466}],591:[function(require,module,exports){
-arguments[4][467][0].apply(exports,arguments)
-},{"dup":467,"ndarray-extract-contour":576,"triangulate-hypercube":584,"zero-crossings":590}],592:[function(require,module,exports){
+},{"./lib/thunk.js":590,"dup":338}],589:[function(require,module,exports){
+arguments[4][339][0].apply(exports,arguments)
+},{"dup":339,"uniq":591}],590:[function(require,module,exports){
+arguments[4][340][0].apply(exports,arguments)
+},{"./compile.js":589,"dup":340}],591:[function(require,module,exports){
+arguments[4][106][0].apply(exports,arguments)
+},{"dup":106}],592:[function(require,module,exports){
+arguments[4][468][0].apply(exports,arguments)
+},{"./lib/zc-core":587,"dup":468}],593:[function(require,module,exports){
+arguments[4][469][0].apply(exports,arguments)
+},{"dup":469,"ndarray-extract-contour":578,"triangulate-hypercube":586,"zero-crossings":592}],594:[function(require,module,exports){
 "use strict"
 
 module.exports = axesProperties
@@ -53311,103 +53421,103 @@ i_loop:
   return ranges
 }
 
-},{"./lib/cube.js":484,"extract-frustum-planes":491,"gl-mat4/multiply":259,"gl-mat4/transpose":267,"gl-vec4/transformMat4":498,"split-polygon":499}],593:[function(require,module,exports){
-arguments[4][340][0].apply(exports,arguments)
-},{"dup":340,"gl-texture2d":597}],594:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],595:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],596:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":594,"buffer":1,"dup":139}],597:[function(require,module,exports){
-arguments[4][205][0].apply(exports,arguments)
-},{"dup":205,"ndarray":1048,"ndarray-ops":1043,"typedarray-pool":596}],598:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],599:[function(require,module,exports){
-arguments[4][335][0].apply(exports,arguments)
-},{"cwise-compiler":600,"dup":335}],600:[function(require,module,exports){
-arguments[4][336][0].apply(exports,arguments)
-},{"./lib/thunk.js":602,"dup":336}],601:[function(require,module,exports){
+},{"./lib/cube.js":486,"extract-frustum-planes":493,"gl-mat4/multiply":261,"gl-mat4/transpose":269,"gl-vec4/transformMat4":500,"split-polygon":501}],595:[function(require,module,exports){
+arguments[4][342][0].apply(exports,arguments)
+},{"dup":342,"gl-texture2d":599}],596:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],597:[function(require,module,exports){
+arguments[4][75][0].apply(exports,arguments)
+},{"dup":75}],598:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":596,"buffer":1,"dup":141}],599:[function(require,module,exports){
+arguments[4][207][0].apply(exports,arguments)
+},{"dup":207,"ndarray":1050,"ndarray-ops":1045,"typedarray-pool":598}],600:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],601:[function(require,module,exports){
 arguments[4][337][0].apply(exports,arguments)
-},{"dup":337,"uniq":603}],602:[function(require,module,exports){
+},{"cwise-compiler":602,"dup":337}],602:[function(require,module,exports){
 arguments[4][338][0].apply(exports,arguments)
-},{"./compile.js":601,"dup":338}],603:[function(require,module,exports){
-arguments[4][104][0].apply(exports,arguments)
-},{"dup":104}],604:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],605:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":598,"buffer":1,"dup":139}],606:[function(require,module,exports){
-arguments[4][344][0].apply(exports,arguments)
-},{"bit-twiddle":598,"cwise/lib/wrapper":599,"dup":344,"gl-fbo":593,"ndarray":1048,"typedarray-pool":605}],607:[function(require,module,exports){
-arguments[4][111][0].apply(exports,arguments)
-},{"./lib/GLError":608,"./lib/create-attributes":609,"./lib/create-uniforms":610,"./lib/reflect":611,"./lib/runtime-reflect":612,"./lib/shader-cache":613,"dup":111}],608:[function(require,module,exports){
-arguments[4][112][0].apply(exports,arguments)
-},{"dup":112}],609:[function(require,module,exports){
+},{"./lib/thunk.js":604,"dup":338}],603:[function(require,module,exports){
+arguments[4][339][0].apply(exports,arguments)
+},{"dup":339,"uniq":605}],604:[function(require,module,exports){
+arguments[4][340][0].apply(exports,arguments)
+},{"./compile.js":603,"dup":340}],605:[function(require,module,exports){
+arguments[4][106][0].apply(exports,arguments)
+},{"dup":106}],606:[function(require,module,exports){
+arguments[4][75][0].apply(exports,arguments)
+},{"dup":75}],607:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":600,"buffer":1,"dup":141}],608:[function(require,module,exports){
+arguments[4][346][0].apply(exports,arguments)
+},{"bit-twiddle":600,"cwise/lib/wrapper":601,"dup":346,"gl-fbo":595,"ndarray":1050,"typedarray-pool":607}],609:[function(require,module,exports){
 arguments[4][113][0].apply(exports,arguments)
-},{"./GLError":608,"dup":113}],610:[function(require,module,exports){
+},{"./lib/GLError":610,"./lib/create-attributes":611,"./lib/create-uniforms":612,"./lib/reflect":613,"./lib/runtime-reflect":614,"./lib/shader-cache":615,"dup":113}],610:[function(require,module,exports){
 arguments[4][114][0].apply(exports,arguments)
-},{"./GLError":608,"./reflect":611,"dup":114}],611:[function(require,module,exports){
+},{"dup":114}],611:[function(require,module,exports){
 arguments[4][115][0].apply(exports,arguments)
-},{"dup":115}],612:[function(require,module,exports){
+},{"./GLError":610,"dup":115}],612:[function(require,module,exports){
 arguments[4][116][0].apply(exports,arguments)
-},{"dup":116}],613:[function(require,module,exports){
+},{"./GLError":610,"./reflect":613,"dup":116}],613:[function(require,module,exports){
 arguments[4][117][0].apply(exports,arguments)
-},{"./GLError":608,"dup":117,"gl-format-compiler-error":614,"weakmap-shim":632}],614:[function(require,module,exports){
+},{"dup":117}],614:[function(require,module,exports){
 arguments[4][118][0].apply(exports,arguments)
-},{"add-line-numbers":615,"dup":118,"gl-constants/lookup":619,"glsl-shader-name":620,"sprintf-js":629}],615:[function(require,module,exports){
+},{"dup":118}],615:[function(require,module,exports){
 arguments[4][119][0].apply(exports,arguments)
-},{"dup":119,"pad-left":616}],616:[function(require,module,exports){
+},{"./GLError":610,"dup":119,"gl-format-compiler-error":616,"weakmap-shim":634}],616:[function(require,module,exports){
 arguments[4][120][0].apply(exports,arguments)
-},{"dup":120,"repeat-string":617}],617:[function(require,module,exports){
+},{"add-line-numbers":617,"dup":120,"gl-constants/lookup":621,"glsl-shader-name":622,"sprintf-js":631}],617:[function(require,module,exports){
 arguments[4][121][0].apply(exports,arguments)
-},{"dup":121}],618:[function(require,module,exports){
+},{"dup":121,"pad-left":618}],618:[function(require,module,exports){
 arguments[4][122][0].apply(exports,arguments)
-},{"dup":122}],619:[function(require,module,exports){
+},{"dup":122,"repeat-string":619}],619:[function(require,module,exports){
 arguments[4][123][0].apply(exports,arguments)
-},{"./1.0/numbers":618,"dup":123}],620:[function(require,module,exports){
+},{"dup":123}],620:[function(require,module,exports){
 arguments[4][124][0].apply(exports,arguments)
-},{"atob-lite":621,"dup":124,"glsl-tokenizer":628}],621:[function(require,module,exports){
+},{"dup":124}],621:[function(require,module,exports){
 arguments[4][125][0].apply(exports,arguments)
-},{"dup":125}],622:[function(require,module,exports){
+},{"./1.0/numbers":620,"dup":125}],622:[function(require,module,exports){
 arguments[4][126][0].apply(exports,arguments)
-},{"./lib/builtins":624,"./lib/builtins-300es":623,"./lib/literals":626,"./lib/literals-300es":625,"./lib/operators":627,"dup":126}],623:[function(require,module,exports){
+},{"atob-lite":623,"dup":126,"glsl-tokenizer":630}],623:[function(require,module,exports){
 arguments[4][127][0].apply(exports,arguments)
-},{"./builtins":624,"dup":127}],624:[function(require,module,exports){
+},{"dup":127}],624:[function(require,module,exports){
 arguments[4][128][0].apply(exports,arguments)
-},{"dup":128}],625:[function(require,module,exports){
+},{"./lib/builtins":626,"./lib/builtins-300es":625,"./lib/literals":628,"./lib/literals-300es":627,"./lib/operators":629,"dup":128}],625:[function(require,module,exports){
 arguments[4][129][0].apply(exports,arguments)
-},{"./literals":626,"dup":129}],626:[function(require,module,exports){
+},{"./builtins":626,"dup":129}],626:[function(require,module,exports){
 arguments[4][130][0].apply(exports,arguments)
 },{"dup":130}],627:[function(require,module,exports){
 arguments[4][131][0].apply(exports,arguments)
-},{"dup":131}],628:[function(require,module,exports){
+},{"./literals":628,"dup":131}],628:[function(require,module,exports){
 arguments[4][132][0].apply(exports,arguments)
-},{"./index":622,"dup":132}],629:[function(require,module,exports){
+},{"dup":132}],629:[function(require,module,exports){
 arguments[4][133][0].apply(exports,arguments)
 },{"dup":133}],630:[function(require,module,exports){
 arguments[4][134][0].apply(exports,arguments)
-},{"./hidden-store.js":631,"dup":134}],631:[function(require,module,exports){
+},{"./index":624,"dup":134}],631:[function(require,module,exports){
 arguments[4][135][0].apply(exports,arguments)
 },{"dup":135}],632:[function(require,module,exports){
 arguments[4][136][0].apply(exports,arguments)
-},{"./create-store.js":630,"dup":136}],633:[function(require,module,exports){
-arguments[4][110][0].apply(exports,arguments)
-},{"dup":110,"ndarray":1048,"ndarray-ops":1043,"typedarray-pool":636}],634:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],635:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],636:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":634,"buffer":1,"dup":139}],637:[function(require,module,exports){
-arguments[4][171][0].apply(exports,arguments)
-},{"dup":171}],638:[function(require,module,exports){
-arguments[4][172][0].apply(exports,arguments)
-},{"./do-bind.js":637,"dup":172}],639:[function(require,module,exports){
+},{"./hidden-store.js":633,"dup":136}],633:[function(require,module,exports){
+arguments[4][137][0].apply(exports,arguments)
+},{"dup":137}],634:[function(require,module,exports){
+arguments[4][138][0].apply(exports,arguments)
+},{"./create-store.js":632,"dup":138}],635:[function(require,module,exports){
+arguments[4][112][0].apply(exports,arguments)
+},{"dup":112,"ndarray":1050,"ndarray-ops":1045,"typedarray-pool":638}],636:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],637:[function(require,module,exports){
+arguments[4][75][0].apply(exports,arguments)
+},{"dup":75}],638:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":636,"buffer":1,"dup":141}],639:[function(require,module,exports){
 arguments[4][173][0].apply(exports,arguments)
-},{"./do-bind.js":637,"dup":173}],640:[function(require,module,exports){
+},{"dup":173}],640:[function(require,module,exports){
 arguments[4][174][0].apply(exports,arguments)
-},{"./lib/vao-emulated.js":638,"./lib/vao-native.js":639,"dup":174}],641:[function(require,module,exports){
+},{"./do-bind.js":639,"dup":174}],641:[function(require,module,exports){
+arguments[4][175][0].apply(exports,arguments)
+},{"./do-bind.js":639,"dup":175}],642:[function(require,module,exports){
+arguments[4][176][0].apply(exports,arguments)
+},{"./lib/vao-emulated.js":640,"./lib/vao-native.js":641,"dup":176}],643:[function(require,module,exports){
 'use strict'
 
 
@@ -53424,7 +53534,7 @@ module.exports = function(gl) {
   ])
 }
 
-},{"gl-shader":607}],642:[function(require,module,exports){
+},{"gl-shader":609}],644:[function(require,module,exports){
 'use strict'
 
 var createBuffer = require('gl-buffer')
@@ -53620,7 +53730,7 @@ function createSpikes(gl, options) {
   return spikes
 }
 
-},{"./shaders/index":641,"gl-buffer":633,"gl-vao":640}],643:[function(require,module,exports){
+},{"./shaders/index":643,"gl-buffer":635,"gl-vao":642}],645:[function(require,module,exports){
 'use strict'
 
 module.exports = createScene
@@ -54385,7 +54495,7 @@ function createScene(options) {
   return scene
 }
 
-},{"./lib/shader":470,"3d-view-controls":471,"a-big-triangle":481,"gl-axes3d":482,"gl-axes3d/properties":592,"gl-fbo":593,"gl-mat4/perspective":260,"gl-select-static":606,"gl-spikes3d":642,"mouse-change":1021}],644:[function(require,module,exports){
+},{"./lib/shader":472,"3d-view-controls":473,"a-big-triangle":483,"gl-axes3d":484,"gl-axes3d/properties":594,"gl-fbo":595,"gl-mat4/perspective":262,"gl-select-static":608,"gl-spikes3d":644,"mouse-change":1023}],646:[function(require,module,exports){
 'use strict'
 
 
@@ -54397,243 +54507,243 @@ module.exports = {
   pickFragment: "precision lowp float;\n#define GLSLIFY 1\nvarying vec4 fragColor;\nvoid main() {\n  gl_FragColor = fragColor;\n}\n"
 }
 
-},{}],645:[function(require,module,exports){
-arguments[4][110][0].apply(exports,arguments)
-},{"dup":110,"ndarray":1048,"ndarray-ops":1043,"typedarray-pool":675}],646:[function(require,module,exports){
-arguments[4][111][0].apply(exports,arguments)
-},{"./lib/GLError":647,"./lib/create-attributes":648,"./lib/create-uniforms":649,"./lib/reflect":650,"./lib/runtime-reflect":651,"./lib/shader-cache":652,"dup":111}],647:[function(require,module,exports){
+},{}],647:[function(require,module,exports){
 arguments[4][112][0].apply(exports,arguments)
-},{"dup":112}],648:[function(require,module,exports){
+},{"dup":112,"ndarray":1050,"ndarray-ops":1045,"typedarray-pool":677}],648:[function(require,module,exports){
 arguments[4][113][0].apply(exports,arguments)
-},{"./GLError":647,"dup":113}],649:[function(require,module,exports){
+},{"./lib/GLError":649,"./lib/create-attributes":650,"./lib/create-uniforms":651,"./lib/reflect":652,"./lib/runtime-reflect":653,"./lib/shader-cache":654,"dup":113}],649:[function(require,module,exports){
 arguments[4][114][0].apply(exports,arguments)
-},{"./GLError":647,"./reflect":650,"dup":114}],650:[function(require,module,exports){
+},{"dup":114}],650:[function(require,module,exports){
 arguments[4][115][0].apply(exports,arguments)
-},{"dup":115}],651:[function(require,module,exports){
+},{"./GLError":649,"dup":115}],651:[function(require,module,exports){
 arguments[4][116][0].apply(exports,arguments)
-},{"dup":116}],652:[function(require,module,exports){
+},{"./GLError":649,"./reflect":652,"dup":116}],652:[function(require,module,exports){
 arguments[4][117][0].apply(exports,arguments)
-},{"./GLError":647,"dup":117,"gl-format-compiler-error":653,"weakmap-shim":671}],653:[function(require,module,exports){
+},{"dup":117}],653:[function(require,module,exports){
 arguments[4][118][0].apply(exports,arguments)
-},{"add-line-numbers":654,"dup":118,"gl-constants/lookup":658,"glsl-shader-name":659,"sprintf-js":668}],654:[function(require,module,exports){
+},{"dup":118}],654:[function(require,module,exports){
 arguments[4][119][0].apply(exports,arguments)
-},{"dup":119,"pad-left":655}],655:[function(require,module,exports){
+},{"./GLError":649,"dup":119,"gl-format-compiler-error":655,"weakmap-shim":673}],655:[function(require,module,exports){
 arguments[4][120][0].apply(exports,arguments)
-},{"dup":120,"repeat-string":656}],656:[function(require,module,exports){
+},{"add-line-numbers":656,"dup":120,"gl-constants/lookup":660,"glsl-shader-name":661,"sprintf-js":670}],656:[function(require,module,exports){
 arguments[4][121][0].apply(exports,arguments)
-},{"dup":121}],657:[function(require,module,exports){
+},{"dup":121,"pad-left":657}],657:[function(require,module,exports){
 arguments[4][122][0].apply(exports,arguments)
-},{"dup":122}],658:[function(require,module,exports){
+},{"dup":122,"repeat-string":658}],658:[function(require,module,exports){
 arguments[4][123][0].apply(exports,arguments)
-},{"./1.0/numbers":657,"dup":123}],659:[function(require,module,exports){
+},{"dup":123}],659:[function(require,module,exports){
 arguments[4][124][0].apply(exports,arguments)
-},{"atob-lite":660,"dup":124,"glsl-tokenizer":667}],660:[function(require,module,exports){
+},{"dup":124}],660:[function(require,module,exports){
 arguments[4][125][0].apply(exports,arguments)
-},{"dup":125}],661:[function(require,module,exports){
+},{"./1.0/numbers":659,"dup":125}],661:[function(require,module,exports){
 arguments[4][126][0].apply(exports,arguments)
-},{"./lib/builtins":663,"./lib/builtins-300es":662,"./lib/literals":665,"./lib/literals-300es":664,"./lib/operators":666,"dup":126}],662:[function(require,module,exports){
+},{"atob-lite":662,"dup":126,"glsl-tokenizer":669}],662:[function(require,module,exports){
 arguments[4][127][0].apply(exports,arguments)
-},{"./builtins":663,"dup":127}],663:[function(require,module,exports){
+},{"dup":127}],663:[function(require,module,exports){
 arguments[4][128][0].apply(exports,arguments)
-},{"dup":128}],664:[function(require,module,exports){
+},{"./lib/builtins":665,"./lib/builtins-300es":664,"./lib/literals":667,"./lib/literals-300es":666,"./lib/operators":668,"dup":128}],664:[function(require,module,exports){
 arguments[4][129][0].apply(exports,arguments)
-},{"./literals":665,"dup":129}],665:[function(require,module,exports){
+},{"./builtins":665,"dup":129}],665:[function(require,module,exports){
 arguments[4][130][0].apply(exports,arguments)
 },{"dup":130}],666:[function(require,module,exports){
 arguments[4][131][0].apply(exports,arguments)
-},{"dup":131}],667:[function(require,module,exports){
+},{"./literals":667,"dup":131}],667:[function(require,module,exports){
 arguments[4][132][0].apply(exports,arguments)
-},{"./index":661,"dup":132}],668:[function(require,module,exports){
+},{"dup":132}],668:[function(require,module,exports){
 arguments[4][133][0].apply(exports,arguments)
 },{"dup":133}],669:[function(require,module,exports){
 arguments[4][134][0].apply(exports,arguments)
-},{"./hidden-store.js":670,"dup":134}],670:[function(require,module,exports){
+},{"./index":663,"dup":134}],670:[function(require,module,exports){
 arguments[4][135][0].apply(exports,arguments)
 },{"dup":135}],671:[function(require,module,exports){
 arguments[4][136][0].apply(exports,arguments)
-},{"./create-store.js":669,"dup":136}],672:[function(require,module,exports){
-arguments[4][468][0].apply(exports,arguments)
-},{"_process":6,"dup":468,"vectorize-text":676}],673:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],674:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],675:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":673,"buffer":1,"dup":139}],676:[function(require,module,exports){
-arguments[4][371][0].apply(exports,arguments)
-},{"./lib/vtext":677,"dup":371}],677:[function(require,module,exports){
-arguments[4][372][0].apply(exports,arguments)
-},{"cdt2d":678,"clean-pslg":690,"dup":372,"ndarray":1048,"planar-graph-to-polyline":745,"simplify-planar-graph":749,"surface-nets":762}],678:[function(require,module,exports){
-arguments[4][373][0].apply(exports,arguments)
-},{"./lib/delaunay":679,"./lib/filter":680,"./lib/monotone":681,"./lib/triangulation":682,"dup":373}],679:[function(require,module,exports){
-arguments[4][374][0].apply(exports,arguments)
-},{"binary-search-bounds":683,"dup":374,"robust-in-sphere":684}],680:[function(require,module,exports){
-arguments[4][375][0].apply(exports,arguments)
-},{"binary-search-bounds":683,"dup":375}],681:[function(require,module,exports){
-arguments[4][376][0].apply(exports,arguments)
-},{"binary-search-bounds":683,"dup":376,"robust-orientation":1057}],682:[function(require,module,exports){
-arguments[4][377][0].apply(exports,arguments)
-},{"binary-search-bounds":683,"dup":377}],683:[function(require,module,exports){
-arguments[4][329][0].apply(exports,arguments)
-},{"dup":329}],684:[function(require,module,exports){
-arguments[4][378][0].apply(exports,arguments)
-},{"dup":378,"robust-scale":686,"robust-subtract":687,"robust-sum":688,"two-product":689}],685:[function(require,module,exports){
-arguments[4][76][0].apply(exports,arguments)
-},{"dup":76}],686:[function(require,module,exports){
-arguments[4][77][0].apply(exports,arguments)
-},{"dup":77,"two-product":689,"two-sum":685}],687:[function(require,module,exports){
-arguments[4][381][0].apply(exports,arguments)
-},{"dup":381}],688:[function(require,module,exports){
-arguments[4][78][0].apply(exports,arguments)
-},{"dup":78}],689:[function(require,module,exports){
-arguments[4][79][0].apply(exports,arguments)
-},{"dup":79}],690:[function(require,module,exports){
-arguments[4][384][0].apply(exports,arguments)
-},{"./lib/rat-seg-intersect":691,"big-rat":695,"big-rat/cmp":693,"big-rat/to-float":710,"box-intersect":711,"compare-cell":719,"dup":384,"nextafter":720,"rat-vec":723,"robust-segment-intersect":726,"union-find":727}],691:[function(require,module,exports){
-arguments[4][385][0].apply(exports,arguments)
-},{"big-rat/div":694,"big-rat/mul":704,"big-rat/sign":708,"big-rat/sub":709,"big-rat/to-float":710,"dup":385,"rat-vec/add":722,"rat-vec/muls":724,"rat-vec/sub":725}],692:[function(require,module,exports){
-arguments[4][386][0].apply(exports,arguments)
-},{"./lib/rationalize":702,"dup":386}],693:[function(require,module,exports){
-arguments[4][387][0].apply(exports,arguments)
-},{"dup":387}],694:[function(require,module,exports){
-arguments[4][388][0].apply(exports,arguments)
-},{"./lib/rationalize":702,"dup":388}],695:[function(require,module,exports){
-arguments[4][389][0].apply(exports,arguments)
-},{"./div":694,"./is-rat":696,"./lib/is-bn":700,"./lib/num-to-bn":701,"./lib/rationalize":702,"./lib/str-to-bn":703,"dup":389}],696:[function(require,module,exports){
-arguments[4][390][0].apply(exports,arguments)
-},{"./lib/is-bn":700,"dup":390}],697:[function(require,module,exports){
-arguments[4][391][0].apply(exports,arguments)
-},{"bn.js":706,"dup":391}],698:[function(require,module,exports){
-arguments[4][392][0].apply(exports,arguments)
-},{"dup":392}],699:[function(require,module,exports){
-arguments[4][393][0].apply(exports,arguments)
-},{"bit-twiddle":705,"double-bits":707,"dup":393}],700:[function(require,module,exports){
-arguments[4][394][0].apply(exports,arguments)
-},{"bn.js":706,"dup":394}],701:[function(require,module,exports){
-arguments[4][395][0].apply(exports,arguments)
-},{"bn.js":706,"double-bits":707,"dup":395}],702:[function(require,module,exports){
-arguments[4][396][0].apply(exports,arguments)
-},{"./bn-sign":697,"./num-to-bn":701,"dup":396}],703:[function(require,module,exports){
-arguments[4][397][0].apply(exports,arguments)
-},{"bn.js":706,"dup":397}],704:[function(require,module,exports){
-arguments[4][398][0].apply(exports,arguments)
-},{"./lib/rationalize":702,"dup":398}],705:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],706:[function(require,module,exports){
-arguments[4][400][0].apply(exports,arguments)
-},{"dup":400}],707:[function(require,module,exports){
-arguments[4][401][0].apply(exports,arguments)
-},{"buffer":1,"dup":401}],708:[function(require,module,exports){
-arguments[4][402][0].apply(exports,arguments)
-},{"./lib/bn-sign":697,"dup":402}],709:[function(require,module,exports){
-arguments[4][403][0].apply(exports,arguments)
-},{"./lib/rationalize":702,"dup":403}],710:[function(require,module,exports){
-arguments[4][404][0].apply(exports,arguments)
-},{"./lib/bn-to-num":698,"./lib/ctz":699,"dup":404}],711:[function(require,module,exports){
-arguments[4][405][0].apply(exports,arguments)
-},{"./lib/intersect":713,"./lib/sweep":717,"dup":405,"typedarray-pool":675}],712:[function(require,module,exports){
-arguments[4][406][0].apply(exports,arguments)
-},{"dup":406}],713:[function(require,module,exports){
-arguments[4][407][0].apply(exports,arguments)
-},{"./brute":712,"./median":714,"./partition":715,"./sweep":717,"bit-twiddle":718,"dup":407,"typedarray-pool":675}],714:[function(require,module,exports){
-arguments[4][408][0].apply(exports,arguments)
-},{"./partition":715,"dup":408}],715:[function(require,module,exports){
-arguments[4][409][0].apply(exports,arguments)
-},{"dup":409}],716:[function(require,module,exports){
-arguments[4][410][0].apply(exports,arguments)
-},{"dup":410}],717:[function(require,module,exports){
-arguments[4][411][0].apply(exports,arguments)
-},{"./sort":716,"bit-twiddle":718,"dup":411,"typedarray-pool":675}],718:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],719:[function(require,module,exports){
-arguments[4][84][0].apply(exports,arguments)
-},{"dup":84}],720:[function(require,module,exports){
-arguments[4][416][0].apply(exports,arguments)
-},{"double-bits":721,"dup":416}],721:[function(require,module,exports){
-arguments[4][401][0].apply(exports,arguments)
-},{"buffer":1,"dup":401}],722:[function(require,module,exports){
-arguments[4][418][0].apply(exports,arguments)
-},{"big-rat/add":692,"dup":418}],723:[function(require,module,exports){
-arguments[4][419][0].apply(exports,arguments)
-},{"big-rat":695,"dup":419}],724:[function(require,module,exports){
-arguments[4][420][0].apply(exports,arguments)
-},{"big-rat":695,"big-rat/mul":704,"dup":420}],725:[function(require,module,exports){
-arguments[4][421][0].apply(exports,arguments)
-},{"big-rat/sub":709,"dup":421}],726:[function(require,module,exports){
-arguments[4][422][0].apply(exports,arguments)
-},{"dup":422,"robust-orientation":1057}],727:[function(require,module,exports){
-arguments[4][95][0].apply(exports,arguments)
-},{"dup":95}],728:[function(require,module,exports){
-arguments[4][424][0].apply(exports,arguments)
-},{"dup":424,"edges-to-adjacency-list":729}],729:[function(require,module,exports){
-arguments[4][425][0].apply(exports,arguments)
-},{"dup":425,"uniq":744}],730:[function(require,module,exports){
-arguments[4][426][0].apply(exports,arguments)
-},{"compare-angle":731,"dup":426}],731:[function(require,module,exports){
-arguments[4][427][0].apply(exports,arguments)
-},{"dup":427,"robust-orientation":1057,"robust-product":733,"robust-sum":742,"signum":734,"two-sum":735}],732:[function(require,module,exports){
-arguments[4][77][0].apply(exports,arguments)
-},{"dup":77,"two-product":743,"two-sum":735}],733:[function(require,module,exports){
-arguments[4][429][0].apply(exports,arguments)
-},{"dup":429,"robust-scale":732,"robust-sum":742}],734:[function(require,module,exports){
-arguments[4][430][0].apply(exports,arguments)
-},{"dup":430}],735:[function(require,module,exports){
-arguments[4][76][0].apply(exports,arguments)
-},{"dup":76}],736:[function(require,module,exports){
-arguments[4][44][0].apply(exports,arguments)
-},{"dup":44}],737:[function(require,module,exports){
-arguments[4][433][0].apply(exports,arguments)
-},{"binary-search-bounds":736,"dup":433}],738:[function(require,module,exports){
-arguments[4][434][0].apply(exports,arguments)
-},{"dup":434,"robust-orientation":1057}],739:[function(require,module,exports){
-arguments[4][435][0].apply(exports,arguments)
-},{"dup":435}],740:[function(require,module,exports){
-arguments[4][436][0].apply(exports,arguments)
-},{"./lib/order-segments":738,"binary-search-bounds":736,"dup":436,"functional-red-black-tree":739,"robust-orientation":1057}],741:[function(require,module,exports){
-arguments[4][437][0].apply(exports,arguments)
-},{"binary-search-bounds":736,"dup":437,"interval-tree-1d":737,"robust-orientation":1057,"slab-decomposition":740}],742:[function(require,module,exports){
-arguments[4][78][0].apply(exports,arguments)
-},{"dup":78}],743:[function(require,module,exports){
-arguments[4][79][0].apply(exports,arguments)
-},{"dup":79}],744:[function(require,module,exports){
-arguments[4][104][0].apply(exports,arguments)
-},{"dup":104}],745:[function(require,module,exports){
-arguments[4][441][0].apply(exports,arguments)
-},{"./lib/trim-leaves":728,"dup":441,"edges-to-adjacency-list":729,"planar-dual":730,"point-in-big-polygon":741,"robust-sum":742,"two-product":743,"uniq":744}],746:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],747:[function(require,module,exports){
-arguments[4][443][0].apply(exports,arguments)
-},{"dup":443}],748:[function(require,module,exports){
+},{"./hidden-store.js":672,"dup":136}],672:[function(require,module,exports){
+arguments[4][137][0].apply(exports,arguments)
+},{"dup":137}],673:[function(require,module,exports){
+arguments[4][138][0].apply(exports,arguments)
+},{"./create-store.js":671,"dup":138}],674:[function(require,module,exports){
+arguments[4][470][0].apply(exports,arguments)
+},{"_process":6,"dup":470,"vectorize-text":678}],675:[function(require,module,exports){
 arguments[4][96][0].apply(exports,arguments)
-},{"bit-twiddle":746,"dup":96,"union-find":747}],749:[function(require,module,exports){
+},{"dup":96}],676:[function(require,module,exports){
+arguments[4][75][0].apply(exports,arguments)
+},{"dup":75}],677:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":675,"buffer":1,"dup":141}],678:[function(require,module,exports){
+arguments[4][373][0].apply(exports,arguments)
+},{"./lib/vtext":679,"dup":373}],679:[function(require,module,exports){
+arguments[4][374][0].apply(exports,arguments)
+},{"cdt2d":680,"clean-pslg":692,"dup":374,"ndarray":1050,"planar-graph-to-polyline":747,"simplify-planar-graph":751,"surface-nets":764}],680:[function(require,module,exports){
+arguments[4][375][0].apply(exports,arguments)
+},{"./lib/delaunay":681,"./lib/filter":682,"./lib/monotone":683,"./lib/triangulation":684,"dup":375}],681:[function(require,module,exports){
+arguments[4][376][0].apply(exports,arguments)
+},{"binary-search-bounds":685,"dup":376,"robust-in-sphere":686}],682:[function(require,module,exports){
+arguments[4][377][0].apply(exports,arguments)
+},{"binary-search-bounds":685,"dup":377}],683:[function(require,module,exports){
+arguments[4][378][0].apply(exports,arguments)
+},{"binary-search-bounds":685,"dup":378,"robust-orientation":1059}],684:[function(require,module,exports){
+arguments[4][379][0].apply(exports,arguments)
+},{"binary-search-bounds":685,"dup":379}],685:[function(require,module,exports){
+arguments[4][331][0].apply(exports,arguments)
+},{"dup":331}],686:[function(require,module,exports){
+arguments[4][380][0].apply(exports,arguments)
+},{"dup":380,"robust-scale":688,"robust-subtract":689,"robust-sum":690,"two-product":691}],687:[function(require,module,exports){
+arguments[4][78][0].apply(exports,arguments)
+},{"dup":78}],688:[function(require,module,exports){
+arguments[4][79][0].apply(exports,arguments)
+},{"dup":79,"two-product":691,"two-sum":687}],689:[function(require,module,exports){
+arguments[4][383][0].apply(exports,arguments)
+},{"dup":383}],690:[function(require,module,exports){
+arguments[4][80][0].apply(exports,arguments)
+},{"dup":80}],691:[function(require,module,exports){
+arguments[4][81][0].apply(exports,arguments)
+},{"dup":81}],692:[function(require,module,exports){
+arguments[4][386][0].apply(exports,arguments)
+},{"./lib/rat-seg-intersect":693,"big-rat":697,"big-rat/cmp":695,"big-rat/to-float":712,"box-intersect":713,"compare-cell":721,"dup":386,"nextafter":722,"rat-vec":725,"robust-segment-intersect":728,"union-find":729}],693:[function(require,module,exports){
+arguments[4][387][0].apply(exports,arguments)
+},{"big-rat/div":696,"big-rat/mul":706,"big-rat/sign":710,"big-rat/sub":711,"big-rat/to-float":712,"dup":387,"rat-vec/add":724,"rat-vec/muls":726,"rat-vec/sub":727}],694:[function(require,module,exports){
+arguments[4][388][0].apply(exports,arguments)
+},{"./lib/rationalize":704,"dup":388}],695:[function(require,module,exports){
+arguments[4][389][0].apply(exports,arguments)
+},{"dup":389}],696:[function(require,module,exports){
+arguments[4][390][0].apply(exports,arguments)
+},{"./lib/rationalize":704,"dup":390}],697:[function(require,module,exports){
+arguments[4][391][0].apply(exports,arguments)
+},{"./div":696,"./is-rat":698,"./lib/is-bn":702,"./lib/num-to-bn":703,"./lib/rationalize":704,"./lib/str-to-bn":705,"dup":391}],698:[function(require,module,exports){
+arguments[4][392][0].apply(exports,arguments)
+},{"./lib/is-bn":702,"dup":392}],699:[function(require,module,exports){
+arguments[4][393][0].apply(exports,arguments)
+},{"bn.js":708,"dup":393}],700:[function(require,module,exports){
+arguments[4][394][0].apply(exports,arguments)
+},{"dup":394}],701:[function(require,module,exports){
+arguments[4][395][0].apply(exports,arguments)
+},{"bit-twiddle":707,"double-bits":709,"dup":395}],702:[function(require,module,exports){
+arguments[4][396][0].apply(exports,arguments)
+},{"bn.js":708,"dup":396}],703:[function(require,module,exports){
+arguments[4][397][0].apply(exports,arguments)
+},{"bn.js":708,"double-bits":709,"dup":397}],704:[function(require,module,exports){
+arguments[4][398][0].apply(exports,arguments)
+},{"./bn-sign":699,"./num-to-bn":703,"dup":398}],705:[function(require,module,exports){
+arguments[4][399][0].apply(exports,arguments)
+},{"bn.js":708,"dup":399}],706:[function(require,module,exports){
+arguments[4][400][0].apply(exports,arguments)
+},{"./lib/rationalize":704,"dup":400}],707:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],708:[function(require,module,exports){
+arguments[4][402][0].apply(exports,arguments)
+},{"dup":402}],709:[function(require,module,exports){
+arguments[4][403][0].apply(exports,arguments)
+},{"buffer":1,"dup":403}],710:[function(require,module,exports){
+arguments[4][404][0].apply(exports,arguments)
+},{"./lib/bn-sign":699,"dup":404}],711:[function(require,module,exports){
+arguments[4][405][0].apply(exports,arguments)
+},{"./lib/rationalize":704,"dup":405}],712:[function(require,module,exports){
+arguments[4][406][0].apply(exports,arguments)
+},{"./lib/bn-to-num":700,"./lib/ctz":701,"dup":406}],713:[function(require,module,exports){
+arguments[4][407][0].apply(exports,arguments)
+},{"./lib/intersect":715,"./lib/sweep":719,"dup":407,"typedarray-pool":677}],714:[function(require,module,exports){
+arguments[4][408][0].apply(exports,arguments)
+},{"dup":408}],715:[function(require,module,exports){
+arguments[4][409][0].apply(exports,arguments)
+},{"./brute":714,"./median":716,"./partition":717,"./sweep":719,"bit-twiddle":720,"dup":409,"typedarray-pool":677}],716:[function(require,module,exports){
+arguments[4][410][0].apply(exports,arguments)
+},{"./partition":717,"dup":410}],717:[function(require,module,exports){
+arguments[4][411][0].apply(exports,arguments)
+},{"dup":411}],718:[function(require,module,exports){
+arguments[4][412][0].apply(exports,arguments)
+},{"dup":412}],719:[function(require,module,exports){
+arguments[4][413][0].apply(exports,arguments)
+},{"./sort":718,"bit-twiddle":720,"dup":413,"typedarray-pool":677}],720:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],721:[function(require,module,exports){
+arguments[4][86][0].apply(exports,arguments)
+},{"dup":86}],722:[function(require,module,exports){
+arguments[4][418][0].apply(exports,arguments)
+},{"double-bits":723,"dup":418}],723:[function(require,module,exports){
+arguments[4][403][0].apply(exports,arguments)
+},{"buffer":1,"dup":403}],724:[function(require,module,exports){
+arguments[4][420][0].apply(exports,arguments)
+},{"big-rat/add":694,"dup":420}],725:[function(require,module,exports){
+arguments[4][421][0].apply(exports,arguments)
+},{"big-rat":697,"dup":421}],726:[function(require,module,exports){
+arguments[4][422][0].apply(exports,arguments)
+},{"big-rat":697,"big-rat/mul":706,"dup":422}],727:[function(require,module,exports){
+arguments[4][423][0].apply(exports,arguments)
+},{"big-rat/sub":711,"dup":423}],728:[function(require,module,exports){
+arguments[4][424][0].apply(exports,arguments)
+},{"dup":424,"robust-orientation":1059}],729:[function(require,module,exports){
+arguments[4][97][0].apply(exports,arguments)
+},{"dup":97}],730:[function(require,module,exports){
+arguments[4][426][0].apply(exports,arguments)
+},{"dup":426,"edges-to-adjacency-list":731}],731:[function(require,module,exports){
+arguments[4][427][0].apply(exports,arguments)
+},{"dup":427,"uniq":746}],732:[function(require,module,exports){
+arguments[4][428][0].apply(exports,arguments)
+},{"compare-angle":733,"dup":428}],733:[function(require,module,exports){
+arguments[4][429][0].apply(exports,arguments)
+},{"dup":429,"robust-orientation":1059,"robust-product":735,"robust-sum":744,"signum":736,"two-sum":737}],734:[function(require,module,exports){
+arguments[4][79][0].apply(exports,arguments)
+},{"dup":79,"two-product":745,"two-sum":737}],735:[function(require,module,exports){
+arguments[4][431][0].apply(exports,arguments)
+},{"dup":431,"robust-scale":734,"robust-sum":744}],736:[function(require,module,exports){
+arguments[4][432][0].apply(exports,arguments)
+},{"dup":432}],737:[function(require,module,exports){
+arguments[4][78][0].apply(exports,arguments)
+},{"dup":78}],738:[function(require,module,exports){
+arguments[4][46][0].apply(exports,arguments)
+},{"dup":46}],739:[function(require,module,exports){
+arguments[4][435][0].apply(exports,arguments)
+},{"binary-search-bounds":738,"dup":435}],740:[function(require,module,exports){
+arguments[4][436][0].apply(exports,arguments)
+},{"dup":436,"robust-orientation":1059}],741:[function(require,module,exports){
+arguments[4][437][0].apply(exports,arguments)
+},{"dup":437}],742:[function(require,module,exports){
+arguments[4][438][0].apply(exports,arguments)
+},{"./lib/order-segments":740,"binary-search-bounds":738,"dup":438,"functional-red-black-tree":741,"robust-orientation":1059}],743:[function(require,module,exports){
+arguments[4][439][0].apply(exports,arguments)
+},{"binary-search-bounds":738,"dup":439,"interval-tree-1d":739,"robust-orientation":1059,"slab-decomposition":742}],744:[function(require,module,exports){
+arguments[4][80][0].apply(exports,arguments)
+},{"dup":80}],745:[function(require,module,exports){
+arguments[4][81][0].apply(exports,arguments)
+},{"dup":81}],746:[function(require,module,exports){
+arguments[4][106][0].apply(exports,arguments)
+},{"dup":106}],747:[function(require,module,exports){
+arguments[4][443][0].apply(exports,arguments)
+},{"./lib/trim-leaves":730,"dup":443,"edges-to-adjacency-list":731,"planar-dual":732,"point-in-big-polygon":743,"robust-sum":744,"two-product":745,"uniq":746}],748:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],749:[function(require,module,exports){
 arguments[4][445][0].apply(exports,arguments)
-},{"dup":445,"robust-orientation":1057,"simplicial-complex":748}],750:[function(require,module,exports){
-arguments[4][446][0].apply(exports,arguments)
-},{"dup":446,"typedarray-pool":675}],751:[function(require,module,exports){
-arguments[4][450][0].apply(exports,arguments)
-},{"dup":450}],752:[function(require,module,exports){
-arguments[4][454][0].apply(exports,arguments)
-},{"dup":454,"typedarray-pool":675}],753:[function(require,module,exports){
-arguments[4][455][0].apply(exports,arguments)
-},{"dup":455,"invert-permutation":754,"typedarray-pool":675}],754:[function(require,module,exports){
+},{"dup":445}],750:[function(require,module,exports){
+arguments[4][98][0].apply(exports,arguments)
+},{"bit-twiddle":748,"dup":98,"union-find":749}],751:[function(require,module,exports){
+arguments[4][447][0].apply(exports,arguments)
+},{"dup":447,"robust-orientation":1059,"simplicial-complex":750}],752:[function(require,module,exports){
+arguments[4][448][0].apply(exports,arguments)
+},{"dup":448,"typedarray-pool":677}],753:[function(require,module,exports){
+arguments[4][452][0].apply(exports,arguments)
+},{"dup":452}],754:[function(require,module,exports){
 arguments[4][456][0].apply(exports,arguments)
-},{"dup":456}],755:[function(require,module,exports){
-arguments[4][460][0].apply(exports,arguments)
-},{"dup":460,"gamma":751,"permutation-parity":752,"permutation-rank":753}],756:[function(require,module,exports){
-arguments[4][461][0].apply(exports,arguments)
-},{"cwise-compiler":757,"dup":461}],757:[function(require,module,exports){
-arguments[4][336][0].apply(exports,arguments)
-},{"./lib/thunk.js":759,"dup":336}],758:[function(require,module,exports){
-arguments[4][337][0].apply(exports,arguments)
-},{"dup":337,"uniq":760}],759:[function(require,module,exports){
+},{"dup":456,"typedarray-pool":677}],755:[function(require,module,exports){
+arguments[4][457][0].apply(exports,arguments)
+},{"dup":457,"invert-permutation":756,"typedarray-pool":677}],756:[function(require,module,exports){
+arguments[4][458][0].apply(exports,arguments)
+},{"dup":458}],757:[function(require,module,exports){
+arguments[4][462][0].apply(exports,arguments)
+},{"dup":462,"gamma":753,"permutation-parity":754,"permutation-rank":755}],758:[function(require,module,exports){
+arguments[4][463][0].apply(exports,arguments)
+},{"cwise-compiler":759,"dup":463}],759:[function(require,module,exports){
 arguments[4][338][0].apply(exports,arguments)
-},{"./compile.js":758,"dup":338}],760:[function(require,module,exports){
-arguments[4][104][0].apply(exports,arguments)
-},{"dup":104}],761:[function(require,module,exports){
-arguments[4][466][0].apply(exports,arguments)
-},{"./lib/zc-core":756,"dup":466}],762:[function(require,module,exports){
-arguments[4][467][0].apply(exports,arguments)
-},{"dup":467,"ndarray-extract-contour":750,"triangulate-hypercube":755,"zero-crossings":761}],763:[function(require,module,exports){
+},{"./lib/thunk.js":761,"dup":338}],760:[function(require,module,exports){
+arguments[4][339][0].apply(exports,arguments)
+},{"dup":339,"uniq":762}],761:[function(require,module,exports){
+arguments[4][340][0].apply(exports,arguments)
+},{"./compile.js":760,"dup":340}],762:[function(require,module,exports){
+arguments[4][106][0].apply(exports,arguments)
+},{"dup":106}],763:[function(require,module,exports){
+arguments[4][468][0].apply(exports,arguments)
+},{"./lib/zc-core":758,"dup":468}],764:[function(require,module,exports){
+arguments[4][469][0].apply(exports,arguments)
+},{"dup":469,"ndarray-extract-contour":752,"triangulate-hypercube":757,"zero-crossings":763}],765:[function(require,module,exports){
 'use strict'
 
 module.exports = createFancyScatter2D
@@ -55020,7 +55130,7 @@ function createFancyScatter2D(plot, options) {
   return scatter
 }
 
-},{"./lib/shaders":644,"gl-buffer":645,"gl-shader":646,"text-cache":672,"typedarray-pool":675,"vectorize-text":676}],764:[function(require,module,exports){
+},{"./lib/shaders":646,"gl-buffer":647,"gl-shader":648,"text-cache":674,"typedarray-pool":677,"vectorize-text":678}],766:[function(require,module,exports){
 
 
 exports.pointVertex       = "precision mediump float;\n#define GLSLIFY 1\n\nattribute vec2 position;\nattribute float weight;\n\nuniform mat3 matrix;\nuniform float pointSize, useWeight;\n\nvarying float fragWeight;\n\nvoid main() {\n  vec3 hgPosition = matrix * vec3(position, 1);\n  gl_Position  = vec4(hgPosition.xy, 0, hgPosition.z);\n  gl_PointSize = pointSize;\n  fragWeight = mix(1.0, weight, useWeight);\n}\n"
@@ -55028,63 +55138,63 @@ exports.pointFragment     = "precision mediump float;\n#define GLSLIFY 1\n\nunif
 exports.pickVertex        = "precision mediump float;\n#define GLSLIFY 1\n\nattribute vec2 position;\nattribute vec4 pickId;\n\nuniform mat3 matrix;\nuniform float pointSize;\nuniform vec4 pickOffset;\n\nvarying vec4 fragId;\n\nvoid main() {\n  vec3 hgPosition = matrix * vec3(position, 1);\n  gl_Position  = vec4(hgPosition.xy, 0, hgPosition.z);\n  gl_PointSize = pointSize;\n\n  vec4 id = pickId + pickOffset;\n  id.y += floor(id.x / 256.0);\n  id.x -= floor(id.x / 256.0) * 256.0;\n\n  id.z += floor(id.y / 256.0);\n  id.y -= floor(id.y / 256.0) * 256.0;\n\n  id.w += floor(id.z / 256.0);\n  id.z -= floor(id.z / 256.0) * 256.0;\n\n  fragId = id;\n}\n"
 exports.pickFragment      = "precision mediump float;\n#define GLSLIFY 1\n\nvarying vec4 fragId;\n\nvoid main() {\n  float radius = length(2.0*gl_PointCoord.xy-1.0);\n  if(radius > 1.0) {\n    discard;\n  }\n  gl_FragColor = fragId / 255.0;\n}\n"
 
-},{}],765:[function(require,module,exports){
-arguments[4][329][0].apply(exports,arguments)
-},{"dup":329}],766:[function(require,module,exports){
-arguments[4][110][0].apply(exports,arguments)
-},{"dup":110,"ndarray":1048,"ndarray-ops":1043,"typedarray-pool":797}],767:[function(require,module,exports){
-arguments[4][111][0].apply(exports,arguments)
-},{"./lib/GLError":768,"./lib/create-attributes":769,"./lib/create-uniforms":770,"./lib/reflect":771,"./lib/runtime-reflect":772,"./lib/shader-cache":773,"dup":111}],768:[function(require,module,exports){
+},{}],767:[function(require,module,exports){
+arguments[4][331][0].apply(exports,arguments)
+},{"dup":331}],768:[function(require,module,exports){
 arguments[4][112][0].apply(exports,arguments)
-},{"dup":112}],769:[function(require,module,exports){
+},{"dup":112,"ndarray":1050,"ndarray-ops":1045,"typedarray-pool":799}],769:[function(require,module,exports){
 arguments[4][113][0].apply(exports,arguments)
-},{"./GLError":768,"dup":113}],770:[function(require,module,exports){
+},{"./lib/GLError":770,"./lib/create-attributes":771,"./lib/create-uniforms":772,"./lib/reflect":773,"./lib/runtime-reflect":774,"./lib/shader-cache":775,"dup":113}],770:[function(require,module,exports){
 arguments[4][114][0].apply(exports,arguments)
-},{"./GLError":768,"./reflect":771,"dup":114}],771:[function(require,module,exports){
+},{"dup":114}],771:[function(require,module,exports){
 arguments[4][115][0].apply(exports,arguments)
-},{"dup":115}],772:[function(require,module,exports){
+},{"./GLError":770,"dup":115}],772:[function(require,module,exports){
 arguments[4][116][0].apply(exports,arguments)
-},{"dup":116}],773:[function(require,module,exports){
+},{"./GLError":770,"./reflect":773,"dup":116}],773:[function(require,module,exports){
 arguments[4][117][0].apply(exports,arguments)
-},{"./GLError":768,"dup":117,"gl-format-compiler-error":774,"weakmap-shim":792}],774:[function(require,module,exports){
+},{"dup":117}],774:[function(require,module,exports){
 arguments[4][118][0].apply(exports,arguments)
-},{"add-line-numbers":775,"dup":118,"gl-constants/lookup":779,"glsl-shader-name":780,"sprintf-js":789}],775:[function(require,module,exports){
+},{"dup":118}],775:[function(require,module,exports){
 arguments[4][119][0].apply(exports,arguments)
-},{"dup":119,"pad-left":776}],776:[function(require,module,exports){
+},{"./GLError":770,"dup":119,"gl-format-compiler-error":776,"weakmap-shim":794}],776:[function(require,module,exports){
 arguments[4][120][0].apply(exports,arguments)
-},{"dup":120,"repeat-string":777}],777:[function(require,module,exports){
+},{"add-line-numbers":777,"dup":120,"gl-constants/lookup":781,"glsl-shader-name":782,"sprintf-js":791}],777:[function(require,module,exports){
 arguments[4][121][0].apply(exports,arguments)
-},{"dup":121}],778:[function(require,module,exports){
+},{"dup":121,"pad-left":778}],778:[function(require,module,exports){
 arguments[4][122][0].apply(exports,arguments)
-},{"dup":122}],779:[function(require,module,exports){
+},{"dup":122,"repeat-string":779}],779:[function(require,module,exports){
 arguments[4][123][0].apply(exports,arguments)
-},{"./1.0/numbers":778,"dup":123}],780:[function(require,module,exports){
+},{"dup":123}],780:[function(require,module,exports){
 arguments[4][124][0].apply(exports,arguments)
-},{"atob-lite":781,"dup":124,"glsl-tokenizer":788}],781:[function(require,module,exports){
+},{"dup":124}],781:[function(require,module,exports){
 arguments[4][125][0].apply(exports,arguments)
-},{"dup":125}],782:[function(require,module,exports){
+},{"./1.0/numbers":780,"dup":125}],782:[function(require,module,exports){
 arguments[4][126][0].apply(exports,arguments)
-},{"./lib/builtins":784,"./lib/builtins-300es":783,"./lib/literals":786,"./lib/literals-300es":785,"./lib/operators":787,"dup":126}],783:[function(require,module,exports){
+},{"atob-lite":783,"dup":126,"glsl-tokenizer":790}],783:[function(require,module,exports){
 arguments[4][127][0].apply(exports,arguments)
-},{"./builtins":784,"dup":127}],784:[function(require,module,exports){
+},{"dup":127}],784:[function(require,module,exports){
 arguments[4][128][0].apply(exports,arguments)
-},{"dup":128}],785:[function(require,module,exports){
+},{"./lib/builtins":786,"./lib/builtins-300es":785,"./lib/literals":788,"./lib/literals-300es":787,"./lib/operators":789,"dup":128}],785:[function(require,module,exports){
 arguments[4][129][0].apply(exports,arguments)
-},{"./literals":786,"dup":129}],786:[function(require,module,exports){
+},{"./builtins":786,"dup":129}],786:[function(require,module,exports){
 arguments[4][130][0].apply(exports,arguments)
 },{"dup":130}],787:[function(require,module,exports){
 arguments[4][131][0].apply(exports,arguments)
-},{"dup":131}],788:[function(require,module,exports){
+},{"./literals":788,"dup":131}],788:[function(require,module,exports){
 arguments[4][132][0].apply(exports,arguments)
-},{"./index":782,"dup":132}],789:[function(require,module,exports){
+},{"dup":132}],789:[function(require,module,exports){
 arguments[4][133][0].apply(exports,arguments)
 },{"dup":133}],790:[function(require,module,exports){
 arguments[4][134][0].apply(exports,arguments)
-},{"./hidden-store.js":791,"dup":134}],791:[function(require,module,exports){
+},{"./index":784,"dup":134}],791:[function(require,module,exports){
 arguments[4][135][0].apply(exports,arguments)
 },{"dup":135}],792:[function(require,module,exports){
 arguments[4][136][0].apply(exports,arguments)
-},{"./create-store.js":790,"dup":136}],793:[function(require,module,exports){
+},{"./hidden-store.js":793,"dup":136}],793:[function(require,module,exports){
+arguments[4][137][0].apply(exports,arguments)
+},{"dup":137}],794:[function(require,module,exports){
+arguments[4][138][0].apply(exports,arguments)
+},{"./create-store.js":792,"dup":138}],795:[function(require,module,exports){
 'use strict'
 
 module.exports = sortLevels
@@ -55382,7 +55492,7 @@ function quickSort(left, right, data_levels, data_points, data_ids, data_weights
   }
 }
 
-},{}],794:[function(require,module,exports){
+},{}],796:[function(require,module,exports){
 'use strict'
 
 var pool = require('typedarray-pool')
@@ -55522,13 +55632,13 @@ function snapPoints(points, ids, weights, bounds) {
   return lod
 }
 
-},{"./lib/sort":793,"typedarray-pool":797}],795:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],796:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],797:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":795,"buffer":1,"dup":139}],798:[function(require,module,exports){
+},{"./lib/sort":795,"typedarray-pool":799}],797:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],798:[function(require,module,exports){
+arguments[4][75][0].apply(exports,arguments)
+},{"dup":75}],799:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":797,"buffer":1,"dup":141}],800:[function(require,module,exports){
 'use strict'
 
 var createShader = require('gl-shader')
@@ -55824,7 +55934,7 @@ function createScatter2D(plot, options) {
   return result
 }
 
-},{"./lib/shader":764,"binary-search-bounds":765,"gl-buffer":766,"gl-shader":767,"snap-points-2d":794,"typedarray-pool":797}],799:[function(require,module,exports){
+},{"./lib/shader":766,"binary-search-bounds":767,"gl-buffer":768,"gl-shader":769,"snap-points-2d":796,"typedarray-pool":799}],801:[function(require,module,exports){
 "use strict"
 
 var vectorizeText = require("vectorize-text")
@@ -55870,7 +55980,7 @@ function getGlyph(symbol, font) {
   //Save cached symbol
   return fontCache[symbol] = [triSymbol, lineSymbol, bounds]
 }
-},{"vectorize-text":835}],800:[function(require,module,exports){
+},{"vectorize-text":837}],802:[function(require,module,exports){
 var createShaderWrapper = require('gl-shader')
 
 
@@ -55947,249 +56057,249 @@ exports.createPickProject = function(gl) {
   return createShader(gl, pickProject)
 }
 
-},{"gl-shader":802}],801:[function(require,module,exports){
-arguments[4][110][0].apply(exports,arguments)
-},{"dup":110,"ndarray":1048,"ndarray-ops":1043,"typedarray-pool":834}],802:[function(require,module,exports){
-arguments[4][111][0].apply(exports,arguments)
-},{"./lib/GLError":803,"./lib/create-attributes":804,"./lib/create-uniforms":805,"./lib/reflect":806,"./lib/runtime-reflect":807,"./lib/shader-cache":808,"dup":111}],803:[function(require,module,exports){
+},{"gl-shader":804}],803:[function(require,module,exports){
 arguments[4][112][0].apply(exports,arguments)
-},{"dup":112}],804:[function(require,module,exports){
+},{"dup":112,"ndarray":1050,"ndarray-ops":1045,"typedarray-pool":836}],804:[function(require,module,exports){
 arguments[4][113][0].apply(exports,arguments)
-},{"./GLError":803,"dup":113}],805:[function(require,module,exports){
+},{"./lib/GLError":805,"./lib/create-attributes":806,"./lib/create-uniforms":807,"./lib/reflect":808,"./lib/runtime-reflect":809,"./lib/shader-cache":810,"dup":113}],805:[function(require,module,exports){
 arguments[4][114][0].apply(exports,arguments)
-},{"./GLError":803,"./reflect":806,"dup":114}],806:[function(require,module,exports){
+},{"dup":114}],806:[function(require,module,exports){
 arguments[4][115][0].apply(exports,arguments)
-},{"dup":115}],807:[function(require,module,exports){
+},{"./GLError":805,"dup":115}],807:[function(require,module,exports){
 arguments[4][116][0].apply(exports,arguments)
-},{"dup":116}],808:[function(require,module,exports){
+},{"./GLError":805,"./reflect":808,"dup":116}],808:[function(require,module,exports){
 arguments[4][117][0].apply(exports,arguments)
-},{"./GLError":803,"dup":117,"gl-format-compiler-error":809,"weakmap-shim":827}],809:[function(require,module,exports){
+},{"dup":117}],809:[function(require,module,exports){
 arguments[4][118][0].apply(exports,arguments)
-},{"add-line-numbers":810,"dup":118,"gl-constants/lookup":814,"glsl-shader-name":815,"sprintf-js":824}],810:[function(require,module,exports){
+},{"dup":118}],810:[function(require,module,exports){
 arguments[4][119][0].apply(exports,arguments)
-},{"dup":119,"pad-left":811}],811:[function(require,module,exports){
+},{"./GLError":805,"dup":119,"gl-format-compiler-error":811,"weakmap-shim":829}],811:[function(require,module,exports){
 arguments[4][120][0].apply(exports,arguments)
-},{"dup":120,"repeat-string":812}],812:[function(require,module,exports){
+},{"add-line-numbers":812,"dup":120,"gl-constants/lookup":816,"glsl-shader-name":817,"sprintf-js":826}],812:[function(require,module,exports){
 arguments[4][121][0].apply(exports,arguments)
-},{"dup":121}],813:[function(require,module,exports){
+},{"dup":121,"pad-left":813}],813:[function(require,module,exports){
 arguments[4][122][0].apply(exports,arguments)
-},{"dup":122}],814:[function(require,module,exports){
+},{"dup":122,"repeat-string":814}],814:[function(require,module,exports){
 arguments[4][123][0].apply(exports,arguments)
-},{"./1.0/numbers":813,"dup":123}],815:[function(require,module,exports){
+},{"dup":123}],815:[function(require,module,exports){
 arguments[4][124][0].apply(exports,arguments)
-},{"atob-lite":816,"dup":124,"glsl-tokenizer":823}],816:[function(require,module,exports){
+},{"dup":124}],816:[function(require,module,exports){
 arguments[4][125][0].apply(exports,arguments)
-},{"dup":125}],817:[function(require,module,exports){
+},{"./1.0/numbers":815,"dup":125}],817:[function(require,module,exports){
 arguments[4][126][0].apply(exports,arguments)
-},{"./lib/builtins":819,"./lib/builtins-300es":818,"./lib/literals":821,"./lib/literals-300es":820,"./lib/operators":822,"dup":126}],818:[function(require,module,exports){
+},{"atob-lite":818,"dup":126,"glsl-tokenizer":825}],818:[function(require,module,exports){
 arguments[4][127][0].apply(exports,arguments)
-},{"./builtins":819,"dup":127}],819:[function(require,module,exports){
+},{"dup":127}],819:[function(require,module,exports){
 arguments[4][128][0].apply(exports,arguments)
-},{"dup":128}],820:[function(require,module,exports){
+},{"./lib/builtins":821,"./lib/builtins-300es":820,"./lib/literals":823,"./lib/literals-300es":822,"./lib/operators":824,"dup":128}],820:[function(require,module,exports){
 arguments[4][129][0].apply(exports,arguments)
-},{"./literals":821,"dup":129}],821:[function(require,module,exports){
+},{"./builtins":821,"dup":129}],821:[function(require,module,exports){
 arguments[4][130][0].apply(exports,arguments)
 },{"dup":130}],822:[function(require,module,exports){
 arguments[4][131][0].apply(exports,arguments)
-},{"dup":131}],823:[function(require,module,exports){
+},{"./literals":823,"dup":131}],823:[function(require,module,exports){
 arguments[4][132][0].apply(exports,arguments)
-},{"./index":817,"dup":132}],824:[function(require,module,exports){
+},{"dup":132}],824:[function(require,module,exports){
 arguments[4][133][0].apply(exports,arguments)
 },{"dup":133}],825:[function(require,module,exports){
 arguments[4][134][0].apply(exports,arguments)
-},{"./hidden-store.js":826,"dup":134}],826:[function(require,module,exports){
+},{"./index":819,"dup":134}],826:[function(require,module,exports){
 arguments[4][135][0].apply(exports,arguments)
 },{"dup":135}],827:[function(require,module,exports){
 arguments[4][136][0].apply(exports,arguments)
-},{"./create-store.js":825,"dup":136}],828:[function(require,module,exports){
-arguments[4][171][0].apply(exports,arguments)
-},{"dup":171}],829:[function(require,module,exports){
-arguments[4][172][0].apply(exports,arguments)
-},{"./do-bind.js":828,"dup":172}],830:[function(require,module,exports){
+},{"./hidden-store.js":828,"dup":136}],828:[function(require,module,exports){
+arguments[4][137][0].apply(exports,arguments)
+},{"dup":137}],829:[function(require,module,exports){
+arguments[4][138][0].apply(exports,arguments)
+},{"./create-store.js":827,"dup":138}],830:[function(require,module,exports){
 arguments[4][173][0].apply(exports,arguments)
-},{"./do-bind.js":828,"dup":173}],831:[function(require,module,exports){
+},{"dup":173}],831:[function(require,module,exports){
 arguments[4][174][0].apply(exports,arguments)
-},{"./lib/vao-emulated.js":829,"./lib/vao-native.js":830,"dup":174}],832:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],833:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],834:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":832,"buffer":1,"dup":139}],835:[function(require,module,exports){
-arguments[4][371][0].apply(exports,arguments)
-},{"./lib/vtext":836,"dup":371}],836:[function(require,module,exports){
-arguments[4][372][0].apply(exports,arguments)
-},{"cdt2d":837,"clean-pslg":849,"dup":372,"ndarray":1048,"planar-graph-to-polyline":904,"simplify-planar-graph":908,"surface-nets":921}],837:[function(require,module,exports){
-arguments[4][373][0].apply(exports,arguments)
-},{"./lib/delaunay":838,"./lib/filter":839,"./lib/monotone":840,"./lib/triangulation":841,"dup":373}],838:[function(require,module,exports){
-arguments[4][374][0].apply(exports,arguments)
-},{"binary-search-bounds":842,"dup":374,"robust-in-sphere":843}],839:[function(require,module,exports){
-arguments[4][375][0].apply(exports,arguments)
-},{"binary-search-bounds":842,"dup":375}],840:[function(require,module,exports){
-arguments[4][376][0].apply(exports,arguments)
-},{"binary-search-bounds":842,"dup":376,"robust-orientation":1057}],841:[function(require,module,exports){
-arguments[4][377][0].apply(exports,arguments)
-},{"binary-search-bounds":842,"dup":377}],842:[function(require,module,exports){
-arguments[4][329][0].apply(exports,arguments)
-},{"dup":329}],843:[function(require,module,exports){
-arguments[4][378][0].apply(exports,arguments)
-},{"dup":378,"robust-scale":845,"robust-subtract":846,"robust-sum":847,"two-product":848}],844:[function(require,module,exports){
-arguments[4][76][0].apply(exports,arguments)
-},{"dup":76}],845:[function(require,module,exports){
-arguments[4][77][0].apply(exports,arguments)
-},{"dup":77,"two-product":848,"two-sum":844}],846:[function(require,module,exports){
-arguments[4][381][0].apply(exports,arguments)
-},{"dup":381}],847:[function(require,module,exports){
-arguments[4][78][0].apply(exports,arguments)
-},{"dup":78}],848:[function(require,module,exports){
-arguments[4][79][0].apply(exports,arguments)
-},{"dup":79}],849:[function(require,module,exports){
-arguments[4][384][0].apply(exports,arguments)
-},{"./lib/rat-seg-intersect":850,"big-rat":854,"big-rat/cmp":852,"big-rat/to-float":869,"box-intersect":870,"compare-cell":878,"dup":384,"nextafter":879,"rat-vec":882,"robust-segment-intersect":885,"union-find":886}],850:[function(require,module,exports){
-arguments[4][385][0].apply(exports,arguments)
-},{"big-rat/div":853,"big-rat/mul":863,"big-rat/sign":867,"big-rat/sub":868,"big-rat/to-float":869,"dup":385,"rat-vec/add":881,"rat-vec/muls":883,"rat-vec/sub":884}],851:[function(require,module,exports){
-arguments[4][386][0].apply(exports,arguments)
-},{"./lib/rationalize":861,"dup":386}],852:[function(require,module,exports){
-arguments[4][387][0].apply(exports,arguments)
-},{"dup":387}],853:[function(require,module,exports){
-arguments[4][388][0].apply(exports,arguments)
-},{"./lib/rationalize":861,"dup":388}],854:[function(require,module,exports){
-arguments[4][389][0].apply(exports,arguments)
-},{"./div":853,"./is-rat":855,"./lib/is-bn":859,"./lib/num-to-bn":860,"./lib/rationalize":861,"./lib/str-to-bn":862,"dup":389}],855:[function(require,module,exports){
-arguments[4][390][0].apply(exports,arguments)
-},{"./lib/is-bn":859,"dup":390}],856:[function(require,module,exports){
-arguments[4][391][0].apply(exports,arguments)
-},{"bn.js":865,"dup":391}],857:[function(require,module,exports){
-arguments[4][392][0].apply(exports,arguments)
-},{"dup":392}],858:[function(require,module,exports){
-arguments[4][393][0].apply(exports,arguments)
-},{"bit-twiddle":864,"double-bits":866,"dup":393}],859:[function(require,module,exports){
-arguments[4][394][0].apply(exports,arguments)
-},{"bn.js":865,"dup":394}],860:[function(require,module,exports){
-arguments[4][395][0].apply(exports,arguments)
-},{"bn.js":865,"double-bits":866,"dup":395}],861:[function(require,module,exports){
-arguments[4][396][0].apply(exports,arguments)
-},{"./bn-sign":856,"./num-to-bn":860,"dup":396}],862:[function(require,module,exports){
-arguments[4][397][0].apply(exports,arguments)
-},{"bn.js":865,"dup":397}],863:[function(require,module,exports){
-arguments[4][398][0].apply(exports,arguments)
-},{"./lib/rationalize":861,"dup":398}],864:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],865:[function(require,module,exports){
-arguments[4][400][0].apply(exports,arguments)
-},{"dup":400}],866:[function(require,module,exports){
-arguments[4][401][0].apply(exports,arguments)
-},{"buffer":1,"dup":401}],867:[function(require,module,exports){
-arguments[4][402][0].apply(exports,arguments)
-},{"./lib/bn-sign":856,"dup":402}],868:[function(require,module,exports){
-arguments[4][403][0].apply(exports,arguments)
-},{"./lib/rationalize":861,"dup":403}],869:[function(require,module,exports){
-arguments[4][404][0].apply(exports,arguments)
-},{"./lib/bn-to-num":857,"./lib/ctz":858,"dup":404}],870:[function(require,module,exports){
-arguments[4][405][0].apply(exports,arguments)
-},{"./lib/intersect":872,"./lib/sweep":876,"dup":405,"typedarray-pool":834}],871:[function(require,module,exports){
-arguments[4][406][0].apply(exports,arguments)
-},{"dup":406}],872:[function(require,module,exports){
-arguments[4][407][0].apply(exports,arguments)
-},{"./brute":871,"./median":873,"./partition":874,"./sweep":876,"bit-twiddle":877,"dup":407,"typedarray-pool":834}],873:[function(require,module,exports){
-arguments[4][408][0].apply(exports,arguments)
-},{"./partition":874,"dup":408}],874:[function(require,module,exports){
-arguments[4][409][0].apply(exports,arguments)
-},{"dup":409}],875:[function(require,module,exports){
-arguments[4][410][0].apply(exports,arguments)
-},{"dup":410}],876:[function(require,module,exports){
-arguments[4][411][0].apply(exports,arguments)
-},{"./sort":875,"bit-twiddle":877,"dup":411,"typedarray-pool":834}],877:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],878:[function(require,module,exports){
-arguments[4][84][0].apply(exports,arguments)
-},{"dup":84}],879:[function(require,module,exports){
-arguments[4][416][0].apply(exports,arguments)
-},{"double-bits":880,"dup":416}],880:[function(require,module,exports){
-arguments[4][401][0].apply(exports,arguments)
-},{"buffer":1,"dup":401}],881:[function(require,module,exports){
-arguments[4][418][0].apply(exports,arguments)
-},{"big-rat/add":851,"dup":418}],882:[function(require,module,exports){
-arguments[4][419][0].apply(exports,arguments)
-},{"big-rat":854,"dup":419}],883:[function(require,module,exports){
-arguments[4][420][0].apply(exports,arguments)
-},{"big-rat":854,"big-rat/mul":863,"dup":420}],884:[function(require,module,exports){
-arguments[4][421][0].apply(exports,arguments)
-},{"big-rat/sub":868,"dup":421}],885:[function(require,module,exports){
-arguments[4][422][0].apply(exports,arguments)
-},{"dup":422,"robust-orientation":1057}],886:[function(require,module,exports){
-arguments[4][95][0].apply(exports,arguments)
-},{"dup":95}],887:[function(require,module,exports){
-arguments[4][424][0].apply(exports,arguments)
-},{"dup":424,"edges-to-adjacency-list":888}],888:[function(require,module,exports){
-arguments[4][425][0].apply(exports,arguments)
-},{"dup":425,"uniq":903}],889:[function(require,module,exports){
-arguments[4][426][0].apply(exports,arguments)
-},{"compare-angle":890,"dup":426}],890:[function(require,module,exports){
-arguments[4][427][0].apply(exports,arguments)
-},{"dup":427,"robust-orientation":1057,"robust-product":892,"robust-sum":901,"signum":893,"two-sum":894}],891:[function(require,module,exports){
-arguments[4][77][0].apply(exports,arguments)
-},{"dup":77,"two-product":902,"two-sum":894}],892:[function(require,module,exports){
-arguments[4][429][0].apply(exports,arguments)
-},{"dup":429,"robust-scale":891,"robust-sum":901}],893:[function(require,module,exports){
-arguments[4][430][0].apply(exports,arguments)
-},{"dup":430}],894:[function(require,module,exports){
-arguments[4][76][0].apply(exports,arguments)
-},{"dup":76}],895:[function(require,module,exports){
-arguments[4][44][0].apply(exports,arguments)
-},{"dup":44}],896:[function(require,module,exports){
-arguments[4][433][0].apply(exports,arguments)
-},{"binary-search-bounds":895,"dup":433}],897:[function(require,module,exports){
-arguments[4][434][0].apply(exports,arguments)
-},{"dup":434,"robust-orientation":1057}],898:[function(require,module,exports){
-arguments[4][435][0].apply(exports,arguments)
-},{"dup":435}],899:[function(require,module,exports){
-arguments[4][436][0].apply(exports,arguments)
-},{"./lib/order-segments":897,"binary-search-bounds":895,"dup":436,"functional-red-black-tree":898,"robust-orientation":1057}],900:[function(require,module,exports){
-arguments[4][437][0].apply(exports,arguments)
-},{"binary-search-bounds":895,"dup":437,"interval-tree-1d":896,"robust-orientation":1057,"slab-decomposition":899}],901:[function(require,module,exports){
-arguments[4][78][0].apply(exports,arguments)
-},{"dup":78}],902:[function(require,module,exports){
-arguments[4][79][0].apply(exports,arguments)
-},{"dup":79}],903:[function(require,module,exports){
-arguments[4][104][0].apply(exports,arguments)
-},{"dup":104}],904:[function(require,module,exports){
-arguments[4][441][0].apply(exports,arguments)
-},{"./lib/trim-leaves":887,"dup":441,"edges-to-adjacency-list":888,"planar-dual":889,"point-in-big-polygon":900,"robust-sum":901,"two-product":902,"uniq":903}],905:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],906:[function(require,module,exports){
-arguments[4][443][0].apply(exports,arguments)
-},{"dup":443}],907:[function(require,module,exports){
+},{"./do-bind.js":830,"dup":174}],832:[function(require,module,exports){
+arguments[4][175][0].apply(exports,arguments)
+},{"./do-bind.js":830,"dup":175}],833:[function(require,module,exports){
+arguments[4][176][0].apply(exports,arguments)
+},{"./lib/vao-emulated.js":831,"./lib/vao-native.js":832,"dup":176}],834:[function(require,module,exports){
 arguments[4][96][0].apply(exports,arguments)
-},{"bit-twiddle":905,"dup":96,"union-find":906}],908:[function(require,module,exports){
+},{"dup":96}],835:[function(require,module,exports){
+arguments[4][75][0].apply(exports,arguments)
+},{"dup":75}],836:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":834,"buffer":1,"dup":141}],837:[function(require,module,exports){
+arguments[4][373][0].apply(exports,arguments)
+},{"./lib/vtext":838,"dup":373}],838:[function(require,module,exports){
+arguments[4][374][0].apply(exports,arguments)
+},{"cdt2d":839,"clean-pslg":851,"dup":374,"ndarray":1050,"planar-graph-to-polyline":906,"simplify-planar-graph":910,"surface-nets":923}],839:[function(require,module,exports){
+arguments[4][375][0].apply(exports,arguments)
+},{"./lib/delaunay":840,"./lib/filter":841,"./lib/monotone":842,"./lib/triangulation":843,"dup":375}],840:[function(require,module,exports){
+arguments[4][376][0].apply(exports,arguments)
+},{"binary-search-bounds":844,"dup":376,"robust-in-sphere":845}],841:[function(require,module,exports){
+arguments[4][377][0].apply(exports,arguments)
+},{"binary-search-bounds":844,"dup":377}],842:[function(require,module,exports){
+arguments[4][378][0].apply(exports,arguments)
+},{"binary-search-bounds":844,"dup":378,"robust-orientation":1059}],843:[function(require,module,exports){
+arguments[4][379][0].apply(exports,arguments)
+},{"binary-search-bounds":844,"dup":379}],844:[function(require,module,exports){
+arguments[4][331][0].apply(exports,arguments)
+},{"dup":331}],845:[function(require,module,exports){
+arguments[4][380][0].apply(exports,arguments)
+},{"dup":380,"robust-scale":847,"robust-subtract":848,"robust-sum":849,"two-product":850}],846:[function(require,module,exports){
+arguments[4][78][0].apply(exports,arguments)
+},{"dup":78}],847:[function(require,module,exports){
+arguments[4][79][0].apply(exports,arguments)
+},{"dup":79,"two-product":850,"two-sum":846}],848:[function(require,module,exports){
+arguments[4][383][0].apply(exports,arguments)
+},{"dup":383}],849:[function(require,module,exports){
+arguments[4][80][0].apply(exports,arguments)
+},{"dup":80}],850:[function(require,module,exports){
+arguments[4][81][0].apply(exports,arguments)
+},{"dup":81}],851:[function(require,module,exports){
+arguments[4][386][0].apply(exports,arguments)
+},{"./lib/rat-seg-intersect":852,"big-rat":856,"big-rat/cmp":854,"big-rat/to-float":871,"box-intersect":872,"compare-cell":880,"dup":386,"nextafter":881,"rat-vec":884,"robust-segment-intersect":887,"union-find":888}],852:[function(require,module,exports){
+arguments[4][387][0].apply(exports,arguments)
+},{"big-rat/div":855,"big-rat/mul":865,"big-rat/sign":869,"big-rat/sub":870,"big-rat/to-float":871,"dup":387,"rat-vec/add":883,"rat-vec/muls":885,"rat-vec/sub":886}],853:[function(require,module,exports){
+arguments[4][388][0].apply(exports,arguments)
+},{"./lib/rationalize":863,"dup":388}],854:[function(require,module,exports){
+arguments[4][389][0].apply(exports,arguments)
+},{"dup":389}],855:[function(require,module,exports){
+arguments[4][390][0].apply(exports,arguments)
+},{"./lib/rationalize":863,"dup":390}],856:[function(require,module,exports){
+arguments[4][391][0].apply(exports,arguments)
+},{"./div":855,"./is-rat":857,"./lib/is-bn":861,"./lib/num-to-bn":862,"./lib/rationalize":863,"./lib/str-to-bn":864,"dup":391}],857:[function(require,module,exports){
+arguments[4][392][0].apply(exports,arguments)
+},{"./lib/is-bn":861,"dup":392}],858:[function(require,module,exports){
+arguments[4][393][0].apply(exports,arguments)
+},{"bn.js":867,"dup":393}],859:[function(require,module,exports){
+arguments[4][394][0].apply(exports,arguments)
+},{"dup":394}],860:[function(require,module,exports){
+arguments[4][395][0].apply(exports,arguments)
+},{"bit-twiddle":866,"double-bits":868,"dup":395}],861:[function(require,module,exports){
+arguments[4][396][0].apply(exports,arguments)
+},{"bn.js":867,"dup":396}],862:[function(require,module,exports){
+arguments[4][397][0].apply(exports,arguments)
+},{"bn.js":867,"double-bits":868,"dup":397}],863:[function(require,module,exports){
+arguments[4][398][0].apply(exports,arguments)
+},{"./bn-sign":858,"./num-to-bn":862,"dup":398}],864:[function(require,module,exports){
+arguments[4][399][0].apply(exports,arguments)
+},{"bn.js":867,"dup":399}],865:[function(require,module,exports){
+arguments[4][400][0].apply(exports,arguments)
+},{"./lib/rationalize":863,"dup":400}],866:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],867:[function(require,module,exports){
+arguments[4][402][0].apply(exports,arguments)
+},{"dup":402}],868:[function(require,module,exports){
+arguments[4][403][0].apply(exports,arguments)
+},{"buffer":1,"dup":403}],869:[function(require,module,exports){
+arguments[4][404][0].apply(exports,arguments)
+},{"./lib/bn-sign":858,"dup":404}],870:[function(require,module,exports){
+arguments[4][405][0].apply(exports,arguments)
+},{"./lib/rationalize":863,"dup":405}],871:[function(require,module,exports){
+arguments[4][406][0].apply(exports,arguments)
+},{"./lib/bn-to-num":859,"./lib/ctz":860,"dup":406}],872:[function(require,module,exports){
+arguments[4][407][0].apply(exports,arguments)
+},{"./lib/intersect":874,"./lib/sweep":878,"dup":407,"typedarray-pool":836}],873:[function(require,module,exports){
+arguments[4][408][0].apply(exports,arguments)
+},{"dup":408}],874:[function(require,module,exports){
+arguments[4][409][0].apply(exports,arguments)
+},{"./brute":873,"./median":875,"./partition":876,"./sweep":878,"bit-twiddle":879,"dup":409,"typedarray-pool":836}],875:[function(require,module,exports){
+arguments[4][410][0].apply(exports,arguments)
+},{"./partition":876,"dup":410}],876:[function(require,module,exports){
+arguments[4][411][0].apply(exports,arguments)
+},{"dup":411}],877:[function(require,module,exports){
+arguments[4][412][0].apply(exports,arguments)
+},{"dup":412}],878:[function(require,module,exports){
+arguments[4][413][0].apply(exports,arguments)
+},{"./sort":877,"bit-twiddle":879,"dup":413,"typedarray-pool":836}],879:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],880:[function(require,module,exports){
+arguments[4][86][0].apply(exports,arguments)
+},{"dup":86}],881:[function(require,module,exports){
+arguments[4][418][0].apply(exports,arguments)
+},{"double-bits":882,"dup":418}],882:[function(require,module,exports){
+arguments[4][403][0].apply(exports,arguments)
+},{"buffer":1,"dup":403}],883:[function(require,module,exports){
+arguments[4][420][0].apply(exports,arguments)
+},{"big-rat/add":853,"dup":420}],884:[function(require,module,exports){
+arguments[4][421][0].apply(exports,arguments)
+},{"big-rat":856,"dup":421}],885:[function(require,module,exports){
+arguments[4][422][0].apply(exports,arguments)
+},{"big-rat":856,"big-rat/mul":865,"dup":422}],886:[function(require,module,exports){
+arguments[4][423][0].apply(exports,arguments)
+},{"big-rat/sub":870,"dup":423}],887:[function(require,module,exports){
+arguments[4][424][0].apply(exports,arguments)
+},{"dup":424,"robust-orientation":1059}],888:[function(require,module,exports){
+arguments[4][97][0].apply(exports,arguments)
+},{"dup":97}],889:[function(require,module,exports){
+arguments[4][426][0].apply(exports,arguments)
+},{"dup":426,"edges-to-adjacency-list":890}],890:[function(require,module,exports){
+arguments[4][427][0].apply(exports,arguments)
+},{"dup":427,"uniq":905}],891:[function(require,module,exports){
+arguments[4][428][0].apply(exports,arguments)
+},{"compare-angle":892,"dup":428}],892:[function(require,module,exports){
+arguments[4][429][0].apply(exports,arguments)
+},{"dup":429,"robust-orientation":1059,"robust-product":894,"robust-sum":903,"signum":895,"two-sum":896}],893:[function(require,module,exports){
+arguments[4][79][0].apply(exports,arguments)
+},{"dup":79,"two-product":904,"two-sum":896}],894:[function(require,module,exports){
+arguments[4][431][0].apply(exports,arguments)
+},{"dup":431,"robust-scale":893,"robust-sum":903}],895:[function(require,module,exports){
+arguments[4][432][0].apply(exports,arguments)
+},{"dup":432}],896:[function(require,module,exports){
+arguments[4][78][0].apply(exports,arguments)
+},{"dup":78}],897:[function(require,module,exports){
+arguments[4][46][0].apply(exports,arguments)
+},{"dup":46}],898:[function(require,module,exports){
+arguments[4][435][0].apply(exports,arguments)
+},{"binary-search-bounds":897,"dup":435}],899:[function(require,module,exports){
+arguments[4][436][0].apply(exports,arguments)
+},{"dup":436,"robust-orientation":1059}],900:[function(require,module,exports){
+arguments[4][437][0].apply(exports,arguments)
+},{"dup":437}],901:[function(require,module,exports){
+arguments[4][438][0].apply(exports,arguments)
+},{"./lib/order-segments":899,"binary-search-bounds":897,"dup":438,"functional-red-black-tree":900,"robust-orientation":1059}],902:[function(require,module,exports){
+arguments[4][439][0].apply(exports,arguments)
+},{"binary-search-bounds":897,"dup":439,"interval-tree-1d":898,"robust-orientation":1059,"slab-decomposition":901}],903:[function(require,module,exports){
+arguments[4][80][0].apply(exports,arguments)
+},{"dup":80}],904:[function(require,module,exports){
+arguments[4][81][0].apply(exports,arguments)
+},{"dup":81}],905:[function(require,module,exports){
+arguments[4][106][0].apply(exports,arguments)
+},{"dup":106}],906:[function(require,module,exports){
+arguments[4][443][0].apply(exports,arguments)
+},{"./lib/trim-leaves":889,"dup":443,"edges-to-adjacency-list":890,"planar-dual":891,"point-in-big-polygon":902,"robust-sum":903,"two-product":904,"uniq":905}],907:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],908:[function(require,module,exports){
 arguments[4][445][0].apply(exports,arguments)
-},{"dup":445,"robust-orientation":1057,"simplicial-complex":907}],909:[function(require,module,exports){
-arguments[4][446][0].apply(exports,arguments)
-},{"dup":446,"typedarray-pool":834}],910:[function(require,module,exports){
-arguments[4][450][0].apply(exports,arguments)
-},{"dup":450}],911:[function(require,module,exports){
-arguments[4][454][0].apply(exports,arguments)
-},{"dup":454,"typedarray-pool":834}],912:[function(require,module,exports){
-arguments[4][455][0].apply(exports,arguments)
-},{"dup":455,"invert-permutation":913,"typedarray-pool":834}],913:[function(require,module,exports){
+},{"dup":445}],909:[function(require,module,exports){
+arguments[4][98][0].apply(exports,arguments)
+},{"bit-twiddle":907,"dup":98,"union-find":908}],910:[function(require,module,exports){
+arguments[4][447][0].apply(exports,arguments)
+},{"dup":447,"robust-orientation":1059,"simplicial-complex":909}],911:[function(require,module,exports){
+arguments[4][448][0].apply(exports,arguments)
+},{"dup":448,"typedarray-pool":836}],912:[function(require,module,exports){
+arguments[4][452][0].apply(exports,arguments)
+},{"dup":452}],913:[function(require,module,exports){
 arguments[4][456][0].apply(exports,arguments)
-},{"dup":456}],914:[function(require,module,exports){
-arguments[4][460][0].apply(exports,arguments)
-},{"dup":460,"gamma":910,"permutation-parity":911,"permutation-rank":912}],915:[function(require,module,exports){
-arguments[4][461][0].apply(exports,arguments)
-},{"cwise-compiler":916,"dup":461}],916:[function(require,module,exports){
-arguments[4][336][0].apply(exports,arguments)
-},{"./lib/thunk.js":918,"dup":336}],917:[function(require,module,exports){
-arguments[4][337][0].apply(exports,arguments)
-},{"dup":337,"uniq":919}],918:[function(require,module,exports){
+},{"dup":456,"typedarray-pool":836}],914:[function(require,module,exports){
+arguments[4][457][0].apply(exports,arguments)
+},{"dup":457,"invert-permutation":915,"typedarray-pool":836}],915:[function(require,module,exports){
+arguments[4][458][0].apply(exports,arguments)
+},{"dup":458}],916:[function(require,module,exports){
+arguments[4][462][0].apply(exports,arguments)
+},{"dup":462,"gamma":912,"permutation-parity":913,"permutation-rank":914}],917:[function(require,module,exports){
+arguments[4][463][0].apply(exports,arguments)
+},{"cwise-compiler":918,"dup":463}],918:[function(require,module,exports){
 arguments[4][338][0].apply(exports,arguments)
-},{"./compile.js":917,"dup":338}],919:[function(require,module,exports){
-arguments[4][104][0].apply(exports,arguments)
-},{"dup":104}],920:[function(require,module,exports){
-arguments[4][466][0].apply(exports,arguments)
-},{"./lib/zc-core":915,"dup":466}],921:[function(require,module,exports){
-arguments[4][467][0].apply(exports,arguments)
-},{"dup":467,"ndarray-extract-contour":909,"triangulate-hypercube":914,"zero-crossings":920}],922:[function(require,module,exports){
+},{"./lib/thunk.js":920,"dup":338}],919:[function(require,module,exports){
+arguments[4][339][0].apply(exports,arguments)
+},{"dup":339,"uniq":921}],920:[function(require,module,exports){
+arguments[4][340][0].apply(exports,arguments)
+},{"./compile.js":919,"dup":340}],921:[function(require,module,exports){
+arguments[4][106][0].apply(exports,arguments)
+},{"dup":106}],922:[function(require,module,exports){
+arguments[4][468][0].apply(exports,arguments)
+},{"./lib/zc-core":917,"dup":468}],923:[function(require,module,exports){
+arguments[4][469][0].apply(exports,arguments)
+},{"dup":469,"ndarray-extract-contour":911,"triangulate-hypercube":916,"zero-crossings":922}],924:[function(require,module,exports){
 'use strict'
 
 var createBuffer  = require('gl-buffer')
@@ -56949,7 +57059,7 @@ function createPointCloud(options) {
   return pointCloud
 }
 
-},{"./lib/glyphs":799,"./lib/shaders":800,"gl-buffer":801,"gl-mat4/multiply":259,"gl-vao":831,"typedarray-pool":834}],923:[function(require,module,exports){
+},{"./lib/glyphs":801,"./lib/shaders":802,"gl-buffer":803,"gl-mat4/multiply":261,"gl-vao":833,"typedarray-pool":836}],925:[function(require,module,exports){
 'use strict'
 
 
@@ -56957,67 +57067,67 @@ function createPointCloud(options) {
 exports.boxVertex = "precision mediump float;\n#define GLSLIFY 1\n\nattribute vec2 vertex;\n\nuniform vec2 cornerA, cornerB;\n\nvoid main() {\n  gl_Position = vec4(mix(cornerA, cornerB, vertex), 0, 1);\n}\n"
 exports.boxFragment = "precision mediump float;\n#define GLSLIFY 1\n\nuniform vec4 color;\n\nvoid main() {\n  gl_FragColor = color;\n}\n"
 
-},{}],924:[function(require,module,exports){
-arguments[4][110][0].apply(exports,arguments)
-},{"dup":110,"ndarray":1048,"ndarray-ops":1043,"typedarray-pool":927}],925:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],926:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],927:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":925,"buffer":1,"dup":139}],928:[function(require,module,exports){
-arguments[4][111][0].apply(exports,arguments)
-},{"./lib/GLError":929,"./lib/create-attributes":930,"./lib/create-uniforms":931,"./lib/reflect":932,"./lib/runtime-reflect":933,"./lib/shader-cache":934,"dup":111}],929:[function(require,module,exports){
+},{}],926:[function(require,module,exports){
 arguments[4][112][0].apply(exports,arguments)
-},{"dup":112}],930:[function(require,module,exports){
+},{"dup":112,"ndarray":1050,"ndarray-ops":1045,"typedarray-pool":929}],927:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],928:[function(require,module,exports){
+arguments[4][75][0].apply(exports,arguments)
+},{"dup":75}],929:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":927,"buffer":1,"dup":141}],930:[function(require,module,exports){
 arguments[4][113][0].apply(exports,arguments)
-},{"./GLError":929,"dup":113}],931:[function(require,module,exports){
+},{"./lib/GLError":931,"./lib/create-attributes":932,"./lib/create-uniforms":933,"./lib/reflect":934,"./lib/runtime-reflect":935,"./lib/shader-cache":936,"dup":113}],931:[function(require,module,exports){
 arguments[4][114][0].apply(exports,arguments)
-},{"./GLError":929,"./reflect":932,"dup":114}],932:[function(require,module,exports){
+},{"dup":114}],932:[function(require,module,exports){
 arguments[4][115][0].apply(exports,arguments)
-},{"dup":115}],933:[function(require,module,exports){
+},{"./GLError":931,"dup":115}],933:[function(require,module,exports){
 arguments[4][116][0].apply(exports,arguments)
-},{"dup":116}],934:[function(require,module,exports){
+},{"./GLError":931,"./reflect":934,"dup":116}],934:[function(require,module,exports){
 arguments[4][117][0].apply(exports,arguments)
-},{"./GLError":929,"dup":117,"gl-format-compiler-error":935,"weakmap-shim":953}],935:[function(require,module,exports){
+},{"dup":117}],935:[function(require,module,exports){
 arguments[4][118][0].apply(exports,arguments)
-},{"add-line-numbers":936,"dup":118,"gl-constants/lookup":940,"glsl-shader-name":941,"sprintf-js":950}],936:[function(require,module,exports){
+},{"dup":118}],936:[function(require,module,exports){
 arguments[4][119][0].apply(exports,arguments)
-},{"dup":119,"pad-left":937}],937:[function(require,module,exports){
+},{"./GLError":931,"dup":119,"gl-format-compiler-error":937,"weakmap-shim":955}],937:[function(require,module,exports){
 arguments[4][120][0].apply(exports,arguments)
-},{"dup":120,"repeat-string":938}],938:[function(require,module,exports){
+},{"add-line-numbers":938,"dup":120,"gl-constants/lookup":942,"glsl-shader-name":943,"sprintf-js":952}],938:[function(require,module,exports){
 arguments[4][121][0].apply(exports,arguments)
-},{"dup":121}],939:[function(require,module,exports){
+},{"dup":121,"pad-left":939}],939:[function(require,module,exports){
 arguments[4][122][0].apply(exports,arguments)
-},{"dup":122}],940:[function(require,module,exports){
+},{"dup":122,"repeat-string":940}],940:[function(require,module,exports){
 arguments[4][123][0].apply(exports,arguments)
-},{"./1.0/numbers":939,"dup":123}],941:[function(require,module,exports){
+},{"dup":123}],941:[function(require,module,exports){
 arguments[4][124][0].apply(exports,arguments)
-},{"atob-lite":942,"dup":124,"glsl-tokenizer":949}],942:[function(require,module,exports){
+},{"dup":124}],942:[function(require,module,exports){
 arguments[4][125][0].apply(exports,arguments)
-},{"dup":125}],943:[function(require,module,exports){
+},{"./1.0/numbers":941,"dup":125}],943:[function(require,module,exports){
 arguments[4][126][0].apply(exports,arguments)
-},{"./lib/builtins":945,"./lib/builtins-300es":944,"./lib/literals":947,"./lib/literals-300es":946,"./lib/operators":948,"dup":126}],944:[function(require,module,exports){
+},{"atob-lite":944,"dup":126,"glsl-tokenizer":951}],944:[function(require,module,exports){
 arguments[4][127][0].apply(exports,arguments)
-},{"./builtins":945,"dup":127}],945:[function(require,module,exports){
+},{"dup":127}],945:[function(require,module,exports){
 arguments[4][128][0].apply(exports,arguments)
-},{"dup":128}],946:[function(require,module,exports){
+},{"./lib/builtins":947,"./lib/builtins-300es":946,"./lib/literals":949,"./lib/literals-300es":948,"./lib/operators":950,"dup":128}],946:[function(require,module,exports){
 arguments[4][129][0].apply(exports,arguments)
-},{"./literals":947,"dup":129}],947:[function(require,module,exports){
+},{"./builtins":947,"dup":129}],947:[function(require,module,exports){
 arguments[4][130][0].apply(exports,arguments)
 },{"dup":130}],948:[function(require,module,exports){
 arguments[4][131][0].apply(exports,arguments)
-},{"dup":131}],949:[function(require,module,exports){
+},{"./literals":949,"dup":131}],949:[function(require,module,exports){
 arguments[4][132][0].apply(exports,arguments)
-},{"./index":943,"dup":132}],950:[function(require,module,exports){
+},{"dup":132}],950:[function(require,module,exports){
 arguments[4][133][0].apply(exports,arguments)
 },{"dup":133}],951:[function(require,module,exports){
 arguments[4][134][0].apply(exports,arguments)
-},{"./hidden-store.js":952,"dup":134}],952:[function(require,module,exports){
+},{"./index":945,"dup":134}],952:[function(require,module,exports){
 arguments[4][135][0].apply(exports,arguments)
 },{"dup":135}],953:[function(require,module,exports){
 arguments[4][136][0].apply(exports,arguments)
-},{"./create-store.js":951,"dup":136}],954:[function(require,module,exports){
+},{"./hidden-store.js":954,"dup":136}],954:[function(require,module,exports){
+arguments[4][137][0].apply(exports,arguments)
+},{"dup":137}],955:[function(require,module,exports){
+arguments[4][138][0].apply(exports,arguments)
+},{"./create-store.js":953,"dup":138}],956:[function(require,module,exports){
 'use strict'
 
 var createShader = require('gl-shader')
@@ -57143,7 +57253,7 @@ function createSelectBox(plot, options) {
   return selectBox
 }
 
-},{"./lib/shaders":923,"gl-buffer":924,"gl-shader":928}],955:[function(require,module,exports){
+},{"./lib/shaders":925,"gl-buffer":926,"gl-shader":930}],957:[function(require,module,exports){
 'use strict'
 
 module.exports = createSpikes2D
@@ -57231,7 +57341,7 @@ function createSpikes2D(plot, options) {
   return spikes
 }
 
-},{}],956:[function(require,module,exports){
+},{}],958:[function(require,module,exports){
 var createShader = require('gl-shader')
 
 
@@ -57281,83 +57391,83 @@ exports.createPickContourShader = function (gl) {
   return shader
 }
 
-},{"gl-shader":964}],957:[function(require,module,exports){
-arguments[4][44][0].apply(exports,arguments)
-},{"dup":44}],958:[function(require,module,exports){
-arguments[4][94][0].apply(exports,arguments)
-},{"dup":94}],959:[function(require,module,exports){
-arguments[4][279][0].apply(exports,arguments)
-},{"dup":279}],960:[function(require,module,exports){
-arguments[4][280][0].apply(exports,arguments)
-},{"./colorScales":959,"arraytools":87,"clone":961,"dup":280}],961:[function(require,module,exports){
+},{"gl-shader":966}],959:[function(require,module,exports){
+arguments[4][46][0].apply(exports,arguments)
+},{"dup":46}],960:[function(require,module,exports){
+arguments[4][96][0].apply(exports,arguments)
+},{"dup":96}],961:[function(require,module,exports){
+arguments[4][281][0].apply(exports,arguments)
+},{"dup":281}],962:[function(require,module,exports){
+arguments[4][282][0].apply(exports,arguments)
+},{"./colorScales":961,"arraytools":89,"clone":963,"dup":282}],963:[function(require,module,exports){
 arguments[4][7][0].apply(exports,arguments)
-},{"buffer":1,"dup":7}],962:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],963:[function(require,module,exports){
-arguments[4][110][0].apply(exports,arguments)
-},{"dup":110,"ndarray":1048,"ndarray-ops":1043,"typedarray-pool":1019}],964:[function(require,module,exports){
-arguments[4][111][0].apply(exports,arguments)
-},{"./lib/GLError":965,"./lib/create-attributes":966,"./lib/create-uniforms":967,"./lib/reflect":968,"./lib/runtime-reflect":969,"./lib/shader-cache":970,"dup":111}],965:[function(require,module,exports){
+},{"buffer":1,"dup":7}],964:[function(require,module,exports){
+arguments[4][75][0].apply(exports,arguments)
+},{"dup":75}],965:[function(require,module,exports){
 arguments[4][112][0].apply(exports,arguments)
-},{"dup":112}],966:[function(require,module,exports){
+},{"dup":112,"ndarray":1050,"ndarray-ops":1045,"typedarray-pool":1021}],966:[function(require,module,exports){
 arguments[4][113][0].apply(exports,arguments)
-},{"./GLError":965,"dup":113}],967:[function(require,module,exports){
+},{"./lib/GLError":967,"./lib/create-attributes":968,"./lib/create-uniforms":969,"./lib/reflect":970,"./lib/runtime-reflect":971,"./lib/shader-cache":972,"dup":113}],967:[function(require,module,exports){
 arguments[4][114][0].apply(exports,arguments)
-},{"./GLError":965,"./reflect":968,"dup":114}],968:[function(require,module,exports){
+},{"dup":114}],968:[function(require,module,exports){
 arguments[4][115][0].apply(exports,arguments)
-},{"dup":115}],969:[function(require,module,exports){
+},{"./GLError":967,"dup":115}],969:[function(require,module,exports){
 arguments[4][116][0].apply(exports,arguments)
-},{"dup":116}],970:[function(require,module,exports){
+},{"./GLError":967,"./reflect":970,"dup":116}],970:[function(require,module,exports){
 arguments[4][117][0].apply(exports,arguments)
-},{"./GLError":965,"dup":117,"gl-format-compiler-error":971,"weakmap-shim":989}],971:[function(require,module,exports){
+},{"dup":117}],971:[function(require,module,exports){
 arguments[4][118][0].apply(exports,arguments)
-},{"add-line-numbers":972,"dup":118,"gl-constants/lookup":976,"glsl-shader-name":977,"sprintf-js":986}],972:[function(require,module,exports){
+},{"dup":118}],972:[function(require,module,exports){
 arguments[4][119][0].apply(exports,arguments)
-},{"dup":119,"pad-left":973}],973:[function(require,module,exports){
+},{"./GLError":967,"dup":119,"gl-format-compiler-error":973,"weakmap-shim":991}],973:[function(require,module,exports){
 arguments[4][120][0].apply(exports,arguments)
-},{"dup":120,"repeat-string":974}],974:[function(require,module,exports){
+},{"add-line-numbers":974,"dup":120,"gl-constants/lookup":978,"glsl-shader-name":979,"sprintf-js":988}],974:[function(require,module,exports){
 arguments[4][121][0].apply(exports,arguments)
-},{"dup":121}],975:[function(require,module,exports){
+},{"dup":121,"pad-left":975}],975:[function(require,module,exports){
 arguments[4][122][0].apply(exports,arguments)
-},{"dup":122}],976:[function(require,module,exports){
+},{"dup":122,"repeat-string":976}],976:[function(require,module,exports){
 arguments[4][123][0].apply(exports,arguments)
-},{"./1.0/numbers":975,"dup":123}],977:[function(require,module,exports){
+},{"dup":123}],977:[function(require,module,exports){
 arguments[4][124][0].apply(exports,arguments)
-},{"atob-lite":978,"dup":124,"glsl-tokenizer":985}],978:[function(require,module,exports){
+},{"dup":124}],978:[function(require,module,exports){
 arguments[4][125][0].apply(exports,arguments)
-},{"dup":125}],979:[function(require,module,exports){
+},{"./1.0/numbers":977,"dup":125}],979:[function(require,module,exports){
 arguments[4][126][0].apply(exports,arguments)
-},{"./lib/builtins":981,"./lib/builtins-300es":980,"./lib/literals":983,"./lib/literals-300es":982,"./lib/operators":984,"dup":126}],980:[function(require,module,exports){
+},{"atob-lite":980,"dup":126,"glsl-tokenizer":987}],980:[function(require,module,exports){
 arguments[4][127][0].apply(exports,arguments)
-},{"./builtins":981,"dup":127}],981:[function(require,module,exports){
+},{"dup":127}],981:[function(require,module,exports){
 arguments[4][128][0].apply(exports,arguments)
-},{"dup":128}],982:[function(require,module,exports){
+},{"./lib/builtins":983,"./lib/builtins-300es":982,"./lib/literals":985,"./lib/literals-300es":984,"./lib/operators":986,"dup":128}],982:[function(require,module,exports){
 arguments[4][129][0].apply(exports,arguments)
-},{"./literals":983,"dup":129}],983:[function(require,module,exports){
+},{"./builtins":983,"dup":129}],983:[function(require,module,exports){
 arguments[4][130][0].apply(exports,arguments)
 },{"dup":130}],984:[function(require,module,exports){
 arguments[4][131][0].apply(exports,arguments)
-},{"dup":131}],985:[function(require,module,exports){
+},{"./literals":985,"dup":131}],985:[function(require,module,exports){
 arguments[4][132][0].apply(exports,arguments)
-},{"./index":979,"dup":132}],986:[function(require,module,exports){
+},{"dup":132}],986:[function(require,module,exports){
 arguments[4][133][0].apply(exports,arguments)
 },{"dup":133}],987:[function(require,module,exports){
 arguments[4][134][0].apply(exports,arguments)
-},{"./hidden-store.js":988,"dup":134}],988:[function(require,module,exports){
+},{"./index":981,"dup":134}],988:[function(require,module,exports){
 arguments[4][135][0].apply(exports,arguments)
 },{"dup":135}],989:[function(require,module,exports){
 arguments[4][136][0].apply(exports,arguments)
-},{"./create-store.js":987,"dup":136}],990:[function(require,module,exports){
-arguments[4][205][0].apply(exports,arguments)
-},{"dup":205,"ndarray":1048,"ndarray-ops":1043,"typedarray-pool":1019}],991:[function(require,module,exports){
-arguments[4][171][0].apply(exports,arguments)
-},{"dup":171}],992:[function(require,module,exports){
-arguments[4][172][0].apply(exports,arguments)
-},{"./do-bind.js":991,"dup":172}],993:[function(require,module,exports){
+},{"./hidden-store.js":990,"dup":136}],990:[function(require,module,exports){
+arguments[4][137][0].apply(exports,arguments)
+},{"dup":137}],991:[function(require,module,exports){
+arguments[4][138][0].apply(exports,arguments)
+},{"./create-store.js":989,"dup":138}],992:[function(require,module,exports){
+arguments[4][207][0].apply(exports,arguments)
+},{"dup":207,"ndarray":1050,"ndarray-ops":1045,"typedarray-pool":1021}],993:[function(require,module,exports){
 arguments[4][173][0].apply(exports,arguments)
-},{"./do-bind.js":991,"dup":173}],994:[function(require,module,exports){
+},{"dup":173}],994:[function(require,module,exports){
 arguments[4][174][0].apply(exports,arguments)
-},{"./lib/vao-emulated.js":992,"./lib/vao-native.js":993,"dup":174}],995:[function(require,module,exports){
+},{"./do-bind.js":993,"dup":174}],995:[function(require,module,exports){
+arguments[4][175][0].apply(exports,arguments)
+},{"./do-bind.js":993,"dup":175}],996:[function(require,module,exports){
+arguments[4][176][0].apply(exports,arguments)
+},{"./lib/vao-emulated.js":994,"./lib/vao-native.js":995,"dup":176}],997:[function(require,module,exports){
 'use strict'
 
 module.exports      = gradient
@@ -57655,15 +57765,15 @@ function gradient(out, inp, bc) {
   var cached = generateGradient(bc)
   return cached(out, inp)
 }
-},{"cwise-compiler":996,"dup":962}],996:[function(require,module,exports){
-arguments[4][336][0].apply(exports,arguments)
-},{"./lib/thunk.js":998,"dup":336}],997:[function(require,module,exports){
-arguments[4][337][0].apply(exports,arguments)
-},{"dup":337,"uniq":999}],998:[function(require,module,exports){
+},{"cwise-compiler":998,"dup":964}],998:[function(require,module,exports){
 arguments[4][338][0].apply(exports,arguments)
-},{"./compile.js":997,"dup":338}],999:[function(require,module,exports){
-arguments[4][104][0].apply(exports,arguments)
-},{"dup":104}],1000:[function(require,module,exports){
+},{"./lib/thunk.js":1000,"dup":338}],999:[function(require,module,exports){
+arguments[4][339][0].apply(exports,arguments)
+},{"dup":339,"uniq":1001}],1000:[function(require,module,exports){
+arguments[4][340][0].apply(exports,arguments)
+},{"./compile.js":999,"dup":340}],1001:[function(require,module,exports){
+arguments[4][106][0].apply(exports,arguments)
+},{"dup":106}],1002:[function(require,module,exports){
 "use strict"
 
 var ndarray = require("ndarray")
@@ -57686,46 +57796,46 @@ module.exports = function convert(arr, result) {
   return result
 }
 
-},{"./doConvert.js":1001,"ndarray":1048}],1001:[function(require,module,exports){
+},{"./doConvert.js":1003,"ndarray":1050}],1003:[function(require,module,exports){
 module.exports=require('cwise-compiler')({"args":["array","scalar","index"],"pre":{"body":"{}","args":[],"thisVars":[],"localVars":[]},"body":{"body":"{\nvar _inline_1_v=_inline_1_arg1_,_inline_1_i\nfor(_inline_1_i=0;_inline_1_i<_inline_1_arg2_.length-1;++_inline_1_i) {\n_inline_1_v=_inline_1_v[_inline_1_arg2_[_inline_1_i]]\n}\n_inline_1_arg0_=_inline_1_v[_inline_1_arg2_[_inline_1_arg2_.length-1]]\n}","args":[{"name":"_inline_1_arg0_","lvalue":true,"rvalue":false,"count":1},{"name":"_inline_1_arg1_","lvalue":false,"rvalue":true,"count":1},{"name":"_inline_1_arg2_","lvalue":false,"rvalue":true,"count":4}],"thisVars":[],"localVars":["_inline_1_i","_inline_1_v"]},"post":{"body":"{}","args":[],"thisVars":[],"localVars":[]},"funcName":"convert","blockSize":64})
 
-},{"cwise-compiler":1002}],1002:[function(require,module,exports){
-arguments[4][336][0].apply(exports,arguments)
-},{"./lib/thunk.js":1004,"dup":336}],1003:[function(require,module,exports){
-arguments[4][337][0].apply(exports,arguments)
-},{"dup":337,"uniq":1005}],1004:[function(require,module,exports){
+},{"cwise-compiler":1004}],1004:[function(require,module,exports){
 arguments[4][338][0].apply(exports,arguments)
-},{"./compile.js":1003,"dup":338}],1005:[function(require,module,exports){
-arguments[4][104][0].apply(exports,arguments)
-},{"dup":104}],1006:[function(require,module,exports){
-arguments[4][446][0].apply(exports,arguments)
-},{"dup":446,"typedarray-pool":1019}],1007:[function(require,module,exports){
-arguments[4][450][0].apply(exports,arguments)
-},{"dup":450}],1008:[function(require,module,exports){
-arguments[4][454][0].apply(exports,arguments)
-},{"dup":454,"typedarray-pool":1019}],1009:[function(require,module,exports){
-arguments[4][455][0].apply(exports,arguments)
-},{"dup":455,"invert-permutation":1010,"typedarray-pool":1019}],1010:[function(require,module,exports){
+},{"./lib/thunk.js":1006,"dup":338}],1005:[function(require,module,exports){
+arguments[4][339][0].apply(exports,arguments)
+},{"dup":339,"uniq":1007}],1006:[function(require,module,exports){
+arguments[4][340][0].apply(exports,arguments)
+},{"./compile.js":1005,"dup":340}],1007:[function(require,module,exports){
+arguments[4][106][0].apply(exports,arguments)
+},{"dup":106}],1008:[function(require,module,exports){
+arguments[4][448][0].apply(exports,arguments)
+},{"dup":448,"typedarray-pool":1021}],1009:[function(require,module,exports){
+arguments[4][452][0].apply(exports,arguments)
+},{"dup":452}],1010:[function(require,module,exports){
 arguments[4][456][0].apply(exports,arguments)
-},{"dup":456}],1011:[function(require,module,exports){
-arguments[4][460][0].apply(exports,arguments)
-},{"dup":460,"gamma":1007,"permutation-parity":1008,"permutation-rank":1009}],1012:[function(require,module,exports){
-arguments[4][461][0].apply(exports,arguments)
-},{"cwise-compiler":1013,"dup":461}],1013:[function(require,module,exports){
-arguments[4][336][0].apply(exports,arguments)
-},{"./lib/thunk.js":1015,"dup":336}],1014:[function(require,module,exports){
-arguments[4][337][0].apply(exports,arguments)
-},{"dup":337,"uniq":1016}],1015:[function(require,module,exports){
+},{"dup":456,"typedarray-pool":1021}],1011:[function(require,module,exports){
+arguments[4][457][0].apply(exports,arguments)
+},{"dup":457,"invert-permutation":1012,"typedarray-pool":1021}],1012:[function(require,module,exports){
+arguments[4][458][0].apply(exports,arguments)
+},{"dup":458}],1013:[function(require,module,exports){
+arguments[4][462][0].apply(exports,arguments)
+},{"dup":462,"gamma":1009,"permutation-parity":1010,"permutation-rank":1011}],1014:[function(require,module,exports){
+arguments[4][463][0].apply(exports,arguments)
+},{"cwise-compiler":1015,"dup":463}],1015:[function(require,module,exports){
 arguments[4][338][0].apply(exports,arguments)
-},{"./compile.js":1014,"dup":338}],1016:[function(require,module,exports){
-arguments[4][104][0].apply(exports,arguments)
-},{"dup":104}],1017:[function(require,module,exports){
-arguments[4][466][0].apply(exports,arguments)
-},{"./lib/zc-core":1012,"dup":466}],1018:[function(require,module,exports){
-arguments[4][467][0].apply(exports,arguments)
-},{"dup":467,"ndarray-extract-contour":1006,"triangulate-hypercube":1011,"zero-crossings":1017}],1019:[function(require,module,exports){
-arguments[4][139][0].apply(exports,arguments)
-},{"bit-twiddle":958,"buffer":1,"dup":139}],1020:[function(require,module,exports){
+},{"./lib/thunk.js":1017,"dup":338}],1016:[function(require,module,exports){
+arguments[4][339][0].apply(exports,arguments)
+},{"dup":339,"uniq":1018}],1017:[function(require,module,exports){
+arguments[4][340][0].apply(exports,arguments)
+},{"./compile.js":1016,"dup":340}],1018:[function(require,module,exports){
+arguments[4][106][0].apply(exports,arguments)
+},{"dup":106}],1019:[function(require,module,exports){
+arguments[4][468][0].apply(exports,arguments)
+},{"./lib/zc-core":1014,"dup":468}],1020:[function(require,module,exports){
+arguments[4][469][0].apply(exports,arguments)
+},{"dup":469,"ndarray-extract-contour":1008,"triangulate-hypercube":1013,"zero-crossings":1019}],1021:[function(require,module,exports){
+arguments[4][141][0].apply(exports,arguments)
+},{"bit-twiddle":960,"buffer":1,"dup":141}],1022:[function(require,module,exports){
 'use strict'
 
 module.exports = createSurfacePlot
@@ -59042,7 +59152,7 @@ function createSurfacePlot (params) {
   return surface
 }
 
-},{"./lib/shaders":956,"binary-search-bounds":957,"bit-twiddle":958,"colormap":960,"gl-buffer":963,"gl-mat4/invert":257,"gl-mat4/multiply":259,"gl-texture2d":990,"gl-vao":994,"ndarray":1048,"ndarray-gradient":995,"ndarray-ops":1043,"ndarray-pack":1000,"surface-nets":1018,"typedarray-pool":1019}],1021:[function(require,module,exports){
+},{"./lib/shaders":958,"binary-search-bounds":959,"bit-twiddle":960,"colormap":962,"gl-buffer":965,"gl-mat4/invert":259,"gl-mat4/multiply":261,"gl-texture2d":992,"gl-vao":996,"ndarray":1050,"ndarray-gradient":997,"ndarray-ops":1045,"ndarray-pack":1002,"surface-nets":1020,"typedarray-pool":1021}],1023:[function(require,module,exports){
 'use strict'
 
 module.exports = mouseListen
@@ -59251,7 +59361,7 @@ function mouseListen(element, callback) {
   return result
 }
 
-},{"mouse-event":1022}],1022:[function(require,module,exports){
+},{"mouse-event":1024}],1024:[function(require,module,exports){
 'use strict'
 
 function mouseButtons(ev) {
@@ -59313,7 +59423,7 @@ function mouseRelativeY(ev) {
 }
 exports.y = mouseRelativeY
 
-},{}],1023:[function(require,module,exports){
+},{}],1025:[function(require,module,exports){
 module.exports = function parseUnit(str, out) {
     if (!out)
         out = [ 0, '' ]
@@ -59324,7 +59434,7 @@ module.exports = function parseUnit(str, out) {
     out[1] = str.match(/[\d.\-\+]*\s*(.*)/)[1] || ''
     return out
 }
-},{}],1024:[function(require,module,exports){
+},{}],1026:[function(require,module,exports){
 'use strict'
 
 var parseUnit = require('parse-unit')
@@ -59385,7 +59495,7 @@ function toPX(str, element) {
   }
   return 1
 }
-},{"parse-unit":1023}],1025:[function(require,module,exports){
+},{"parse-unit":1025}],1027:[function(require,module,exports){
 'use strict'
 
 var toPX = require('to-px')
@@ -59427,7 +59537,7 @@ function mouseWheelListen(element, callback, noScroll) {
   return listener
 }
 
-},{"to-px":1024}],1026:[function(require,module,exports){
+},{"to-px":1026}],1028:[function(require,module,exports){
 "use strict"
 
 
@@ -59439,17 +59549,17 @@ module.exports = function(array, f) {
   return array
 }
 
-},{"cwise/lib/wrapper":1027}],1027:[function(require,module,exports){
-arguments[4][335][0].apply(exports,arguments)
-},{"cwise-compiler":1028,"dup":335}],1028:[function(require,module,exports){
-arguments[4][336][0].apply(exports,arguments)
-},{"./lib/thunk.js":1030,"dup":336}],1029:[function(require,module,exports){
+},{"cwise/lib/wrapper":1029}],1029:[function(require,module,exports){
 arguments[4][337][0].apply(exports,arguments)
-},{"dup":337,"uniq":1031}],1030:[function(require,module,exports){
+},{"cwise-compiler":1030,"dup":337}],1030:[function(require,module,exports){
 arguments[4][338][0].apply(exports,arguments)
-},{"./compile.js":1029,"dup":338}],1031:[function(require,module,exports){
-arguments[4][104][0].apply(exports,arguments)
-},{"dup":104}],1032:[function(require,module,exports){
+},{"./lib/thunk.js":1032,"dup":338}],1031:[function(require,module,exports){
+arguments[4][339][0].apply(exports,arguments)
+},{"dup":339,"uniq":1033}],1032:[function(require,module,exports){
+arguments[4][340][0].apply(exports,arguments)
+},{"./compile.js":1031,"dup":340}],1033:[function(require,module,exports){
+arguments[4][106][0].apply(exports,arguments)
+},{"dup":106}],1034:[function(require,module,exports){
 'use strict'
 
 module.exports = invert
@@ -59480,7 +59590,7 @@ function invert(out, M) {
   }
   return out
 }
-},{"gl-mat2/invert":1033,"gl-mat3/invert":1034,"gl-mat4/invert":257}],1033:[function(require,module,exports){
+},{"gl-mat2/invert":1035,"gl-mat3/invert":1036,"gl-mat4/invert":259}],1035:[function(require,module,exports){
 module.exports = invert
 
 /**
@@ -59509,7 +59619,7 @@ function invert(out, a) {
   return out
 }
 
-},{}],1034:[function(require,module,exports){
+},{}],1036:[function(require,module,exports){
 module.exports = invert
 
 /**
@@ -59548,17 +59658,17 @@ function invert(out, a) {
   return out
 }
 
-},{}],1035:[function(require,module,exports){
-arguments[4][335][0].apply(exports,arguments)
-},{"cwise-compiler":1036,"dup":335}],1036:[function(require,module,exports){
-arguments[4][336][0].apply(exports,arguments)
-},{"./lib/thunk.js":1038,"dup":336}],1037:[function(require,module,exports){
+},{}],1037:[function(require,module,exports){
 arguments[4][337][0].apply(exports,arguments)
-},{"dup":337,"uniq":1039}],1038:[function(require,module,exports){
+},{"cwise-compiler":1038,"dup":337}],1038:[function(require,module,exports){
 arguments[4][338][0].apply(exports,arguments)
-},{"./compile.js":1037,"dup":338}],1039:[function(require,module,exports){
-arguments[4][104][0].apply(exports,arguments)
-},{"dup":104}],1040:[function(require,module,exports){
+},{"./lib/thunk.js":1040,"dup":338}],1039:[function(require,module,exports){
+arguments[4][339][0].apply(exports,arguments)
+},{"dup":339,"uniq":1041}],1040:[function(require,module,exports){
+arguments[4][340][0].apply(exports,arguments)
+},{"./compile.js":1039,"dup":340}],1041:[function(require,module,exports){
+arguments[4][106][0].apply(exports,arguments)
+},{"dup":106}],1042:[function(require,module,exports){
 "use strict"
 
 function interp1d(arr, x) {
@@ -59669,7 +59779,7 @@ module.exports.d1 = interp1d
 module.exports.d2 = interp2d
 module.exports.d3 = interp3d
 
-},{}],1041:[function(require,module,exports){
+},{}],1043:[function(require,module,exports){
 'use strict'
 
 var interp  = require('ndarray-linear-interpolate')
@@ -59701,7 +59811,7 @@ module.exports = function warp(dest, src, func) {
   return dest
 }
 
-},{"cwise/lib/wrapper":1035,"ndarray-linear-interpolate":1040}],1042:[function(require,module,exports){
+},{"cwise/lib/wrapper":1037,"ndarray-linear-interpolate":1042}],1044:[function(require,module,exports){
 'use strict'
 
 var warp = require('ndarray-warp')
@@ -59731,7 +59841,7 @@ function applyHomography(dest, src, Xi) {
   })
   return dest
 }
-},{"gl-matrix-invert":1032,"ndarray-warp":1041}],1043:[function(require,module,exports){
+},{"gl-matrix-invert":1034,"ndarray-warp":1043}],1045:[function(require,module,exports){
 "use strict"
 
 var compile = require("cwise-compiler")
@@ -60194,15 +60304,15 @@ exports.equals = compile({
 
 
 
-},{"cwise-compiler":1044}],1044:[function(require,module,exports){
-arguments[4][336][0].apply(exports,arguments)
-},{"./lib/thunk.js":1046,"dup":336}],1045:[function(require,module,exports){
-arguments[4][337][0].apply(exports,arguments)
-},{"dup":337,"uniq":1047}],1046:[function(require,module,exports){
+},{"cwise-compiler":1046}],1046:[function(require,module,exports){
 arguments[4][338][0].apply(exports,arguments)
-},{"./compile.js":1045,"dup":338}],1047:[function(require,module,exports){
-arguments[4][104][0].apply(exports,arguments)
-},{"dup":104}],1048:[function(require,module,exports){
+},{"./lib/thunk.js":1048,"dup":338}],1047:[function(require,module,exports){
+arguments[4][339][0].apply(exports,arguments)
+},{"dup":339,"uniq":1049}],1048:[function(require,module,exports){
+arguments[4][340][0].apply(exports,arguments)
+},{"./compile.js":1047,"dup":340}],1049:[function(require,module,exports){
+arguments[4][106][0].apply(exports,arguments)
+},{"dup":106}],1050:[function(require,module,exports){
 var iota = require("iota-array")
 var isBuffer = require("is-buffer")
 
@@ -60547,7 +60657,7 @@ function wrappedNDArrayCtor(data, shape, stride, offset) {
 
 module.exports = wrappedNDArrayCtor
 
-},{"iota-array":1049,"is-buffer":1050}],1049:[function(require,module,exports){
+},{"iota-array":1051,"is-buffer":1052}],1051:[function(require,module,exports){
 "use strict"
 
 function iota(n) {
@@ -60559,7 +60669,7 @@ function iota(n) {
 }
 
 module.exports = iota
-},{}],1050:[function(require,module,exports){
+},{}],1052:[function(require,module,exports){
 /**
  * Determine if an object is Buffer
  *
@@ -60578,7 +60688,7 @@ module.exports = function (obj) {
     ))
 }
 
-},{}],1051:[function(require,module,exports){
+},{}],1053:[function(require,module,exports){
 (function (global){
 module.exports =
   global.performance &&
@@ -60589,17 +60699,17 @@ module.exports =
   }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],1052:[function(require,module,exports){
-arguments[4][76][0].apply(exports,arguments)
-},{"dup":76}],1053:[function(require,module,exports){
-arguments[4][77][0].apply(exports,arguments)
-},{"dup":77,"two-product":1056,"two-sum":1052}],1054:[function(require,module,exports){
-arguments[4][381][0].apply(exports,arguments)
-},{"dup":381}],1055:[function(require,module,exports){
+},{}],1054:[function(require,module,exports){
 arguments[4][78][0].apply(exports,arguments)
-},{"dup":78}],1056:[function(require,module,exports){
+},{"dup":78}],1055:[function(require,module,exports){
 arguments[4][79][0].apply(exports,arguments)
-},{"dup":79}],1057:[function(require,module,exports){
+},{"dup":79,"two-product":1058,"two-sum":1054}],1056:[function(require,module,exports){
+arguments[4][383][0].apply(exports,arguments)
+},{"dup":383}],1057:[function(require,module,exports){
+arguments[4][80][0].apply(exports,arguments)
+},{"dup":80}],1058:[function(require,module,exports){
+arguments[4][81][0].apply(exports,arguments)
+},{"dup":81}],1059:[function(require,module,exports){
 "use strict"
 
 var twoProduct = require("two-product")
@@ -60790,7 +60900,7 @@ function generateOrientationProc() {
 }
 
 generateOrientationProc()
-},{"robust-scale":1053,"robust-subtract":1054,"robust-sum":1055,"two-product":1056}],1058:[function(require,module,exports){
+},{"robust-scale":1055,"robust-subtract":1056,"robust-sum":1057,"two-product":1058}],1060:[function(require,module,exports){
 'use strict'
 
 module.exports = toSuperScript
@@ -60845,7 +60955,7 @@ function toSuperScript(x) {
   }).join('')
 }
 
-},{}],1059:[function(require,module,exports){
+},{}],1061:[function(require,module,exports){
 // TinyColor v1.3.0
 // https://github.com/bgrins/TinyColor
 // Brian Grinstead, MIT License
@@ -62013,7 +62123,7 @@ else {
 
 })();
 
-},{}],1060:[function(require,module,exports){
+},{}],1062:[function(require,module,exports){
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -62562,7 +62672,7 @@ else {
   exports.presimplify = presimplify;
 
 }));
-},{}],1061:[function(require,module,exports){
+},{}],1063:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -62624,7 +62734,7 @@ module.exports = [
     }
 ];
 
-},{}],1062:[function(require,module,exports){
+},{}],1064:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -62877,7 +62987,7 @@ module.exports = {
     }
 };
 
-},{"../../lib/extend":1138,"../../plots/cartesian/constants":1171,"../../plots/font_attributes":1184,"./arrow_paths":1061}],1063:[function(require,module,exports){
+},{"../../lib/extend":1140,"../../plots/cartesian/constants":1173,"../../plots/font_attributes":1186,"./arrow_paths":1063}],1065:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -63806,7 +63916,7 @@ function lineIntersect(x1, y1, x2, y2, x3, y3, x4, y4) {
     return {x: x1 + a * t, y: y1 + d * t};
 }
 
-},{"../../lib":1143,"../../lib/setcursor":1152,"../../lib/svg_text_utils":1156,"../../plotly":1163,"../../plots/cartesian/axes":1166,"../color":1065,"../dragelement":1085,"../drawing":1087,"./arrow_paths":1061,"./attributes":1062,"d3":99,"fast-isnumeric":107}],1064:[function(require,module,exports){
+},{"../../lib":1145,"../../lib/setcursor":1154,"../../lib/svg_text_utils":1158,"../../plotly":1165,"../../plots/cartesian/axes":1168,"../color":1067,"../dragelement":1087,"../drawing":1089,"./arrow_paths":1063,"./attributes":1064,"d3":101,"fast-isnumeric":109}],1066:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -63844,7 +63954,7 @@ exports.background = '#fff';
 // gives back exactly lightLine if the other colors are defaults.
 exports.lightFraction = 100 * (0xe - 0x4) / (0xf - 0x4);
 
-},{}],1065:[function(require,module,exports){
+},{}],1067:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -63988,7 +64098,7 @@ function cleanOne(val) {
     return 'rgb(' + rgbStr + ')';
 }
 
-},{"./attributes":1064,"fast-isnumeric":107,"tinycolor2":1059}],1066:[function(require,module,exports){
+},{"./attributes":1066,"fast-isnumeric":109,"tinycolor2":1061}],1068:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -64183,7 +64293,7 @@ module.exports = {
     }
 };
 
-},{"../../lib/extend":1138,"../../plots/cartesian/layout_attributes":1175,"../../plots/font_attributes":1184}],1067:[function(require,module,exports){
+},{"../../lib/extend":1140,"../../plots/cartesian/layout_attributes":1177,"../../plots/font_attributes":1186}],1069:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -64250,7 +64360,7 @@ module.exports = function colorbarDefaults(containerIn, containerOut, layout) {
     coerce('titleside');
 };
 
-},{"../../lib":1143,"../../plots/cartesian/tick_label_defaults":1181,"../../plots/cartesian/tick_mark_defaults":1182,"../../plots/cartesian/tick_value_defaults":1183,"./attributes":1066}],1068:[function(require,module,exports){
+},{"../../lib":1145,"../../plots/cartesian/tick_label_defaults":1183,"../../plots/cartesian/tick_mark_defaults":1184,"../../plots/cartesian/tick_value_defaults":1185,"./attributes":1068}],1070:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -64880,7 +64990,7 @@ module.exports = function draw(gd, id) {
     return component;
 };
 
-},{"../../lib":1143,"../../lib/extend":1138,"../../lib/setcursor":1152,"../../plotly":1163,"../../plots/cartesian/axes":1166,"../../plots/cartesian/axis_defaults":1167,"../../plots/cartesian/layout_attributes":1175,"../../plots/cartesian/position_defaults":1178,"../../plots/plots":1215,"../color":1065,"../dragelement":1085,"../drawing":1087,"../titles":1127,"./attributes":1066,"d3":99,"tinycolor2":1059}],1069:[function(require,module,exports){
+},{"../../lib":1145,"../../lib/extend":1140,"../../lib/setcursor":1154,"../../plotly":1165,"../../plots/cartesian/axes":1168,"../../plots/cartesian/axis_defaults":1169,"../../plots/cartesian/layout_attributes":1177,"../../plots/cartesian/position_defaults":1180,"../../plots/plots":1217,"../color":1067,"../dragelement":1087,"../drawing":1089,"../titles":1129,"./attributes":1068,"d3":101,"tinycolor2":1061}],1071:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -64900,7 +65010,7 @@ module.exports = function hasColorbar(container) {
     );
 };
 
-},{}],1070:[function(require,module,exports){
+},{}],1072:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -64921,7 +65031,7 @@ exports.draw = require('./draw');
 
 exports.hasColorbar = require('./has_colorbar');
 
-},{"./attributes":1066,"./defaults":1067,"./draw":1068,"./has_colorbar":1069}],1071:[function(require,module,exports){
+},{"./attributes":1068,"./defaults":1069,"./draw":1070,"./has_colorbar":1071}],1073:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -65008,7 +65118,7 @@ module.exports = {
     }
 };
 
-},{}],1072:[function(require,module,exports){
+},{}],1074:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -65073,7 +65183,7 @@ module.exports = function calc(trace, vals, containerStr, cLetter) {
     }
 };
 
-},{"../../lib":1143,"./flip_scale":1075,"./scales":1082}],1073:[function(require,module,exports){
+},{"../../lib":1145,"./flip_scale":1077,"./scales":1084}],1075:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -65089,7 +65199,7 @@ var scales = require('./scales');
 
 module.exports = scales.RdBu;
 
-},{"./scales":1082}],1074:[function(require,module,exports){
+},{"./scales":1084}],1076:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -65153,7 +65263,7 @@ module.exports = function colorScaleDefaults(traceIn, traceOut, layout, coerce, 
     if(showScale) colorbarDefaults(containerIn, containerOut, layout);
 };
 
-},{"../../lib":1143,"../colorbar/defaults":1067,"../colorbar/has_colorbar":1069,"./flip_scale":1075,"./is_valid_scale":1079,"fast-isnumeric":107}],1075:[function(require,module,exports){
+},{"../../lib":1145,"../colorbar/defaults":1069,"../colorbar/has_colorbar":1071,"./flip_scale":1077,"./is_valid_scale":1081,"fast-isnumeric":109}],1077:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -65178,7 +65288,7 @@ module.exports = function flipScale(scl) {
     return sclNew;
 };
 
-},{}],1076:[function(require,module,exports){
+},{}],1078:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -65218,7 +65328,7 @@ module.exports = function getScale(scl, dflt) {
     return scl;
 };
 
-},{"./default_scale":1073,"./is_valid_scale_array":1080,"./scales":1082}],1077:[function(require,module,exports){
+},{"./default_scale":1075,"./is_valid_scale_array":1082,"./scales":1084}],1079:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -65264,7 +65374,7 @@ module.exports = function hasColorscale(trace, containerStr) {
     );
 };
 
-},{"../../lib":1143,"./is_valid_scale":1079,"fast-isnumeric":107}],1078:[function(require,module,exports){
+},{"../../lib":1145,"./is_valid_scale":1081,"fast-isnumeric":109}],1080:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -65296,7 +65406,7 @@ exports.flipScale = require('./flip_scale');
 
 exports.makeScaleFunction = require('./make_scale_function');
 
-},{"./attributes":1071,"./calc":1072,"./default_scale":1073,"./defaults":1074,"./flip_scale":1075,"./get_scale":1076,"./has_colorscale":1077,"./is_valid_scale":1079,"./make_scale_function":1081,"./scales":1082}],1079:[function(require,module,exports){
+},{"./attributes":1073,"./calc":1074,"./default_scale":1075,"./defaults":1076,"./flip_scale":1077,"./get_scale":1078,"./has_colorscale":1079,"./is_valid_scale":1081,"./make_scale_function":1083,"./scales":1084}],1081:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -65317,7 +65427,7 @@ module.exports = function isValidScale(scl) {
     else return isValidScaleArray(scl);
 };
 
-},{"./is_valid_scale_array":1080,"./scales":1082}],1080:[function(require,module,exports){
+},{"./is_valid_scale_array":1082,"./scales":1084}],1082:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -65352,7 +65462,7 @@ module.exports = function isValidScaleArray(scl) {
     }
 };
 
-},{"tinycolor2":1059}],1081:[function(require,module,exports){
+},{"tinycolor2":1061}],1083:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -65401,7 +65511,7 @@ module.exports = function makeScaleFunction(scl, cmin, cmax) {
     };
 };
 
-},{"../../lib":1143,"../color":1065,"d3":99,"fast-isnumeric":107,"tinycolor2":1059}],1082:[function(require,module,exports){
+},{"../../lib":1145,"../color":1067,"d3":101,"fast-isnumeric":109,"tinycolor2":1061}],1084:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -65532,7 +65642,7 @@ module.exports = {
     ]
 };
 
-},{}],1083:[function(require,module,exports){
+},{}],1085:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -65565,7 +65675,7 @@ module.exports = function align(v, dv, v0, v1, anchor) {
     return vc;
 };
 
-},{}],1084:[function(require,module,exports){
+},{}],1086:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -65603,7 +65713,7 @@ module.exports = function getCursor(x, y, xanchor, yanchor) {
     return cursorset[y][x];
 };
 
-},{"../../lib":1143}],1085:[function(require,module,exports){
+},{"../../lib":1145}],1087:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -65772,7 +65882,7 @@ function finishDrag(gd) {
     if(gd._replotPending) Plotly.plot(gd);
 }
 
-},{"../../lib":1143,"../../plotly":1163,"../../plots/cartesian/constants":1171,"./align":1083,"./cursor":1084,"./unhover":1086}],1086:[function(require,module,exports){
+},{"../../lib":1145,"../../plotly":1165,"../../plots/cartesian/constants":1173,"./align":1085,"./cursor":1086,"./unhover":1088}],1088:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -65823,7 +65933,7 @@ unhover.raw = function unhoverRaw(gd, evt) {
     gd._hoverdata = undefined;
 };
 
-},{"../../lib/events":1137}],1087:[function(require,module,exports){
+},{"../../lib/events":1139}],1089:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -65872,7 +65982,7 @@ drawing.setRect = function(s, x, y, w, h) {
     s.call(drawing.setPosition, x, y).call(drawing.setSize, w, h);
 };
 
-drawing.translatePoints = function(s, xa, ya, transitionDuration, transitionEasing, trace) {
+drawing.translatePoints = function(s, xa, ya, transitionDuration, transitionEasing, trace, dir) {
     s.each(function(d) {
         // put xp and yp into d if pixel scaling is already done
         var x = d.xp || xa.c2p(d.x),
@@ -65883,16 +65993,38 @@ drawing.translatePoints = function(s, xa, ya, transitionDuration, transitionEasi
             if(this.nodeName==='text') {
               p.attr('x',x).attr('y',y);
             } else {
-              var join = p;
               if (isNumeric(transitionDuration) && transitionDuration > 0) {
-                var trans = p.transition()
-                  .duration(transitionDuration)
-                  .ease(transitionEasing)
-                  .attr('transform', 'translate('+x+','+y+')')
+                var trans;
+                if (!dir) {
+                    trans = p.transition()
+                        .duration(transitionDuration)
+                        .ease(transitionEasing)
+                        .attr('transform', 'translate('+x+','+y+')')
 
-                if (trace) {
-                  trans.call(drawing.pointStyle, trace)
+                    if (trace) {
+                      trans.call(drawing.pointStyle, trace)
+                    }
+                } else if (dir === -1) {
+                    trans = p.style('opacity', 1)
+                        .transition()
+                            .duration(transitionDuration)
+                            .ease(transitionEasing)
+                            .style('opacity', 0)
+                            .remove();
+                } else if (dir === 1) {
+                    trans = p.attr('transform', 'translate('+x+','+y+')')
+
+                    if (trace) {
+                      trans.call(drawing.pointStyle, trace)
+                    }
+
+                    trans.style('opacity', 0)
+                        .transition()
+                            .duration(transitionDuration)
+                            .ease(transitionEasing)
+                            .style('opacity', 1)
                 }
+
               } else {
                 p.attr('transform', 'translate('+x+','+y+')');
               }
@@ -66401,7 +66533,7 @@ drawing.setClipUrl = function(s, localId) {
     s.attr('clip-path', 'url(' + url + ')');
 };
 
-},{"../../constants/xmlns_namespaces":1131,"../../lib":1143,"../../lib/svg_text_utils":1156,"../../plots/plots":1215,"../../traces/scatter/make_bubble_size_func":1331,"../../traces/scatter/subtypes":1337,"../color":1065,"../colorscale":1078,"./symbol_defs":1088,"d3":99,"fast-isnumeric":107}],1088:[function(require,module,exports){
+},{"../../constants/xmlns_namespaces":1133,"../../lib":1145,"../../lib/svg_text_utils":1158,"../../plots/plots":1217,"../../traces/scatter/make_bubble_size_func":1333,"../../traces/scatter/subtypes":1339,"../color":1067,"../colorscale":1080,"./symbol_defs":1090,"d3":101,"fast-isnumeric":109}],1090:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -66877,7 +67009,7 @@ module.exports = {
     }
 };
 
-},{"d3":99}],1089:[function(require,module,exports){
+},{"d3":101}],1091:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -67019,7 +67151,7 @@ module.exports = {
     }
 };
 
-},{}],1090:[function(require,module,exports){
+},{}],1092:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -67082,7 +67214,7 @@ function calcOneAxis(calcTrace, trace, axis, coord) {
     Axes.expand(axis, vals, {padded: true});
 }
 
-},{"../../plots/cartesian/axes":1166,"../../plots/plots":1215,"./compute_error":1091,"fast-isnumeric":107}],1091:[function(require,module,exports){
+},{"../../plots/cartesian/axes":1168,"../../plots/plots":1217,"./compute_error":1093,"fast-isnumeric":109}],1093:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -67178,7 +67310,7 @@ function makeComputeErrorValue(type, value) {
     }
 }
 
-},{}],1092:[function(require,module,exports){
+},{}],1094:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -67255,7 +67387,7 @@ module.exports = function(traceIn, traceOut, defaultColor, opts) {
     }
 };
 
-},{"../../lib":1143,"../../plots/plots":1215,"./attributes":1089,"fast-isnumeric":107}],1093:[function(require,module,exports){
+},{"../../lib":1145,"../../plots/plots":1217,"./attributes":1091,"fast-isnumeric":109}],1095:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -67314,7 +67446,7 @@ errorBars.hoverInfo = function(calcPoint, trace, hoverPoint) {
     }
 };
 
-},{"./attributes":1089,"./calc":1090,"./defaults":1092,"./plot":1094,"./style":1095}],1094:[function(require,module,exports){
+},{"./attributes":1091,"./calc":1092,"./defaults":1094,"./plot":1096,"./style":1097}],1096:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -67435,7 +67567,7 @@ function errorCoords(d, xa, ya) {
     return out;
 }
 
-},{"../../lib":1143,"../../traces/scatter/subtypes":1337,"d3":99,"fast-isnumeric":107}],1095:[function(require,module,exports){
+},{"../../lib":1145,"../../traces/scatter/subtypes":1339,"d3":101,"fast-isnumeric":109}],1097:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -67472,7 +67604,7 @@ module.exports = function style(traces) {
     });
 };
 
-},{"../color":1065,"d3":99}],1096:[function(require,module,exports){
+},{"../color":1067,"d3":101}],1098:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -67632,7 +67764,7 @@ module.exports = {
     }
 };
 
-},{"../../plots/cartesian/constants":1171}],1097:[function(require,module,exports){
+},{"../../plots/cartesian/constants":1173}],1099:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -67698,7 +67830,7 @@ function imageDefaults(imageIn, imageOut, fullLayout) {
     return imageOut;
 }
 
-},{"../../lib":1143,"../../plots/cartesian/axes":1166,"./attributes":1096}],1098:[function(require,module,exports){
+},{"../../lib":1145,"../../plots/cartesian/axes":1168,"./attributes":1098}],1100:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -67871,7 +68003,7 @@ module.exports = function draw(gd) {
     imagesAbove.each(applyAttributes);
 };
 
-},{"../../plots/cartesian/axes":1166,"../drawing":1087,"d3":99}],1099:[function(require,module,exports){
+},{"../../plots/cartesian/axes":1168,"../drawing":1089,"d3":101}],1101:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -67894,7 +68026,7 @@ module.exports = {
     supplyLayoutDefaults: supplyLayoutDefaults
 };
 
-},{"./attributes":1096,"./defaults":1097,"./draw":1098}],1100:[function(require,module,exports){
+},{"./attributes":1098,"./defaults":1099,"./draw":1100}],1102:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -67943,7 +68075,7 @@ exports.isMiddleAnchor = function isMiddleAnchor(opts) {
     );
 };
 
-},{}],1101:[function(require,module,exports){
+},{}],1103:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -68058,7 +68190,7 @@ module.exports = {
     }
 };
 
-},{"../../lib/extend":1138,"../../plots/font_attributes":1184,"../color/attributes":1064}],1102:[function(require,module,exports){
+},{"../../lib/extend":1140,"../../plots/font_attributes":1186,"../color/attributes":1066}],1104:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -68076,7 +68208,7 @@ module.exports = {
     scrollBarMargin: 4
 };
 
-},{}],1103:[function(require,module,exports){
+},{}],1105:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -68168,7 +68300,7 @@ module.exports = function legendDefaults(layoutIn, layoutOut, fullData) {
     Lib.noneOrAll(containerIn, containerOut, ['x', 'y']);
 };
 
-},{"../../lib":1143,"../../plots/plots":1215,"./attributes":1101,"./helpers":1106}],1104:[function(require,module,exports){
+},{"../../lib":1145,"../../plots/plots":1217,"./attributes":1103,"./helpers":1108}],1106:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -68816,7 +68948,7 @@ function expandHorizontalMargin(gd) {
     });
 }
 
-},{"../../lib":1143,"../../plotly":1163,"../../plots/plots":1215,"../color":1065,"../dragelement":1085,"../drawing":1087,"./anchor_utils":1100,"./constants":1102,"./get_legend_data":1105,"./helpers":1106,"./style":1108,"d3":99}],1105:[function(require,module,exports){
+},{"../../lib":1145,"../../plotly":1165,"../../plots/plots":1217,"../color":1067,"../dragelement":1087,"../drawing":1089,"./anchor_utils":1102,"./constants":1104,"./get_legend_data":1107,"./helpers":1108,"./style":1110,"d3":101}],1107:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -68922,7 +69054,7 @@ module.exports = function getLegendData(calcdata, opts) {
     return legendData;
 };
 
-},{"../../plots/plots":1215,"./helpers":1106}],1106:[function(require,module,exports){
+},{"../../plots/plots":1217,"./helpers":1108}],1108:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -68953,7 +69085,7 @@ exports.isReversed = function isReversed(legendLayout) {
     return (legendLayout.traceorder || '').indexOf('reversed') !== -1;
 };
 
-},{"../../plots/plots":1215}],1107:[function(require,module,exports){
+},{"../../plots/plots":1217}],1109:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -68976,7 +69108,7 @@ legend.draw = require('./draw');
 
 legend.style = require('./style');
 
-},{"./attributes":1101,"./defaults":1103,"./draw":1104,"./style":1108}],1108:[function(require,module,exports){
+},{"./attributes":1103,"./defaults":1105,"./draw":1106,"./style":1110}],1110:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -69198,7 +69330,7 @@ function stylePies(d) {
     if(pts.size()) pts.call(stylePie, d[0], trace);
 }
 
-},{"../../lib":1143,"../../plots/plots":1215,"../../traces/pie/style_one":1315,"../../traces/scatter/subtypes":1337,"../color":1065,"../drawing":1087,"d3":99}],1109:[function(require,module,exports){
+},{"../../lib":1145,"../../plots/plots":1217,"../../traces/pie/style_one":1317,"../../traces/scatter/subtypes":1339,"../color":1067,"../drawing":1089,"d3":101}],1111:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -69725,7 +69857,7 @@ modeBarButtons.resetViews = {
     }
 };
 
-},{"../../../build/ploticon":25,"../../lib":1143,"../../lib/setcursor":1152,"../../plotly":1163,"../../snapshot/download":1230}],1110:[function(require,module,exports){
+},{"../../../build/ploticon":27,"../../lib":1145,"../../lib/setcursor":1154,"../../plotly":1165,"../../snapshot/download":1232}],1112:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -70015,7 +70147,7 @@ function createModeBar(gd, buttons) {
 
 module.exports = createModeBar;
 
-},{"../../../build/ploticon":25,"../../lib":1143,"d3":99}],1111:[function(require,module,exports){
+},{"../../../build/ploticon":27,"../../lib":1145,"d3":101}],1113:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -70243,7 +70375,7 @@ function fillCustomButton(customButtons) {
     return customButtons;
 }
 
-},{"../../plotly":1163,"../../traces/scatter/subtypes":1337,"./":1110,"./buttons":1109}],1112:[function(require,module,exports){
+},{"../../plotly":1165,"../../traces/scatter/subtypes":1339,"./":1112,"./buttons":1111}],1114:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -70342,7 +70474,7 @@ module.exports = {
     }
 };
 
-},{"../../lib/extend":1138,"../../plots/font_attributes":1184,"../color/attributes":1064,"./button_attributes":1113}],1113:[function(require,module,exports){
+},{"../../lib/extend":1140,"../../plots/font_attributes":1186,"../color/attributes":1066,"./button_attributes":1115}],1115:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -70398,7 +70530,7 @@ module.exports = {
     }
 };
 
-},{}],1114:[function(require,module,exports){
+},{}],1116:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -70426,7 +70558,7 @@ module.exports = {
     activeColor: '#d3d3d3'
 };
 
-},{}],1115:[function(require,module,exports){
+},{}],1117:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -70513,7 +70645,7 @@ function getPosDflt(containerOut, layout, counterAxes) {
     return [containerOut.domain[0], posY + constants.yPad];
 }
 
-},{"../../lib":1143,"./attributes":1112,"./button_attributes":1113,"./constants":1114}],1116:[function(require,module,exports){
+},{"../../lib":1145,"./attributes":1114,"./button_attributes":1115,"./constants":1116}],1118:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -70788,7 +70920,7 @@ function reposition(gd, buttons, opts, axName) {
     });
 }
 
-},{"../../lib/svg_text_utils":1156,"../../plotly":1163,"../../plots/cartesian/axis_ids":1168,"../../plots/plots":1215,"../color":1065,"../drawing":1087,"../legend/anchor_utils":1100,"./constants":1114,"./get_update_object":1117,"d3":99}],1117:[function(require,module,exports){
+},{"../../lib/svg_text_utils":1158,"../../plotly":1165,"../../plots/cartesian/axis_ids":1170,"../../plots/plots":1217,"../color":1067,"../drawing":1089,"../legend/anchor_utils":1102,"./constants":1116,"./get_update_object":1119,"d3":101}],1119:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -70846,7 +70978,7 @@ function getXRange(axisLayout, buttonLayout) {
     return [range0, range1];
 }
 
-},{"d3":99}],1118:[function(require,module,exports){
+},{"d3":101}],1120:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -70864,7 +70996,7 @@ exports.supplyLayoutDefaults = require('./defaults');
 
 exports.draw = require('./draw');
 
-},{"./attributes":1112,"./defaults":1115,"./draw":1116}],1119:[function(require,module,exports){
+},{"./attributes":1114,"./defaults":1117,"./draw":1118}],1121:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -70935,7 +71067,7 @@ module.exports = {
     }
 };
 
-},{"../color/attributes":1064}],1120:[function(require,module,exports){
+},{"../color/attributes":1066}],1122:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -71231,7 +71363,7 @@ module.exports = function createSlider(gd) {
         });
 };
 
-},{"../../constants/xmlns_namespaces":1131,"../../lib":1143,"../../plotly":1163,"../../plots/cartesian/axes":1166,"./helpers":1122,"./range_plot":1124}],1121:[function(require,module,exports){
+},{"../../constants/xmlns_namespaces":1133,"../../lib":1145,"../../plotly":1165,"../../plots/cartesian/axes":1168,"./helpers":1124,"./range_plot":1126}],1123:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -71285,7 +71417,7 @@ module.exports = function supplyLayoutDefaults(layoutIn, layoutOut, axName, coun
     }
 };
 
-},{"../../lib":1143,"./attributes":1119}],1122:[function(require,module,exports){
+},{"../../lib":1145,"./attributes":1121}],1124:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -71311,7 +71443,7 @@ exports.appendChildren = function appendChildren(el, children) {
     }
 };
 
-},{}],1123:[function(require,module,exports){
+},{}],1125:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -71368,7 +71500,7 @@ function draw(gd) {
     });
 }
 
-},{"../../plots/plots":1215,"./create_slider":1120,"./defaults":1121}],1124:[function(require,module,exports){
+},{"../../plots/plots":1217,"./create_slider":1122,"./defaults":1123}],1126:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -71549,7 +71681,7 @@ function makeScatter(trace, pointPairs, w, h) {
     return [line, markers, fill];
 }
 
-},{"../../constants/xmlns_namespaces":1131,"../../lib":1143,"../drawing":1087,"../drawing/symbol_defs":1088,"./helpers":1122,"d3":99}],1125:[function(require,module,exports){
+},{"../../constants/xmlns_namespaces":1133,"../../lib":1145,"../drawing":1089,"../drawing/symbol_defs":1090,"./helpers":1124,"d3":101}],1127:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -71707,7 +71839,7 @@ module.exports = {
     }
 };
 
-},{"../../lib/extend":1138,"../../traces/scatter/attributes":1318,"../annotations/attributes":1062}],1126:[function(require,module,exports){
+},{"../../lib/extend":1140,"../../traces/scatter/attributes":1320,"../annotations/attributes":1064}],1128:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -72267,7 +72399,7 @@ function shapeBounds(ax, v0, v1, path, paramsToUse) {
     if(max >= min) return [min, max];
 }
 
-},{"../../lib":1143,"../../plotly":1163,"../../plots/cartesian/axes":1166,"../color":1065,"../drawing":1087,"./attributes":1125,"fast-isnumeric":107}],1127:[function(require,module,exports){
+},{"../../lib":1145,"../../plotly":1165,"../../plots/cartesian/axes":1168,"../color":1067,"../drawing":1089,"./attributes":1127,"fast-isnumeric":109}],1129:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -72497,7 +72629,7 @@ Titles.draw = function(gd, titleClass, options) {
     el.classed('js-placeholder', isplaceholder);
 };
 
-},{"../../lib":1143,"../../lib/svg_text_utils":1156,"../../plotly":1163,"../../plots/plots":1215,"../color":1065,"../drawing":1087,"d3":99,"fast-isnumeric":107}],1128:[function(require,module,exports){
+},{"../../lib":1145,"../../lib/svg_text_utils":1158,"../../plotly":1165,"../../plots/plots":1217,"../color":1067,"../drawing":1089,"d3":101,"fast-isnumeric":109}],1130:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -72518,7 +72650,7 @@ module.exports = {
     longdashdot: [8, 1, 1, 1]
 };
 
-},{}],1129:[function(require,module,exports){
+},{}],1131:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -72539,7 +72671,7 @@ module.exports = {
     longdashdot: [[0.5, 0.7, 0.8, 1], 10]
 };
 
-},{}],1130:[function(require,module,exports){
+},{}],1132:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -72562,7 +72694,7 @@ module.exports = {
     x: '❌'
 };
 
-},{}],1131:[function(require,module,exports){
+},{}],1133:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -72586,7 +72718,7 @@ exports.svgAttrs = {
     'xmlns:xlink': exports.xlink
 };
 
-},{}],1132:[function(require,module,exports){
+},{}],1134:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -72637,7 +72769,7 @@ exports.Queue = Plotly.Queue;
 // export d3 used in the bundle
 exports.d3 = require('d3');
 
-},{"../build/ploticon":25,"./plot_api/set_plot_config":1161,"./plot_api/to_image":1162,"./plotly":1163,"./snapshot/download":1230,"d3":99}],1133:[function(require,module,exports){
+},{"../build/ploticon":27,"./plot_api/set_plot_config":1163,"./plot_api/to_image":1164,"./plotly":1165,"./snapshot/download":1232,"d3":101}],1135:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -72670,7 +72802,7 @@ if(typeof MathJax !== 'undefined') {
     exports.MathJax = false;
 }
 
-},{}],1134:[function(require,module,exports){
+},{}],1136:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -72687,7 +72819,7 @@ module.exports = function arrayToCalcItem(traceAttr, calcItem, calcAttr, i) {
     if(Array.isArray(traceAttr)) calcItem[calcAttr] = traceAttr[i];
 };
 
-},{}],1135:[function(require,module,exports){
+},{}],1137:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -73000,7 +73132,7 @@ exports.coerceFont = function(coerce, attr, dfltObj) {
     return out;
 };
 
-},{"../components/colorscale/get_scale":1076,"../components/colorscale/scales":1082,"./nested_property":1147,"fast-isnumeric":107,"tinycolor2":1059}],1136:[function(require,module,exports){
+},{"../components/colorscale/get_scale":1078,"../components/colorscale/scales":1084,"./nested_property":1149,"fast-isnumeric":109,"tinycolor2":1061}],1138:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -73339,7 +73471,7 @@ exports.parseDate = function(v) {
     return out;
 };
 
-},{"../lib":1143,"d3":99,"fast-isnumeric":107}],1137:[function(require,module,exports){
+},{"../lib":1145,"d3":101,"fast-isnumeric":109}],1139:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -73473,7 +73605,7 @@ var Events = {
 
 module.exports = Events;
 
-},{"events":5}],1138:[function(require,module,exports){
+},{"events":5}],1140:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -73553,7 +73685,7 @@ function _extend(inputs, isDeep, keepAllKeys) {
     return target;
 }
 
-},{"./is_plain_object.js":1144}],1139:[function(require,module,exports){
+},{"./is_plain_object.js":1146}],1141:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -73577,7 +73709,7 @@ module.exports = function filterVisible(dataIn) {
     return dataOut;
 };
 
-},{}],1140:[function(require,module,exports){
+},{}],1142:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -73636,7 +73768,7 @@ function countryNameToISO3(countryName) {
     Lib.warn('Unrecognized country name: ' + countryName + '.');
 }
 
-},{"../lib":1143,"country-regex":98}],1141:[function(require,module,exports){
+},{"../lib":1145,"country-regex":100}],1143:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -73715,7 +73847,7 @@ function formatColor(containerIn, opacityIn, len) {
 
 module.exports = formatColor;
 
-},{"../components/color/attributes":1064,"../components/colorscale/make_scale_function":1081,"./str2rgbarray":1155,"fast-isnumeric":107,"tinycolor2":1059}],1142:[function(require,module,exports){
+},{"../components/color/attributes":1066,"../components/colorscale/make_scale_function":1083,"./str2rgbarray":1157,"fast-isnumeric":109,"tinycolor2":1061}],1144:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -73789,7 +73921,7 @@ function convertHTMLToUnicode(html) {
 
 module.exports = convertHTMLToUnicode;
 
-},{"superscript-text":1058}],1143:[function(require,module,exports){
+},{"superscript-text":1060}],1145:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -74464,7 +74596,7 @@ lib.deepCloneTrace = function deepCloneTrace (trace, schema) {
     });
 };
 
-},{"./coerce":1135,"./dates":1136,"./extend":1138,"./is_plain_object":1144,"./loggers":1145,"./matrix":1146,"./nested_property":1147,"./notifier":1148,"./search":1151,"./stats":1154,"d3":99}],1144:[function(require,module,exports){
+},{"./coerce":1137,"./dates":1138,"./extend":1140,"./is_plain_object":1146,"./loggers":1147,"./matrix":1148,"./nested_property":1149,"./notifier":1150,"./search":1153,"./stats":1156,"d3":101}],1146:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -74484,7 +74616,7 @@ module.exports = function isPlainObject(obj) {
     );
 };
 
-},{}],1145:[function(require,module,exports){
+},{}],1147:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -74551,7 +74683,7 @@ loggers.error = function() {
 };
 /* eslint-enable no-console */
 
-},{"../plot_api/plot_config":1159}],1146:[function(require,module,exports){
+},{"../plot_api/plot_config":1161}],1148:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -74661,7 +74793,7 @@ exports.apply2DTransform2 = function(transform) {
     };
 };
 
-},{}],1147:[function(require,module,exports){
+},{}],1149:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -74917,7 +75049,7 @@ function badContainer(container, propStr, propParts) {
     };
 }
 
-},{"fast-isnumeric":107}],1148:[function(require,module,exports){
+},{"fast-isnumeric":109}],1150:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -74994,7 +75126,7 @@ module.exports = function(text, displayLength) {
         });
 };
 
-},{"d3":99,"fast-isnumeric":107}],1149:[function(require,module,exports){
+},{"d3":101,"fast-isnumeric":109}],1151:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -75234,7 +75366,7 @@ polygon.filter = function filter(pts, tolerance) {
     };
 };
 
-},{"./matrix":1146}],1150:[function(require,module,exports){
+},{"./matrix":1148}],1152:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -75437,7 +75569,7 @@ queue.plotDo = function(gd, func, args) {
 
 module.exports = queue;
 
-},{"../plotly":1163}],1151:[function(require,module,exports){
+},{"../plotly":1165}],1153:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -75549,7 +75681,7 @@ exports.roundUp = function(val, arrayIn, reverse) {
     return arrayIn[low];
 };
 
-},{"../lib":1143,"fast-isnumeric":107}],1152:[function(require,module,exports){
+},{"../lib":1145,"fast-isnumeric":109}],1154:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -75572,7 +75704,7 @@ module.exports = function setCursor(el3, csr) {
     if(csr) el3.classed('cursor-' + csr, true);
 };
 
-},{}],1153:[function(require,module,exports){
+},{}],1155:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -75621,7 +75753,7 @@ module.exports = function showWebGlMsg(scene) {
     return false;
 };
 
-},{"../components/color":1065}],1154:[function(require,module,exports){
+},{"../components/color":1067}],1156:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -75717,7 +75849,7 @@ exports.interp = function(arr, n) {
     return frac * arr[Math.ceil(n)] + (1 - frac) * arr[Math.floor(n)];
 };
 
-},{"fast-isnumeric":107}],1155:[function(require,module,exports){
+},{"fast-isnumeric":109}],1157:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -75739,7 +75871,7 @@ function str2RgbaArray(color) {
 
 module.exports = str2RgbaArray;
 
-},{"arraytools":87,"tinycolor2":1059}],1156:[function(require,module,exports){
+},{"arraytools":89,"tinycolor2":1061}],1158:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -76223,7 +76355,7 @@ util.makeEditable = function(context, _delegate, options) {
     return d3.rebind(this, dispatch, 'on');
 };
 
-},{"../constants/xmlns_namespaces":1131,"../lib":1143,"../plotly":1163,"d3":99}],1157:[function(require,module,exports){
+},{"../constants/xmlns_namespaces":1133,"../lib":1145,"../plotly":1165,"d3":101}],1159:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -76259,7 +76391,7 @@ topojsonUtils.getTopojsonFeatures = function(trace, topojson) {
     return topojsonFeature(topojson, obj).features;
 };
 
-},{"../plots/geo/constants":1185,"topojson":1060}],1158:[function(require,module,exports){
+},{"../plots/geo/constants":1187,"topojson":1062}],1160:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -77812,6 +77944,7 @@ Plotly.animate = function animate (gd, newData, transitionOpts, traces) {
         }
         gd._fullData[traces[i]].x = gd.data[traces[i]].x;
         gd._fullData[traces[i]].y = gd.data[traces[i]].y;
+        gd._fullData[traces[i]].key = gd.data[traces[i]].key;
     }
 
     doCalcdata(gd);
@@ -77852,6 +77985,8 @@ Plotly.animate = function animate (gd, newData, transitionOpts, traces) {
             module.animate(gd, contFull, newData[i], transitionOpts);
         }
     }
+
+    //Plots.style(gd);
 
     /*
     for(var i = 0; i < gd.calcdata.length; i++) {
@@ -79475,7 +79610,7 @@ function cloneTraceDefinitions (gd) {
     }
 }
 
-},{"../components/color":1065,"../components/drawing":1087,"../components/errorbars":1093,"../components/images":1099,"../components/legend":1107,"../components/modebar/manage":1111,"../components/rangeselector":1118,"../components/rangeslider":1123,"../components/shapes":1126,"../components/titles":1127,"../constants/xmlns_namespaces":1131,"../lib":1143,"../lib/events":1137,"../lib/queue":1150,"../plotly":1163,"../plots/cartesian/graph_interact":1173,"../plots/plots":1215,"d3":99,"fast-isnumeric":107,"gl-mat4/fromQuat":254}],1159:[function(require,module,exports){
+},{"../components/color":1067,"../components/drawing":1089,"../components/errorbars":1095,"../components/images":1101,"../components/legend":1109,"../components/modebar/manage":1113,"../components/rangeselector":1120,"../components/rangeslider":1125,"../components/shapes":1128,"../components/titles":1129,"../constants/xmlns_namespaces":1133,"../lib":1145,"../lib/events":1139,"../lib/queue":1152,"../plotly":1165,"../plots/cartesian/graph_interact":1175,"../plots/plots":1217,"d3":101,"fast-isnumeric":109,"gl-mat4/fromQuat":256}],1161:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -79578,7 +79713,7 @@ function defaultSetBackground(gd, bgColor) {
     catch(e) { Lib.error(e); }
 }
 
-},{"../lib":1143}],1160:[function(require,module,exports){
+},{"../lib":1145}],1162:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -79904,7 +80039,7 @@ function handleLinkedToArray(layoutAttributes) {
     PlotSchema.crawl(layoutAttributes, callback);
 }
 
-},{"../lib":1143,"../plotly":1163,"../plots/plots":1215,"../plots/polar/area_attributes":1216,"../plots/polar/axis_attributes":1217}],1161:[function(require,module,exports){
+},{"../lib":1145,"../plotly":1165,"../plots/plots":1217,"../plots/polar/area_attributes":1218,"../plots/polar/axis_attributes":1219}],1163:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -79930,7 +80065,7 @@ module.exports = function setPlotConfig(configObj) {
     return Lib.extendFlat(Plotly.defaultConfig, configObj);
 };
 
-},{"../lib":1143,"../plotly":1163}],1162:[function(require,module,exports){
+},{"../lib":1145,"../plotly":1165}],1164:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -80043,7 +80178,7 @@ function toImage(gd, opts) {
 
 module.exports = toImage;
 
-},{"../lib":1143,"../plotly":1163,"../snapshot":1232,"fast-isnumeric":107}],1163:[function(require,module,exports){
+},{"../lib":1145,"../plotly":1165,"../snapshot":1234,"fast-isnumeric":109}],1165:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -80130,7 +80265,7 @@ exports.PlotSchema = require('./plot_api/plot_schema');
 // imaging routines
 exports.Snapshot = require('./snapshot');
 
-},{"../build/plotcss":24,"./components/annotations":1063,"./components/color":1065,"./components/colorbar":1070,"./components/colorscale":1078,"./components/drawing":1087,"./components/errorbars":1093,"./components/images":1099,"./components/legend":1107,"./components/modebar":1110,"./components/shapes":1126,"./fonts/mathjax_config":1133,"./lib":1143,"./lib/queue":1150,"./lib/svg_text_utils":1156,"./plot_api/plot_api":1158,"./plot_api/plot_config":1159,"./plot_api/plot_schema":1160,"./plots/cartesian/axes":1166,"./plots/cartesian/graph_interact":1173,"./plots/plots":1215,"./plots/polar/micropolar":1218,"./snapshot":1232,"./traces/scatter":1327,"es6-promise":106}],1164:[function(require,module,exports){
+},{"../build/plotcss":26,"./components/annotations":1065,"./components/color":1067,"./components/colorbar":1072,"./components/colorscale":1080,"./components/drawing":1089,"./components/errorbars":1095,"./components/images":1101,"./components/legend":1109,"./components/modebar":1112,"./components/shapes":1128,"./fonts/mathjax_config":1135,"./lib":1145,"./lib/queue":1152,"./lib/svg_text_utils":1158,"./plot_api/plot_api":1160,"./plot_api/plot_config":1161,"./plot_api/plot_schema":1162,"./plots/cartesian/axes":1168,"./plots/cartesian/graph_interact":1175,"./plots/plots":1217,"./plots/polar/micropolar":1220,"./snapshot":1234,"./traces/scatter":1329,"es6-promise":108}],1166:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -80234,7 +80369,7 @@ module.exports = {
     }
 };
 
-},{}],1165:[function(require,module,exports){
+},{}],1167:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -80273,7 +80408,7 @@ module.exports = {
     }
 };
 
-},{}],1166:[function(require,module,exports){
+},{}],1168:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -82246,7 +82381,7 @@ function swapAxisAttrs(layout, key, xFullAxes, yFullAxes) {
 // rather than built-in % which gives a negative value for negative v
 function mod(v, d) { return ((v % d) + d) % d; }
 
-},{"../../components/color":1065,"../../components/drawing":1087,"../../components/titles":1127,"../../lib":1143,"../../lib/svg_text_utils":1156,"../../plotly":1163,"./axis_ids":1168,"./layout_attributes":1175,"./layout_defaults":1176,"./set_convert":1180,"d3":99,"fast-isnumeric":107}],1167:[function(require,module,exports){
+},{"../../components/color":1067,"../../components/drawing":1089,"../../components/titles":1129,"../../lib":1145,"../../lib/svg_text_utils":1158,"../../plotly":1165,"./axis_ids":1170,"./layout_attributes":1177,"./layout_defaults":1178,"./set_convert":1182,"d3":101,"fast-isnumeric":109}],1169:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -82529,7 +82664,7 @@ function category(a) {
     return curvecats > curvenums * 2;
 }
 
-},{"../../components/color/attributes":1064,"../../lib":1143,"../plots":1215,"./axis_ids":1168,"./category_order_defaults":1169,"./clean_datum":1170,"./layout_attributes":1175,"./ordered_categories":1177,"./set_convert":1180,"./tick_label_defaults":1181,"./tick_mark_defaults":1182,"./tick_value_defaults":1183,"fast-isnumeric":107,"tinycolor2":1059}],1168:[function(require,module,exports){
+},{"../../components/color/attributes":1066,"../../lib":1145,"../plots":1217,"./axis_ids":1170,"./category_order_defaults":1171,"./clean_datum":1172,"./layout_attributes":1177,"./ordered_categories":1179,"./set_convert":1182,"./tick_label_defaults":1183,"./tick_mark_defaults":1184,"./tick_value_defaults":1185,"fast-isnumeric":109,"tinycolor2":1061}],1170:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -82650,7 +82785,7 @@ exports.getFromTrace = function(gd, fullTrace, type) {
     return ax;
 };
 
-},{"../../lib":1143,"../plots":1215,"./constants":1171}],1169:[function(require,module,exports){
+},{"../../lib":1145,"../plots":1217,"./constants":1173}],1171:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -82684,7 +82819,7 @@ module.exports = function handleCategoryOrderDefaults(containerIn, containerOut,
     }
 };
 
-},{}],1170:[function(require,module,exports){
+},{}],1172:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -82723,7 +82858,7 @@ module.exports = function cleanDatum(c) {
     return c;
 };
 
-},{"../../lib":1143,"fast-isnumeric":107}],1171:[function(require,module,exports){
+},{"../../lib":1145,"fast-isnumeric":109}],1173:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -82801,7 +82936,7 @@ module.exports = {
     REDRAWDELAY: 50
 };
 
-},{}],1172:[function(require,module,exports){
+},{}],1174:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -83473,7 +83608,7 @@ function removeZoombox(gd) {
         .remove();
 }
 
-},{"../../components/color":1065,"../../components/dragelement":1085,"../../components/drawing":1087,"../../lib":1143,"../../lib/setcursor":1152,"../../lib/svg_text_utils":1156,"../../plotly":1163,"./axes":1166,"./constants":1171,"./select":1179,"d3":99,"tinycolor2":1059}],1173:[function(require,module,exports){
+},{"../../components/color":1067,"../../components/dragelement":1087,"../../components/drawing":1089,"../../lib":1145,"../../lib/setcursor":1154,"../../lib/svg_text_utils":1158,"../../plotly":1165,"./axes":1168,"./constants":1173,"./select":1181,"d3":101,"tinycolor2":1061}],1175:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -84815,7 +84950,7 @@ fx.inbox = function(v0, v1) {
     return Infinity;
 };
 
-},{"../../components/color":1065,"../../components/dragelement":1085,"../../components/drawing":1087,"../../lib":1143,"../../lib/events":1137,"../../lib/svg_text_utils":1156,"./axes":1166,"./constants":1171,"./dragbox":1172,"d3":99,"fast-isnumeric":107,"tinycolor2":1059}],1174:[function(require,module,exports){
+},{"../../components/color":1067,"../../components/dragelement":1087,"../../components/drawing":1089,"../../lib":1145,"../../lib/events":1139,"../../lib/svg_text_utils":1158,"./axes":1168,"./constants":1173,"./dragbox":1174,"d3":101,"fast-isnumeric":109,"tinycolor2":1061}],1176:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -84902,7 +85037,7 @@ exports.plot = function(gd) {
     }
 };
 
-},{"../plots":1215,"./attributes":1165,"./constants":1171}],1175:[function(require,module,exports){
+},{"../plots":1217,"./attributes":1167,"./constants":1173}],1177:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -85415,7 +85550,7 @@ module.exports = {
     }
 };
 
-},{"../../components/color/attributes":1064,"../../components/rangeselector/attributes":1112,"../../components/rangeslider/attributes":1119,"../../lib/extend":1138,"../font_attributes":1184,"./constants":1171}],1176:[function(require,module,exports){
+},{"../../components/color/attributes":1066,"../../components/rangeselector/attributes":1114,"../../components/rangeslider/attributes":1121,"../../lib/extend":1140,"../font_attributes":1186,"./constants":1173}],1178:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -85588,7 +85723,7 @@ module.exports = function supplyLayoutDefaults(layoutIn, layoutOut, fullData) {
     });
 };
 
-},{"../../components/color":1065,"../../components/rangeselector":1118,"../../components/rangeslider":1123,"../../lib":1143,"../plots":1215,"./axis_defaults":1167,"./axis_ids":1168,"./constants":1171,"./layout_attributes":1175,"./position_defaults":1178}],1177:[function(require,module,exports){
+},{"../../components/color":1067,"../../components/rangeselector":1120,"../../components/rangeslider":1125,"../../lib":1145,"../plots":1217,"./axis_defaults":1169,"./axis_ids":1170,"./constants":1173,"./layout_attributes":1177,"./position_defaults":1180}],1179:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -85667,7 +85802,7 @@ module.exports = function orderedCategories(axisLetter, categoryorder, categorya
     }
 };
 
-},{"d3":99}],1178:[function(require,module,exports){
+},{"d3":101}],1180:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -85732,7 +85867,7 @@ module.exports = function handlePositionDefaults(containerIn, containerOut, coer
     return containerOut;
 };
 
-},{"../../lib":1143,"fast-isnumeric":107}],1179:[function(require,module,exports){
+},{"../../lib":1145,"fast-isnumeric":109}],1181:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -85932,7 +86067,7 @@ module.exports = function prepSelect(e, startX, startY, dragOptions, mode) {
     };
 };
 
-},{"../../components/color":1065,"../../lib/polygon":1149,"./axes":1166,"./constants":1171}],1180:[function(require,module,exports){
+},{"../../components/color":1067,"../../lib/polygon":1151,"./axes":1168,"./constants":1173}],1182:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -86176,7 +86311,7 @@ module.exports = function setConvert(ax) {
     ax._forceTick0 = null;
 };
 
-},{"../../lib":1143,"./axis_ids":1168,"./clean_datum":1170,"./constants":1171,"d3":99,"fast-isnumeric":107}],1181:[function(require,module,exports){
+},{"../../lib":1145,"./axis_ids":1170,"./clean_datum":1172,"./constants":1173,"d3":101,"fast-isnumeric":109}],1183:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -86259,7 +86394,7 @@ function getShowAttrDflt(containerIn) {
     }
 }
 
-},{"../../lib":1143}],1182:[function(require,module,exports){
+},{"../../lib":1145}],1184:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -86292,7 +86427,7 @@ module.exports = function handleTickDefaults(containerIn, containerOut, coerce, 
     }
 };
 
-},{"../../lib":1143,"./layout_attributes":1175}],1183:[function(require,module,exports){
+},{"../../lib":1145,"./layout_attributes":1177}],1185:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -86333,7 +86468,7 @@ module.exports = function handleTickValueDefaults(containerIn, containerOut, coe
     }
 };
 
-},{"fast-isnumeric":107}],1184:[function(require,module,exports){
+},{"fast-isnumeric":109}],1186:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -86375,7 +86510,7 @@ module.exports = {
     }
 };
 
-},{}],1185:[function(require,module,exports){
+},{}],1187:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -86533,7 +86668,7 @@ params.layerNameToAdjective = {
 // base layers drawn over choropleth
 params.baseLayersOverChoropleth = ['rivers', 'lakes'];
 
-},{}],1186:[function(require,module,exports){
+},{}],1188:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -87027,7 +87162,7 @@ function createMockAxis(fullLayout) {
     return mockAxis;
 }
 
-},{"../../components/color":1065,"../../components/drawing":1087,"../../constants/xmlns_namespaces":1131,"../../lib/filter_visible":1139,"../../lib/topojson_utils":1157,"../../plots/cartesian/axes":1166,"./constants":1185,"./projections":1193,"./set_scale":1194,"./zoom":1195,"./zoom_reset":1196,"d3":99,"topojson":1060}],1187:[function(require,module,exports){
+},{"../../components/color":1067,"../../components/drawing":1089,"../../constants/xmlns_namespaces":1133,"../../lib/filter_visible":1141,"../../lib/topojson_utils":1159,"../../plots/cartesian/axes":1168,"./constants":1187,"./projections":1195,"./set_scale":1196,"./zoom":1197,"./zoom_reset":1198,"d3":101,"topojson":1062}],1189:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -87133,7 +87268,7 @@ exports.toSVG = function(gd) {
     }
 };
 
-},{"../../plots/plots":1215,"./geo":1186,"./layout/attributes":1188,"./layout/defaults":1191,"./layout/layout_attributes":1192}],1188:[function(require,module,exports){
+},{"../../plots/plots":1217,"./geo":1188,"./layout/attributes":1190,"./layout/defaults":1193,"./layout/layout_attributes":1194}],1190:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -87161,7 +87296,7 @@ module.exports = {
     }
 };
 
-},{}],1189:[function(require,module,exports){
+},{}],1191:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -87224,7 +87359,7 @@ module.exports = {
     }
 };
 
-},{"../../../components/color/attributes":1064}],1190:[function(require,module,exports){
+},{"../../../components/color/attributes":1066}],1192:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -87298,7 +87433,7 @@ module.exports = function supplyGeoAxisLayoutDefaults(geoLayoutIn, geoLayoutOut)
     }
 };
 
-},{"../../../lib":1143,"../constants":1185,"./axis_attributes":1189}],1191:[function(require,module,exports){
+},{"../../../lib":1145,"../constants":1187,"./axis_attributes":1191}],1193:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -87417,7 +87552,7 @@ function handleGeoDefaults(geoLayoutIn, geoLayoutOut, coerce) {
     ];
 }
 
-},{"../../subplot_defaults":1221,"../constants":1185,"./axis_defaults":1190,"./layout_attributes":1192}],1192:[function(require,module,exports){
+},{"../../subplot_defaults":1223,"../constants":1187,"./axis_defaults":1192,"./layout_attributes":1194}],1194:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -87676,7 +87811,7 @@ module.exports = {
     lataxis: geoAxesAttrs
 };
 
-},{"../../../components/color/attributes":1064,"../constants":1185,"./axis_attributes":1189}],1193:[function(require,module,exports){
+},{"../../../components/color/attributes":1066,"../constants":1187,"./axis_attributes":1191}],1195:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -88122,7 +88257,7 @@ function addProjectionsToD3(d3) {
 
 module.exports = addProjectionsToD3;
 
-},{}],1194:[function(require,module,exports){
+},{}],1196:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -88273,7 +88408,7 @@ function getBounds(projection, rangeBox) {
     return d3.geo.path().projection(projection).bounds(rangeBox);
 }
 
-},{"./constants/":1185,"d3":99}],1195:[function(require,module,exports){
+},{"./constants/":1187,"d3":101}],1197:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -88700,7 +88835,7 @@ function d3_eventDispatch(target) {
     return dispatch;
 }
 
-},{"d3":99}],1196:[function(require,module,exports){
+},{"d3":101}],1198:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -88735,7 +88870,7 @@ function createGeoZoomReset(geo, geoLayout) {
 
 module.exports = createGeoZoomReset;
 
-},{"../cartesian/graph_interact":1173}],1197:[function(require,module,exports){
+},{"../cartesian/graph_interact":1175}],1199:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -88890,7 +89025,7 @@ function createCamera(scene) {
     return result;
 }
 
-},{"mouse-change":1021,"mouse-wheel":1025}],1198:[function(require,module,exports){
+},{"mouse-change":1023,"mouse-wheel":1027}],1200:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -89133,7 +89268,7 @@ function createAxes2D(scene) {
 
 module.exports = createAxes2D;
 
-},{"../../lib/html2unicode":1142,"../../lib/str2rgbarray":1155,"../../plotly":1163}],1199:[function(require,module,exports){
+},{"../../lib/html2unicode":1144,"../../lib/str2rgbarray":1157,"../../plotly":1165}],1201:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -89246,7 +89381,7 @@ exports.toSVG = function(gd) {
     }
 };
 
-},{"../../constants/xmlns_namespaces":1131,"../cartesian/attributes":1165,"../plots":1215,"./scene2d":1200}],1200:[function(require,module,exports){
+},{"../../constants/xmlns_namespaces":1133,"../cartesian/attributes":1167,"../plots":1217,"./scene2d":1202}],1202:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -89783,7 +89918,7 @@ proto.hoverFormatter = function(axisName, val) {
     return Axes.tickText(axis, axis.c2l(val), 'hover').text;
 };
 
-},{"../../lib/html2unicode":1142,"../../lib/show_no_webgl_msg":1153,"../../plots/cartesian/axes":1166,"../../plots/cartesian/graph_interact":1173,"./camera":1197,"./convert":1198,"gl-plot2d":469,"gl-select-box":954,"gl-spikes2d":955}],1201:[function(require,module,exports){
+},{"../../lib/html2unicode":1144,"../../lib/show_no_webgl_msg":1155,"../../plots/cartesian/axes":1168,"../../plots/cartesian/graph_interact":1175,"./camera":1199,"./convert":1200,"gl-plot2d":471,"gl-select-box":956,"gl-spikes2d":957}],1203:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -90026,7 +90161,7 @@ function createCamera(element, options) {
     return camera;
 }
 
-},{"3d-view":68,"mouse-change":1021,"mouse-wheel":1025,"right-now":1051}],1202:[function(require,module,exports){
+},{"3d-view":70,"mouse-change":1023,"mouse-wheel":1027,"right-now":1053}],1204:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -90160,7 +90295,7 @@ function initAxes(gd, sceneLayout) {
     }
 }
 
-},{"../../constants/xmlns_namespaces":1131,"../plots":1215,"./layout/attributes":1203,"./layout/defaults":1207,"./layout/layout_attributes":1208,"./scene":1212,"./set_convert":1213}],1203:[function(require,module,exports){
+},{"../../constants/xmlns_namespaces":1133,"../plots":1217,"./layout/attributes":1205,"./layout/defaults":1209,"./layout/layout_attributes":1210,"./scene":1214,"./set_convert":1215}],1205:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -90188,7 +90323,7 @@ module.exports = {
     }
 };
 
-},{}],1204:[function(require,module,exports){
+},{}],1206:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -90304,7 +90439,7 @@ module.exports = {
     zerolinewidth: axesAttrs.zerolinewidth
 };
 
-},{"../../../components/color":1065,"../../../lib/extend":1138,"../../cartesian/layout_attributes":1175}],1205:[function(require,module,exports){
+},{"../../../components/color":1067,"../../../lib/extend":1140,"../../cartesian/layout_attributes":1177}],1207:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -90373,7 +90508,7 @@ module.exports = function supplyLayoutDefaults(layoutIn, layoutOut, options) {
     }
 };
 
-},{"../../../lib":1143,"../../cartesian/axis_defaults":1167,"./axis_attributes":1204,"tinycolor2":1059}],1206:[function(require,module,exports){
+},{"../../../lib":1145,"../../cartesian/axis_defaults":1169,"./axis_attributes":1206,"tinycolor2":1061}],1208:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -90529,7 +90664,7 @@ function createAxesOptions(plotlyOptions) {
 
 module.exports = createAxesOptions;
 
-},{"../../../lib/html2unicode":1142,"../../../lib/str2rgbarray":1155,"arraytools":87}],1207:[function(require,module,exports){
+},{"../../../lib/html2unicode":1144,"../../../lib/str2rgbarray":1157,"arraytools":89}],1209:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -90636,7 +90771,7 @@ function handleGl3dDefaults(sceneLayoutIn, sceneLayoutOut, coerce, opts) {
     coerce('hovermode', opts.getDfltFromLayout('hovermode'));
 }
 
-},{"../../../components/color":1065,"../../subplot_defaults":1221,"./axis_defaults":1205,"./layout_attributes":1208}],1208:[function(require,module,exports){
+},{"../../../components/color":1067,"../../subplot_defaults":1223,"./axis_defaults":1207,"./layout_attributes":1210}],1210:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -90806,7 +90941,7 @@ module.exports = {
     }
 };
 
-},{"../../../lib/extend":1138,"./axis_attributes":1204}],1209:[function(require,module,exports){
+},{"../../../lib/extend":1140,"./axis_attributes":1206}],1211:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -90852,7 +90987,7 @@ function createSpikeOptions(layout) {
 
 module.exports = createSpikeOptions;
 
-},{"../../../lib/str2rgbarray":1155}],1210:[function(require,module,exports){
+},{"../../../lib/str2rgbarray":1157}],1212:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -90947,7 +91082,7 @@ function computeTickMarks(scene) {
     scene.contourLevels = contourLevelsFromTicks(ticks);
 }
 
-},{"../../../lib/html2unicode":1142,"../../../plotly":1163}],1211:[function(require,module,exports){
+},{"../../../lib/html2unicode":1144,"../../../plotly":1165}],1213:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -90981,7 +91116,7 @@ function project(camera, v) {
 
 module.exports = project;
 
-},{}],1212:[function(require,module,exports){
+},{}],1214:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -91710,7 +91845,7 @@ proto.toImage = function(format) {
 
 module.exports = Scene;
 
-},{"../../lib":1143,"../../lib/show_no_webgl_msg":1153,"../../lib/str2rgbarray":1155,"../../plots/cartesian/axes":1166,"../../plots/cartesian/graph_interact":1173,"../../plots/plots":1215,"./camera":1201,"./layout/convert":1206,"./layout/spikes":1209,"./layout/tick_marks":1210,"./project":1211,"./set_convert":1213,"gl-plot3d":643}],1213:[function(require,module,exports){
+},{"../../lib":1145,"../../lib/show_no_webgl_msg":1155,"../../lib/str2rgbarray":1157,"../../plots/cartesian/axes":1168,"../../plots/cartesian/graph_interact":1175,"../../plots/plots":1217,"./camera":1203,"./layout/convert":1208,"./layout/spikes":1211,"./layout/tick_marks":1212,"./project":1213,"./set_convert":1215,"gl-plot3d":645}],1215:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -91732,7 +91867,7 @@ module.exports = function setConvert(containerOut) {
     containerOut.setScale = noop;
 };
 
-},{"../cartesian/axes":1166}],1214:[function(require,module,exports){
+},{"../cartesian/axes":1168}],1216:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -91922,7 +92057,7 @@ module.exports = {
     }
 };
 
-},{"../components/color/attributes":1064,"../plotly":1163,"./font_attributes":1184}],1215:[function(require,module,exports){
+},{"../components/color/attributes":1066,"../plotly":1165,"./font_attributes":1186}],1217:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -93028,7 +93163,7 @@ plots.graphJson = function(gd, dataonly, mode, output, useDefaults) {
     return (output === 'object') ? obj : JSON.stringify(obj);
 };
 
-},{"../components/color":1065,"../lib":1143,"../plotly":1163,"./attributes":1164,"./font_attributes":1184,"./layout_attributes":1214,"d3":99,"fast-isnumeric":107}],1216:[function(require,module,exports){
+},{"../components/color":1067,"../lib":1145,"../plotly":1165,"./attributes":1166,"./font_attributes":1186,"./layout_attributes":1216,"d3":101,"fast-isnumeric":109}],1218:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -93053,7 +93188,7 @@ module.exports = {
     }
 };
 
-},{"../../traces/scatter/attributes":1318}],1217:[function(require,module,exports){
+},{"../../traces/scatter/attributes":1320}],1219:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -93203,7 +93338,7 @@ module.exports = {
     }
 };
 
-},{"../../lib/extend":1138,"../cartesian/layout_attributes":1175}],1218:[function(require,module,exports){
+},{"../../lib/extend":1140,"../cartesian/layout_attributes":1177}],1220:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -94626,7 +94761,7 @@ var extendDeepAll = Plotly.Lib.extendDeepAll;
     return exports;
 };
 
-},{"../../plotly":1163,"./micropolar_manager":1219,"d3":99}],1219:[function(require,module,exports){
+},{"../../plotly":1165,"./micropolar_manager":1221,"d3":101}],1221:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -94709,7 +94844,7 @@ manager.fillLayout = function(_gd) {
     _gd._fullLayout = extendDeepAll(dflts, _gd.layout);
 };
 
-},{"../../plotly":1163,"./undo_manager":1220,"d3":99}],1220:[function(require,module,exports){
+},{"../../plotly":1165,"./undo_manager":1222,"d3":101}],1222:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -94775,7 +94910,7 @@ module.exports = function UndoManager() {
     };
 };
 
-},{}],1221:[function(require,module,exports){
+},{}],1223:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -94850,7 +94985,7 @@ module.exports = function handleSubplotDefaults(layoutIn, layoutOut, fullData, o
     }
 };
 
-},{"../lib":1143,"./plots":1215}],1222:[function(require,module,exports){
+},{"../lib":1145,"./plots":1217}],1224:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -94924,7 +95059,7 @@ exports.clean = function(newFullData, newFullLayout, oldFullData, oldFullLayout)
     }
 };
 
-},{"../../plots/plots":1215,"./layout/attributes":1223,"./layout/defaults":1226,"./layout/layout_attributes":1227,"./ternary":1228}],1223:[function(require,module,exports){
+},{"../../plots/plots":1217,"./layout/attributes":1225,"./layout/defaults":1228,"./layout/layout_attributes":1229,"./ternary":1230}],1225:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -94950,7 +95085,7 @@ module.exports = {
     }
 };
 
-},{}],1224:[function(require,module,exports){
+},{}],1226:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -95014,7 +95149,7 @@ module.exports = {
     }
 };
 
-},{"../../../lib/extend":1138,"../../cartesian/layout_attributes":1175}],1225:[function(require,module,exports){
+},{"../../../lib/extend":1140,"../../cartesian/layout_attributes":1177}],1227:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -95098,7 +95233,7 @@ module.exports = function supplyLayoutDefaults(containerIn, containerOut, option
     }
 };
 
-},{"../../../lib":1143,"../../cartesian/tick_label_defaults":1181,"../../cartesian/tick_mark_defaults":1182,"../../cartesian/tick_value_defaults":1183,"./axis_attributes":1224,"tinycolor2":1059}],1226:[function(require,module,exports){
+},{"../../../lib":1145,"../../cartesian/tick_label_defaults":1183,"../../cartesian/tick_mark_defaults":1184,"../../cartesian/tick_value_defaults":1185,"./axis_attributes":1226,"tinycolor2":1061}],1228:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -95161,7 +95296,7 @@ function handleTernaryDefaults(ternaryLayoutIn, ternaryLayoutOut, coerce, option
     }
 }
 
-},{"../../../components/color":1065,"../../subplot_defaults":1221,"./axis_defaults":1225,"./layout_attributes":1227}],1227:[function(require,module,exports){
+},{"../../../components/color":1067,"../../subplot_defaults":1223,"./axis_defaults":1227,"./layout_attributes":1229}],1229:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -95226,7 +95361,7 @@ module.exports = {
     caxis: ternaryAxesAttrs
 };
 
-},{"../../../components/color/attributes":1064,"./axis_attributes":1224}],1228:[function(require,module,exports){
+},{"../../../components/color/attributes":1066,"./axis_attributes":1226}],1230:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -95912,7 +96047,7 @@ function removeZoombox(gd) {
         .remove();
 }
 
-},{"../../components/color":1065,"../../components/dragelement":1085,"../../components/drawing":1087,"../../components/titles":1127,"../../lib":1143,"../../lib/extend":1138,"../../lib/filter_visible":1139,"../../plotly":1163,"../cartesian/axes":1166,"../cartesian/constants":1171,"../cartesian/graph_interact":1173,"../cartesian/select":1179,"../cartesian/set_convert":1180,"d3":99,"tinycolor2":1059}],1229:[function(require,module,exports){
+},{"../../components/color":1067,"../../components/dragelement":1087,"../../components/drawing":1089,"../../components/titles":1129,"../../lib":1145,"../../lib/extend":1140,"../../lib/filter_visible":1141,"../../plotly":1165,"../cartesian/axes":1168,"../cartesian/constants":1173,"../cartesian/graph_interact":1175,"../cartesian/select":1181,"../cartesian/set_convert":1182,"d3":101,"tinycolor2":1061}],1231:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -96068,7 +96203,7 @@ module.exports = function clonePlot(graphObj, options) {
     return plotTile;
 };
 
-},{"../plotly":1163}],1230:[function(require,module,exports){
+},{"../plotly":1165}],1232:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -96134,7 +96269,7 @@ function downloadImage(gd, opts) {
 
 module.exports = downloadImage;
 
-},{"../lib":1143,"../plot_api/to_image":1162,"./filesaver":1231}],1231:[function(require,module,exports){
+},{"../lib":1145,"../plot_api/to_image":1164,"./filesaver":1233}],1233:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -96202,7 +96337,7 @@ var fileSaver = function(url, name) {
 
 module.exports = fileSaver;
 
-},{}],1232:[function(require,module,exports){
+},{}],1234:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -96247,7 +96382,7 @@ var Snapshot = {
 
 module.exports = Snapshot;
 
-},{"./cloneplot":1229,"./download":1230,"./svgtoimg":1233,"./toimage":1234,"./tosvg":1235}],1233:[function(require,module,exports){
+},{"./cloneplot":1231,"./download":1232,"./svgtoimg":1235,"./toimage":1236,"./tosvg":1237}],1235:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -96378,7 +96513,7 @@ function svgToImg(opts) {
 
 module.exports = svgToImg;
 
-},{"../lib":1143,"events":5}],1234:[function(require,module,exports){
+},{"../lib":1145,"events":5}],1236:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -96457,7 +96592,7 @@ function toImage(gd, opts) {
 
 module.exports = toImage;
 
-},{"../lib":1143,"../plotly":1163,"events":5}],1235:[function(require,module,exports){
+},{"../lib":1145,"../plotly":1165,"events":5}],1237:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -96578,7 +96713,7 @@ module.exports = function toSVG(gd, format) {
     return s;
 };
 
-},{"../components/color":1065,"../components/drawing":1087,"../constants/xmlns_namespaces":1131,"../lib/svg_text_utils":1156,"d3":99}],1236:[function(require,module,exports){
+},{"../components/color":1067,"../components/drawing":1089,"../constants/xmlns_namespaces":1133,"../lib/svg_text_utils":1158,"d3":101}],1238:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -96606,7 +96741,7 @@ module.exports = function arraysToCalcdata(cd) {
     mergeArray(markerLine.width, cd, 'mlw');
 };
 
-},{"../../lib":1143}],1237:[function(require,module,exports){
+},{"../../lib":1145}],1239:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -96680,7 +96815,7 @@ module.exports = {
     }
 };
 
-},{"../scatter/attributes":1318}],1238:[function(require,module,exports){
+},{"../scatter/attributes":1320}],1240:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -96739,7 +96874,7 @@ module.exports = function calc(gd, trace) {
     return cd;
 };
 
-},{"../../components/colorscale/calc":1072,"../../components/colorscale/has_colorscale":1077,"../../plots/cartesian/axes":1166,"fast-isnumeric":107}],1239:[function(require,module,exports){
+},{"../../components/colorscale/calc":1074,"../../components/colorscale/has_colorscale":1079,"../../plots/cartesian/axes":1168,"fast-isnumeric":109}],1241:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -96781,7 +96916,7 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor, layout
     errorBarsSupplyDefaults(traceIn, traceOut, Color.defaultLine, {axis: 'x', inherit: 'y'});
 };
 
-},{"../../components/color":1065,"../../components/errorbars/defaults":1092,"../../lib":1143,"../bar/style_defaults":1247,"../scatter/xy_defaults":1339,"./attributes":1237}],1240:[function(require,module,exports){
+},{"../../components/color":1067,"../../components/errorbars/defaults":1094,"../../lib":1145,"../bar/style_defaults":1249,"../scatter/xy_defaults":1341,"./attributes":1239}],1242:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -96872,7 +97007,7 @@ module.exports = function hoverPoints(pointData, xval, yval, hovermode) {
     return [pointData];
 };
 
-},{"../../components/color":1065,"../../components/errorbars":1093,"../../plots/cartesian/graph_interact":1173}],1241:[function(require,module,exports){
+},{"../../components/color":1067,"../../components/errorbars":1095,"../../plots/cartesian/graph_interact":1175}],1243:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -96913,7 +97048,7 @@ Bar.meta = {
 
 module.exports = Bar;
 
-},{"../../plots/cartesian":1174,"../scatter/colorbar":1321,"./arrays_to_calcdata":1236,"./attributes":1237,"./calc":1238,"./defaults":1239,"./hover":1240,"./layout_attributes":1242,"./layout_defaults":1243,"./plot":1244,"./set_positions":1245,"./style":1246}],1242:[function(require,module,exports){
+},{"../../plots/cartesian":1176,"../scatter/colorbar":1323,"./arrays_to_calcdata":1238,"./attributes":1239,"./calc":1240,"./defaults":1241,"./hover":1242,"./layout_attributes":1244,"./layout_defaults":1245,"./plot":1246,"./set_positions":1247,"./style":1248}],1244:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -96978,7 +97113,7 @@ module.exports = {
     }
 };
 
-},{}],1243:[function(require,module,exports){
+},{}],1245:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -97036,7 +97171,7 @@ module.exports = function(layoutIn, layoutOut, fullData) {
     coerce('bargroupgap');
 };
 
-},{"../../lib":1143,"../../plots/cartesian/axes":1166,"../../plots/plots":1215,"./layout_attributes":1242}],1244:[function(require,module,exports){
+},{"../../lib":1145,"../../plots/cartesian/axes":1168,"../../plots/plots":1217,"./layout_attributes":1244}],1246:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -97148,7 +97283,7 @@ module.exports = function plot(gd, plotinfo, cdbar) {
 
 };
 
-},{"../../components/color":1065,"../../components/errorbars":1093,"../../lib":1143,"./arrays_to_calcdata":1236,"d3":99,"fast-isnumeric":107}],1245:[function(require,module,exports){
+},{"../../components/color":1067,"../../components/errorbars":1095,"../../lib":1145,"./arrays_to_calcdata":1238,"d3":101,"fast-isnumeric":109}],1247:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -97362,7 +97497,7 @@ module.exports = function setPositions(gd, plotinfo) {
     });
 };
 
-},{"../../lib":1143,"../../plots/cartesian/axes":1166,"../../plots/plots":1215,"fast-isnumeric":107}],1246:[function(require,module,exports){
+},{"../../lib":1145,"../../plots/cartesian/axes":1168,"../../plots/plots":1217,"fast-isnumeric":109}],1248:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -97441,7 +97576,7 @@ module.exports = function style(gd) {
     s.call(ErrorBars.style);
 };
 
-},{"../../components/color":1065,"../../components/drawing":1087,"../../components/errorbars":1093,"d3":99}],1247:[function(require,module,exports){
+},{"../../components/color":1067,"../../components/drawing":1089,"../../components/errorbars":1095,"d3":101}],1249:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -97478,7 +97613,7 @@ module.exports = function handleStyleDefaults(traceIn, traceOut, coerce, default
     coerce('marker.line.width');
 };
 
-},{"../../components/color":1065,"../../components/colorscale/defaults":1074,"../../components/colorscale/has_colorscale":1077}],1248:[function(require,module,exports){
+},{"../../components/color":1067,"../../components/colorscale/defaults":1076,"../../components/colorscale/has_colorscale":1079}],1250:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -97656,7 +97791,7 @@ module.exports = {
     fillcolor: scatterAttrs.fillcolor
 };
 
-},{"../../components/color/attributes":1064,"../../lib/extend":1138,"../scatter/attributes":1318}],1249:[function(require,module,exports){
+},{"../../components/color/attributes":1066,"../../lib/extend":1140,"../scatter/attributes":1320}],1251:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -97805,7 +97940,7 @@ module.exports = function calc(gd, trace) {
     return cd;
 };
 
-},{"../../lib":1143,"../../plots/cartesian/axes":1166,"fast-isnumeric":107}],1250:[function(require,module,exports){
+},{"../../lib":1145,"../../plots/cartesian/axes":1168,"fast-isnumeric":109}],1252:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -97874,7 +98009,7 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor) {
     }
 };
 
-},{"../../components/color":1065,"../../lib":1143,"./attributes":1248}],1251:[function(require,module,exports){
+},{"../../components/color":1067,"../../lib":1145,"./attributes":1250}],1253:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -97983,7 +98118,7 @@ module.exports = function hoverPoints(pointData, xval, yval, hovermode) {
     return closeData;
 };
 
-},{"../../components/color":1065,"../../lib":1143,"../../plots/cartesian/axes":1166,"../../plots/cartesian/graph_interact":1173}],1252:[function(require,module,exports){
+},{"../../components/color":1067,"../../lib":1145,"../../plots/cartesian/axes":1168,"../../plots/cartesian/graph_interact":1175}],1254:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -98029,7 +98164,7 @@ Box.meta = {
 
 module.exports = Box;
 
-},{"../../plots/cartesian":1174,"./attributes":1248,"./calc":1249,"./defaults":1250,"./hover":1251,"./layout_attributes":1253,"./layout_defaults":1254,"./plot":1255,"./set_positions":1256,"./style":1257}],1253:[function(require,module,exports){
+},{"../../plots/cartesian":1176,"./attributes":1250,"./calc":1251,"./defaults":1252,"./hover":1253,"./layout_attributes":1255,"./layout_defaults":1256,"./plot":1257,"./set_positions":1258,"./style":1259}],1255:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -98080,7 +98215,7 @@ module.exports = {
     }
 };
 
-},{}],1254:[function(require,module,exports){
+},{}],1256:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -98114,7 +98249,7 @@ module.exports = function supplyLayoutDefaults(layoutIn, layoutOut, fullData) {
     coerce('boxgroupgap');
 };
 
-},{"../../lib":1143,"../../plots/plots":1215,"./layout_attributes":1253}],1255:[function(require,module,exports){
+},{"../../lib":1145,"../../plots/plots":1217,"./layout_attributes":1255}],1257:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -98341,7 +98476,7 @@ module.exports = function plot(gd, plotinfo, cdbox) {
     });
 };
 
-},{"../../components/drawing":1087,"../../lib":1143,"d3":99}],1256:[function(require,module,exports){
+},{"../../components/drawing":1089,"../../lib":1145,"d3":101}],1258:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -98434,7 +98569,7 @@ module.exports = function setPositions(gd, plotinfo) {
     }
 };
 
-},{"../../lib":1143,"../../plots/cartesian/axes":1166,"../../plots/plots":1215}],1257:[function(require,module,exports){
+},{"../../lib":1145,"../../plots/cartesian/axes":1168,"../../plots/plots":1217}],1259:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -98473,7 +98608,7 @@ module.exports = function style(gd) {
         });
 };
 
-},{"../../components/color":1065,"../../components/drawing":1087,"d3":99}],1258:[function(require,module,exports){
+},{"../../components/color":1067,"../../components/drawing":1089,"d3":101}],1260:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -98529,7 +98664,7 @@ module.exports = {
     }
 };
 
-},{"../../components/colorscale/attributes":1071,"../../lib/extend":1138,"../../plots/attributes":1164,"../scattergeo/attributes":1346}],1259:[function(require,module,exports){
+},{"../../components/colorscale/attributes":1073,"../../lib/extend":1140,"../../plots/attributes":1166,"../scattergeo/attributes":1348}],1261:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -98548,7 +98683,7 @@ module.exports = function calc(gd, trace) {
     colorscaleCalc(trace, trace.z, '', 'z');
 };
 
-},{"../../components/colorscale/calc":1072}],1260:[function(require,module,exports){
+},{"../../components/colorscale/calc":1074}],1262:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -98603,7 +98738,7 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor, layout
     coerce('hoverinfo', (layout._dataLength === 1) ? 'location+z+text' : undefined);
 };
 
-},{"../../components/colorscale/defaults":1074,"../../lib":1143,"./attributes":1258}],1261:[function(require,module,exports){
+},{"../../components/colorscale/defaults":1076,"../../lib":1145,"./attributes":1260}],1263:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -98638,7 +98773,7 @@ Choropleth.meta = {
 
 module.exports = Choropleth;
 
-},{"../../plots/geo":1187,"../heatmap/colorbar":1275,"./attributes":1258,"./calc":1259,"./defaults":1260,"./plot":1262}],1262:[function(require,module,exports){
+},{"../../plots/geo":1189,"../heatmap/colorbar":1277,"./attributes":1260,"./calc":1261,"./defaults":1262,"./plot":1264}],1264:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -98859,7 +98994,7 @@ function makeEventDataFunc(trace) {
     };
 }
 
-},{"../../components/color":1065,"../../components/colorscale/get_scale":1076,"../../components/colorscale/make_scale_function":1081,"../../components/drawing":1087,"../../lib/array_to_calc_item":1134,"../../lib/geo_location_utils":1140,"../../lib/topojson_utils":1157,"../../plots/cartesian/axes":1166,"../../plots/cartesian/graph_interact":1173,"../../plots/geo/constants":1185,"./attributes":1258,"d3":99}],1263:[function(require,module,exports){
+},{"../../components/color":1067,"../../components/colorscale/get_scale":1078,"../../components/colorscale/make_scale_function":1083,"../../components/drawing":1089,"../../lib/array_to_calc_item":1136,"../../lib/geo_location_utils":1142,"../../lib/topojson_utils":1159,"../../plots/cartesian/axes":1168,"../../plots/cartesian/graph_interact":1175,"../../plots/geo/constants":1187,"./attributes":1260,"d3":101}],1265:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -98986,7 +99121,7 @@ module.exports = {
     }
 };
 
-},{"../../lib/extend":1138,"../heatmap/attributes":1273,"../scatter/attributes":1318}],1264:[function(require,module,exports){
+},{"../../lib/extend":1140,"../heatmap/attributes":1275,"../scatter/attributes":1320}],1266:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -99039,7 +99174,7 @@ module.exports = function calc(gd, trace) {
     return cd;
 };
 
-},{"../../plots/cartesian/axes":1166,"../heatmap/calc":1274}],1265:[function(require,module,exports){
+},{"../../plots/cartesian/axes":1168,"../heatmap/calc":1276}],1267:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -99100,7 +99235,7 @@ module.exports = function colorbar(gd, cd) {
         .options(trace.colorbar)();
 };
 
-},{"../../components/colorbar/draw":1068,"../../plots/plots":1215,"./make_color_map":1269}],1266:[function(require,module,exports){
+},{"../../components/colorbar/draw":1070,"../../plots/plots":1217,"./make_color_map":1271}],1268:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -99144,7 +99279,7 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor, layout
     handleStyleDefaults(traceIn, traceOut, coerce, layout);
 };
 
-},{"../../lib":1143,"../contour/style_defaults":1272,"../heatmap/has_columns":1278,"../heatmap/xyz_defaults":1284,"./attributes":1263}],1267:[function(require,module,exports){
+},{"../../lib":1145,"../contour/style_defaults":1274,"../heatmap/has_columns":1280,"../heatmap/xyz_defaults":1286,"./attributes":1265}],1269:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -99163,7 +99298,7 @@ module.exports = function hoverPoints(pointData, xval, yval, hovermode) {
     return heatmapHoverPoints(pointData, xval, yval, hovermode, true);
 };
 
-},{"../heatmap/hover":1279}],1268:[function(require,module,exports){
+},{"../heatmap/hover":1281}],1270:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -99204,7 +99339,7 @@ Contour.meta = {
 
 module.exports = Contour;
 
-},{"../../plots/cartesian":1174,"./attributes":1263,"./calc":1264,"./colorbar":1265,"./defaults":1266,"./hover":1267,"./plot":1270,"./style":1271}],1269:[function(require,module,exports){
+},{"../../plots/cartesian":1176,"./attributes":1265,"./calc":1266,"./colorbar":1267,"./defaults":1268,"./hover":1269,"./plot":1272,"./style":1273}],1271:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -99284,7 +99419,7 @@ module.exports = function makeColorMap(trace) {
     return colorMap;
 };
 
-},{"../../components/colorscale/get_scale":1076,"d3":99}],1270:[function(require,module,exports){
+},{"../../components/colorscale/get_scale":1078,"d3":101}],1272:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -99994,7 +100129,7 @@ function makeClipMask(cd0) {
     return z;
 }
 
-},{"../../components/drawing":1087,"../../lib":1143,"../heatmap/plot":1282,"d3":99}],1271:[function(require,module,exports){
+},{"../../components/drawing":1089,"../../lib":1145,"../heatmap/plot":1284,"d3":101}],1273:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -100051,7 +100186,7 @@ module.exports = function style(gd) {
     heatmapStyle(gd);
 };
 
-},{"../../components/drawing":1087,"../heatmap/style":1283,"./make_color_map":1269,"d3":99}],1272:[function(require,module,exports){
+},{"../../components/drawing":1089,"../heatmap/style":1285,"./make_color_map":1271,"d3":101}],1274:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -100087,7 +100222,7 @@ module.exports = function handleStyleDefaults(traceIn, traceOut, coerce, layout)
     }
 };
 
-},{"../../components/colorscale/defaults":1074}],1273:[function(require,module,exports){
+},{"../../components/colorscale/defaults":1076}],1275:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -100180,7 +100315,7 @@ module.exports = {
     }
 };
 
-},{"../../components/colorscale/attributes":1071,"../../lib/extend":1138,"../scatter/attributes":1318}],1274:[function(require,module,exports){
+},{"../../components/colorscale/attributes":1073,"../../lib/extend":1140,"../scatter/attributes":1320}],1276:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -100616,7 +100751,7 @@ function iterateInterp2d(z, emptyPoints, overshoot) {
     return maxFractionalChange;
 }
 
-},{"../../components/colorscale/calc":1072,"../../lib":1143,"../../plots/cartesian/axes":1166,"../../plots/plots":1215,"../histogram2d/calc":1294,"./convert_column_xyz":1276,"./has_columns":1278,"./max_row_length":1281,"fast-isnumeric":107}],1275:[function(require,module,exports){
+},{"../../components/colorscale/calc":1074,"../../lib":1145,"../../plots/cartesian/axes":1168,"../../plots/plots":1217,"../histogram2d/calc":1296,"./convert_column_xyz":1278,"./has_columns":1280,"./max_row_length":1283,"fast-isnumeric":109}],1277:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -100662,7 +100797,7 @@ module.exports = function colorbar(gd, cd) {
         .options(trace.colorbar)();
 };
 
-},{"../../components/colorbar/draw":1068,"../../components/colorscale/get_scale":1076,"../../lib":1143,"../../plots/plots":1215,"d3":99,"fast-isnumeric":107}],1276:[function(require,module,exports){
+},{"../../components/colorbar/draw":1070,"../../components/colorscale/get_scale":1078,"../../lib":1145,"../../plots/plots":1217,"d3":101,"fast-isnumeric":109}],1278:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -100719,7 +100854,7 @@ module.exports = function convertColumnXYZ(trace, xa, ya) {
     if(hasColumnText) trace.text = text;
 };
 
-},{"../../lib":1143}],1277:[function(require,module,exports){
+},{"../../lib":1145}],1279:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -100757,7 +100892,7 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor, layout
     colorscaleDefaults(traceIn, traceOut, layout, coerce, {prefix: '', cLetter: 'z'});
 };
 
-},{"../../components/colorscale/defaults":1074,"../../lib":1143,"./attributes":1273,"./has_columns":1278,"./xyz_defaults":1284}],1278:[function(require,module,exports){
+},{"../../components/colorscale/defaults":1076,"../../lib":1145,"./attributes":1275,"./has_columns":1280,"./xyz_defaults":1286}],1280:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -100773,7 +100908,7 @@ module.exports = function(trace) {
     return !Array.isArray(trace.z[0]);
 };
 
-},{}],1279:[function(require,module,exports){
+},{}],1281:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -100887,7 +101022,7 @@ module.exports = function hoverPoints(pointData, xval, yval, hovermode, contour)
     })];
 };
 
-},{"../../lib":1143,"../../plots/cartesian/graph_interact":1173}],1280:[function(require,module,exports){
+},{"../../lib":1145,"../../plots/cartesian/graph_interact":1175}],1282:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -100942,7 +101077,7 @@ Heatmap.meta = {
 
 module.exports = Heatmap;
 
-},{"../../plots/cartesian":1174,"./attributes":1273,"./calc":1274,"./colorbar":1275,"./defaults":1277,"./hover":1279,"./plot":1282,"./style":1283}],1281:[function(require,module,exports){
+},{"../../plots/cartesian":1176,"./attributes":1275,"./calc":1276,"./colorbar":1277,"./defaults":1279,"./hover":1281,"./plot":1284,"./style":1285}],1283:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -100964,7 +101099,7 @@ module.exports = function maxRowLength(z) {
     return len;
 };
 
-},{}],1282:[function(require,module,exports){
+},{}],1284:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -101354,7 +101489,7 @@ function plotOne(gd, plotinfo, cd) {
     });
 }
 
-},{"../../components/colorscale/get_scale":1076,"../../constants/xmlns_namespaces":1131,"../../lib":1143,"../../plots/plots":1215,"./max_row_length":1281,"d3":99,"tinycolor2":1059}],1283:[function(require,module,exports){
+},{"../../components/colorscale/get_scale":1078,"../../constants/xmlns_namespaces":1133,"../../lib":1145,"../../plots/plots":1217,"./max_row_length":1283,"d3":101,"tinycolor2":1061}],1285:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -101375,7 +101510,7 @@ module.exports = function style(gd) {
         });
 };
 
-},{"d3":99}],1284:[function(require,module,exports){
+},{"d3":101}],1286:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -101464,7 +101599,7 @@ function isValidZ(z) {
     return (allRowsAreArrays && oneRowIsFilled && hasOneNumber);
 }
 
-},{"./has_columns":1278,"fast-isnumeric":107}],1285:[function(require,module,exports){
+},{"./has_columns":1280,"fast-isnumeric":109}],1287:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -101643,7 +101778,7 @@ function makeBinsAttr(axLetter) {
     };
 }
 
-},{"../../lib":1143,"../bar/attributes":1237}],1286:[function(require,module,exports){
+},{"../../lib":1145,"../bar/attributes":1239}],1288:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -101669,7 +101804,7 @@ module.exports = function doAvg(size, counts) {
     return total;
 };
 
-},{}],1287:[function(require,module,exports){
+},{}],1289:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -101699,7 +101834,7 @@ module.exports = function handleBinDefaults(traceIn, traceOut, coerce, binDirect
     return traceOut;
 };
 
-},{}],1288:[function(require,module,exports){
+},{}],1290:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -101773,7 +101908,7 @@ module.exports = {
     }
 };
 
-},{"fast-isnumeric":107}],1289:[function(require,module,exports){
+},{"fast-isnumeric":109}],1291:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -101903,7 +102038,7 @@ module.exports = function calc(gd, trace) {
     return cd;
 };
 
-},{"../../lib":1143,"../../plots/cartesian/axes":1166,"./average":1286,"./bin_functions":1288,"./norm_functions":1292,"fast-isnumeric":107}],1290:[function(require,module,exports){
+},{"../../lib":1145,"../../plots/cartesian/axes":1168,"./average":1288,"./bin_functions":1290,"./norm_functions":1294,"fast-isnumeric":109}],1292:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -101955,7 +102090,7 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor, layout
     errorBarsSupplyDefaults(traceIn, traceOut, Color.defaultLine, {axis: 'x', inherit: 'y'});
 };
 
-},{"../../components/color":1065,"../../components/errorbars/defaults":1092,"../../lib":1143,"../bar/style_defaults":1247,"./attributes":1285,"./bin_defaults":1287}],1291:[function(require,module,exports){
+},{"../../components/color":1067,"../../components/errorbars/defaults":1094,"../../lib":1145,"../bar/style_defaults":1249,"./attributes":1287,"./bin_defaults":1289}],1293:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -102010,7 +102145,7 @@ Histogram.meta = {
 
 module.exports = Histogram;
 
-},{"../../plots/cartesian":1174,"../bar/hover":1240,"../bar/layout_attributes":1242,"../bar/layout_defaults":1243,"../bar/plot":1244,"../bar/set_positions":1245,"../bar/style":1246,"../scatter/colorbar":1321,"./attributes":1285,"./calc":1289,"./defaults":1290}],1292:[function(require,module,exports){
+},{"../../plots/cartesian":1176,"../bar/hover":1242,"../bar/layout_attributes":1244,"../bar/layout_defaults":1245,"../bar/plot":1246,"../bar/set_positions":1247,"../bar/style":1248,"../scatter/colorbar":1323,"./attributes":1287,"./calc":1291,"./defaults":1292}],1294:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -102045,7 +102180,7 @@ module.exports = {
     }
 };
 
-},{}],1293:[function(require,module,exports){
+},{}],1295:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -102098,7 +102233,7 @@ module.exports = {
     }
 };
 
-},{"../heatmap/attributes":1273,"../histogram/attributes":1285}],1294:[function(require,module,exports){
+},{"../heatmap/attributes":1275,"../histogram/attributes":1287}],1296:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -102264,7 +102399,7 @@ module.exports = function calc(gd, trace) {
     };
 };
 
-},{"../../lib":1143,"../../plots/cartesian/axes":1166,"../histogram/average":1286,"../histogram/bin_functions":1288,"../histogram/norm_functions":1292}],1295:[function(require,module,exports){
+},{"../../lib":1145,"../../plots/cartesian/axes":1168,"../histogram/average":1288,"../histogram/bin_functions":1290,"../histogram/norm_functions":1294}],1297:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -102297,7 +102432,7 @@ module.exports = function supplyDefaults(traceIn, traceOut, layout) {
     );
 };
 
-},{"../../components/colorscale/defaults":1074,"../../lib":1143,"./attributes":1293,"./sample_defaults":1297}],1296:[function(require,module,exports){
+},{"../../components/colorscale/defaults":1076,"../../lib":1145,"./attributes":1295,"./sample_defaults":1299}],1298:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -102337,7 +102472,7 @@ Histogram2D.meta = {
 
 module.exports = Histogram2D;
 
-},{"../../plots/cartesian":1174,"../heatmap/calc":1274,"../heatmap/colorbar":1275,"../heatmap/hover":1279,"../heatmap/plot":1282,"../heatmap/style":1283,"./attributes":1293,"./defaults":1295}],1297:[function(require,module,exports){
+},{"../../plots/cartesian":1176,"../heatmap/calc":1276,"../heatmap/colorbar":1277,"../heatmap/hover":1281,"../heatmap/plot":1284,"../heatmap/style":1285,"./attributes":1295,"./defaults":1297}],1299:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -102373,7 +102508,7 @@ module.exports = function handleSampleDefaults(traceIn, traceOut, coerce) {
     handleBinDefaults(traceIn, traceOut, coerce, binDirections);
 };
 
-},{"../histogram/bin_defaults":1287}],1298:[function(require,module,exports){
+},{"../histogram/bin_defaults":1289}],1300:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -102420,7 +102555,7 @@ module.exports = {
     }
 };
 
-},{"../contour/attributes":1263,"../histogram2d/attributes":1293}],1299:[function(require,module,exports){
+},{"../contour/attributes":1265,"../histogram2d/attributes":1295}],1301:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -102456,7 +102591,7 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor, layout
     handleStyleDefaults(traceIn, traceOut, coerce, layout);
 };
 
-},{"../../lib":1143,"../contour/style_defaults":1272,"../histogram2d/sample_defaults":1297,"./attributes":1298}],1300:[function(require,module,exports){
+},{"../../lib":1145,"../contour/style_defaults":1274,"../histogram2d/sample_defaults":1299,"./attributes":1300}],1302:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -102496,7 +102631,7 @@ Histogram2dContour.meta = {
 
 module.exports = Histogram2dContour;
 
-},{"../../plots/cartesian":1174,"../contour/calc":1264,"../contour/colorbar":1265,"../contour/hover":1267,"../contour/plot":1270,"../contour/style":1271,"./attributes":1298,"./defaults":1299}],1301:[function(require,module,exports){
+},{"../../plots/cartesian":1176,"../contour/calc":1266,"../contour/colorbar":1267,"../contour/hover":1269,"../contour/plot":1272,"../contour/style":1273,"./attributes":1300,"./defaults":1301}],1303:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -102652,7 +102787,7 @@ module.exports = {
     }
 };
 
-},{"../../components/colorscale/attributes":1071,"../../lib/extend":1138,"../surface/attributes":1363}],1302:[function(require,module,exports){
+},{"../../components/colorscale/attributes":1073,"../../lib/extend":1140,"../surface/attributes":1365}],1304:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -102814,7 +102949,7 @@ function createMesh3DTrace(scene, data) {
 
 module.exports = createMesh3DTrace;
 
-},{"../../lib/str2rgbarray":1155,"alpha-shape":69,"convex-hull":88,"delaunay-triangulate":105,"gl-mesh3d":270,"tinycolor2":1059}],1303:[function(require,module,exports){
+},{"../../lib/str2rgbarray":1157,"alpha-shape":71,"convex-hull":90,"delaunay-triangulate":107,"gl-mesh3d":272,"tinycolor2":1061}],1305:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -102911,7 +103046,7 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor, layout
     }
 };
 
-},{"../../components/colorbar/defaults":1067,"../../lib":1143,"./attributes":1301}],1304:[function(require,module,exports){
+},{"../../components/colorbar/defaults":1069,"../../lib":1145,"./attributes":1303}],1306:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -102947,7 +103082,7 @@ Mesh3D.meta = {
 
 module.exports = Mesh3D;
 
-},{"../../plots/gl3d":1202,"../heatmap/colorbar":1275,"./attributes":1301,"./convert":1302,"./defaults":1303}],1305:[function(require,module,exports){
+},{"../../plots/gl3d":1204,"../heatmap/colorbar":1277,"./attributes":1303,"./convert":1304,"./defaults":1305}],1307:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -103211,7 +103346,7 @@ module.exports = {
     }
 };
 
-},{"../../components/color/attributes":1064,"../../lib/extend":1138,"../../plots/attributes":1164,"../../plots/font_attributes":1184}],1306:[function(require,module,exports){
+},{"../../components/color/attributes":1066,"../../lib/extend":1140,"../../plots/attributes":1166,"../../plots/font_attributes":1186}],1308:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -103258,7 +103393,7 @@ function getCdModule(calcdata, _module) {
     return cdModule;
 }
 
-},{"../../plots/plots":1215}],1307:[function(require,module,exports){
+},{"../../plots/plots":1217}],1309:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -103410,7 +103545,7 @@ function nextDefaultColor(index) {
     return pieDefaultColors[index % pieDefaultColors.length];
 }
 
-},{"../../components/color":1065,"./helpers":1309,"fast-isnumeric":107,"tinycolor2":1059}],1308:[function(require,module,exports){
+},{"../../components/color":1067,"./helpers":1311,"fast-isnumeric":109,"tinycolor2":1061}],1310:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -103494,7 +103629,7 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor, layout
     coerce('pull');
 };
 
-},{"../../lib":1143,"./attributes":1305}],1309:[function(require,module,exports){
+},{"../../lib":1145,"./attributes":1307}],1311:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -103523,7 +103658,7 @@ exports.formatPieValue = function formatPieValue(v, separators) {
     return Lib.numSeparate(vRounded, separators);
 };
 
-},{"../../lib":1143}],1310:[function(require,module,exports){
+},{"../../lib":1145}],1312:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -103559,7 +103694,7 @@ Pie.meta = {
 
 module.exports = Pie;
 
-},{"./attributes":1305,"./base_plot":1306,"./calc":1307,"./defaults":1308,"./layout_attributes":1311,"./layout_defaults":1312,"./plot":1313,"./style":1314,"./style_one":1315}],1311:[function(require,module,exports){
+},{"./attributes":1307,"./base_plot":1308,"./calc":1309,"./defaults":1310,"./layout_attributes":1313,"./layout_defaults":1314,"./plot":1315,"./style":1316,"./style_one":1317}],1313:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -103579,7 +103714,7 @@ module.exports = {
     hiddenlabels: {valType: 'data_array'}
 };
 
-},{}],1312:[function(require,module,exports){
+},{}],1314:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -103601,7 +103736,7 @@ module.exports = function supplyLayoutDefaults(layoutIn, layoutOut) {
     coerce('hiddenlabels');
 };
 
-},{"../../lib":1143,"./layout_attributes":1311}],1313:[function(require,module,exports){
+},{"../../lib":1145,"./layout_attributes":1313}],1315:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -104296,7 +104431,7 @@ function maxExtent(tilt, tiltAxisFraction, depth) {
         2 * Math.sqrt(1 - sinTilt * sinTilt * tiltAxisFraction * tiltAxisFraction));
 }
 
-},{"../../components/color":1065,"../../components/drawing":1087,"../../lib/svg_text_utils":1156,"../../plots/cartesian/graph_interact":1173,"./helpers":1309,"d3":99}],1314:[function(require,module,exports){
+},{"../../components/color":1067,"../../components/drawing":1089,"../../lib/svg_text_utils":1158,"../../plots/cartesian/graph_interact":1175,"./helpers":1311,"d3":101}],1316:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -104325,7 +104460,7 @@ module.exports = function style(gd) {
     });
 };
 
-},{"./style_one":1315,"d3":99}],1315:[function(require,module,exports){
+},{"./style_one":1317,"d3":101}],1317:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -104352,7 +104487,7 @@ module.exports = function styleOne(s, pt, trace) {
     .call(Color.stroke, lineColor);
 };
 
-},{"../../components/color":1065}],1316:[function(require,module,exports){
+},{"../../components/color":1067}],1318:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -104582,6 +104717,16 @@ module.exports = function animate (gd, trace, data, opts) {
         return d.filter(function(v) { return v.vis; });
     }
 
+    function keyFunc (d) {
+        return d.key;
+    }
+
+    function getKeyFunc(trace) {
+        if (trace.key) {
+            return keyFunc;
+        }
+    }
+
     scattertraces.select('g.points')
         .each(function(d) {
             var trace = d[0].trace,
@@ -104592,16 +104737,50 @@ module.exports = function animate (gd, trace, data, opts) {
             if((!showMarkers && !showText) || trace.visible !== true) s.remove();
             else {
                 if(showMarkers) {
-                    s.selectAll('path.point')
-                        .data(trace.marker.maxdisplayed ? visFilter : Lib.identity)
-                            .call(Drawing.translatePoints, xa, ya, transitionDuration, transitionEasing, trace);
+                    var selection = s.selectAll('path.point')
+                        .data(trace.marker.maxdisplayed ? visFilter : Lib.identity, getKeyFunc(trace))
+
+                    selection.call(Drawing.translatePoints, xa, ya, transitionDuration, transitionEasing, trace);
+
+                    var enter = selection.enter().append('path')
+                        .classed('point', true)
+                        .call(Drawing.translatePoints, xa, ya, transitionDuration, transitionEasing, trace, 1)
+
+                    selection.exit()
+                        .call(Drawing.translatePoints, xa, ya, transitionDuration, transitionEasing, trace, -1)
                 }
             }
         });
 
 };
 
-},{"../../components/drawing":1087,"../../components/errorbars":1093,"../../lib":1143,"./arrays_to_calcdata":1317,"./line_points":1329,"./subtypes":1337,"d3":99,"fast-isnumeric":107}],1317:[function(require,module,exports){
+    /*
+    window.gd = gd;
+
+    scattertraces.select('g.points')
+        .each(function(d) {
+            var trace = d[0].trace,
+                s = d3.select(this),
+                showMarkers = subTypes.hasMarkers(trace),
+                showText = subTypes.hasText(trace);
+
+            if((!showMarkers && !showText) || trace.visible !== true) s.remove();
+            else {
+                if(showMarkers) {
+                    var selection = s.selectAll('path.point')
+                        .data(trace.marker.maxdisplayed ? visFilter : Lib.identity, getKeyFunc(trace));
+
+                    selection.call(Drawing.translatePoints, xa, ya, transitionDuration, transitionEasing, trace);
+
+                    selection.enter().append('path')
+                        .classed('point', true)
+                        .call(Drawing.translatePoints, xa, ya);
+                }
+            }
+        });
+};*/
+
+},{"../../components/drawing":1089,"../../components/errorbars":1095,"../../lib":1145,"./arrays_to_calcdata":1319,"./line_points":1331,"./subtypes":1339,"d3":101,"fast-isnumeric":109}],1319:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -104639,7 +104818,7 @@ module.exports = function arraysToCalcdata(cd) {
     }
 };
 
-},{"../../lib":1143}],1318:[function(require,module,exports){
+},{"../../lib":1145}],1320:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -105131,7 +105310,7 @@ module.exports = {
     }
 };
 
-},{"../../components/drawing":1087,"./constants":1322}],1319:[function(require,module,exports){
+},{"../../components/drawing":1089,"./constants":1324}],1321:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -105249,6 +105428,10 @@ module.exports = function calc(gd, trace) {
     for(i = 0; i < serieslen; i++) {
         cd[i] = (isNumeric(x[i]) && isNumeric(y[i])) ?
             {x: x[i], y: y[i]} : {x: false, y: false};
+
+        if (trace.key && trace.key[i]) {
+          cd[i].key = trace.key[i];
+        }
     }
 
     // this has migrated up from arraysToCalcdata as we have a reference to 's' here
@@ -105258,7 +105441,7 @@ module.exports = function calc(gd, trace) {
     return cd;
 };
 
-},{"../../lib":1143,"../../plots/cartesian/axes":1166,"./marker_colorscale_calc":1332,"./subtypes":1337,"fast-isnumeric":107}],1320:[function(require,module,exports){
+},{"../../lib":1145,"../../plots/cartesian/axes":1168,"./marker_colorscale_calc":1334,"./subtypes":1339,"fast-isnumeric":109}],1322:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -105299,7 +105482,7 @@ module.exports = function cleanData(fullData) {
     }
 };
 
-},{}],1321:[function(require,module,exports){
+},{}],1323:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -105352,7 +105535,7 @@ module.exports = function colorbar(gd, cd) {
         .options(marker.colorbar)();
 };
 
-},{"../../components/colorbar/draw":1068,"../../components/colorscale/get_scale":1076,"../../lib":1143,"../../plots/plots":1215,"d3":99,"fast-isnumeric":107}],1322:[function(require,module,exports){
+},{"../../components/colorbar/draw":1070,"../../components/colorscale/get_scale":1078,"../../lib":1145,"../../plots/plots":1217,"d3":101,"fast-isnumeric":109}],1324:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -105368,7 +105551,7 @@ module.exports = {
     PTS_LINESONLY: 20
 };
 
-},{}],1323:[function(require,module,exports){
+},{}],1325:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -105407,6 +105590,7 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor, layout
         return;
     }
 
+    coerce('key');
     coerce('text');
     coerce('mode', defaultMode);
 
@@ -105438,7 +105622,7 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor, layout
     errorBarsSupplyDefaults(traceIn, traceOut, defaultColor, {axis: 'x', inherit: 'y'});
 };
 
-},{"../../components/errorbars/defaults":1092,"../../lib":1143,"./attributes":1318,"./constants":1322,"./fillcolor_defaults":1324,"./line_defaults":1328,"./line_shape_defaults":1330,"./marker_defaults":1333,"./subtypes":1337,"./text_defaults":1338,"./xy_defaults":1339}],1324:[function(require,module,exports){
+},{"../../components/errorbars/defaults":1094,"../../lib":1145,"./attributes":1320,"./constants":1324,"./fillcolor_defaults":1326,"./line_defaults":1330,"./line_shape_defaults":1332,"./marker_defaults":1335,"./subtypes":1339,"./text_defaults":1340,"./xy_defaults":1341}],1326:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -105477,7 +105661,7 @@ module.exports = function fillColorDefaults(traceIn, traceOut, defaultColor, coe
     ));
 };
 
-},{"../../components/color":1065}],1325:[function(require,module,exports){
+},{"../../components/color":1067}],1327:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -105530,7 +105714,7 @@ module.exports = function getTraceColor(trace, di) {
     }
 };
 
-},{"../../components/color":1065,"./subtypes":1337}],1326:[function(require,module,exports){
+},{"../../components/color":1067,"./subtypes":1339}],1328:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -105601,7 +105785,7 @@ module.exports = function hoverPoints(pointData, xval, yval, hovermode) {
     return [pointData];
 };
 
-},{"../../components/errorbars":1093,"../../plots/cartesian/graph_interact":1173,"./get_trace_color":1325}],1327:[function(require,module,exports){
+},{"../../components/errorbars":1095,"../../plots/cartesian/graph_interact":1175,"./get_trace_color":1327}],1329:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -105651,7 +105835,7 @@ Scatter.meta = {
 
 module.exports = Scatter;
 
-},{"../../plots/cartesian":1174,"./animate":1316,"./arrays_to_calcdata":1317,"./attributes":1318,"./calc":1319,"./clean_data":1320,"./colorbar":1321,"./defaults":1323,"./hover":1326,"./plot":1334,"./select":1335,"./style":1336,"./subtypes":1337}],1328:[function(require,module,exports){
+},{"../../plots/cartesian":1176,"./animate":1318,"./arrays_to_calcdata":1319,"./attributes":1320,"./calc":1321,"./clean_data":1322,"./colorbar":1323,"./defaults":1325,"./hover":1328,"./plot":1336,"./select":1337,"./style":1338,"./subtypes":1339}],1330:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -105675,7 +105859,7 @@ module.exports = function lineDefaults(traceIn, traceOut, defaultColor, coerce) 
     coerce('line.dash');
 };
 
-},{}],1329:[function(require,module,exports){
+},{}],1331:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -105844,7 +106028,7 @@ module.exports = function linePoints(d, opts) {
     return segments;
 };
 
-},{"../../plots/cartesian/axes":1166}],1330:[function(require,module,exports){
+},{"../../plots/cartesian/axes":1168}],1332:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -105863,7 +106047,7 @@ module.exports = function handleLineShapeDefaults(traceIn, traceOut, coerce) {
     if(shape === 'spline') coerce('line.smoothing');
 };
 
-},{}],1331:[function(require,module,exports){
+},{}],1333:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -105905,7 +106089,7 @@ module.exports = function makeBubbleSizeFn(trace) {
     };
 };
 
-},{"fast-isnumeric":107}],1332:[function(require,module,exports){
+},{"fast-isnumeric":109}],1334:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -105939,7 +106123,7 @@ module.exports = function calcMarkerColorscale(trace) {
     }
 };
 
-},{"../../components/colorscale/calc":1072,"../../components/colorscale/has_colorscale":1077,"./subtypes":1337}],1333:[function(require,module,exports){
+},{"../../components/colorscale/calc":1074,"../../components/colorscale/has_colorscale":1079,"./subtypes":1339}],1335:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -106002,7 +106186,7 @@ module.exports = function markerDefaults(traceIn, traceOut, defaultColor, layout
     }
 };
 
-},{"../../components/color":1065,"../../components/colorscale/defaults":1074,"../../components/colorscale/has_colorscale":1077,"./subtypes":1337}],1334:[function(require,module,exports){
+},{"../../components/color":1067,"../../components/colorscale/defaults":1076,"../../components/colorscale/has_colorscale":1079,"./subtypes":1339}],1336:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -106202,6 +106386,16 @@ module.exports = function plot(gd, plotinfo, cdscatter) {
         return d.filter(function(v) { return v.vis; });
     }
 
+    function keyFunc (d) {
+        return d.key;
+    }
+
+    function getKeyFunc(trace) {
+        if (trace.key) {
+            return keyFunc;
+        }
+    }
+
     scattertraces.append('g')
         .attr('class', 'points')
         .each(function(d) {
@@ -106214,7 +106408,7 @@ module.exports = function plot(gd, plotinfo, cdscatter) {
             else {
                 if(showMarkers) {
                     s.selectAll('path.point')
-                        .data(trace.marker.maxdisplayed ? visFilter : Lib.identity)
+                        .data(trace.marker.maxdisplayed ? visFilter : Lib.identity, getKeyFunc(trace))
                         .enter().append('path')
                             .classed('point', true)
                             .call(Drawing.translatePoints, xa, ya);
@@ -106276,7 +106470,7 @@ function selectMarkers(gd, plotinfo, cdscatter) {
     });
 }
 
-},{"../../components/drawing":1087,"../../components/errorbars":1093,"../../lib":1143,"./arrays_to_calcdata":1317,"./line_points":1329,"./subtypes":1337,"d3":99}],1335:[function(require,module,exports){
+},{"../../components/drawing":1089,"../../components/errorbars":1095,"../../lib":1145,"./arrays_to_calcdata":1319,"./line_points":1331,"./subtypes":1339,"d3":101}],1337:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -106346,7 +106540,7 @@ module.exports = function selectPoints(searchInfo, polygon) {
     return selection;
 };
 
-},{"./subtypes":1337}],1336:[function(require,module,exports){
+},{"./subtypes":1339}],1338:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -106388,7 +106582,7 @@ module.exports = function style(gd) {
     s.call(ErrorBars.style);
 };
 
-},{"../../components/drawing":1087,"../../components/errorbars":1093,"d3":99}],1337:[function(require,module,exports){
+},{"../../components/drawing":1089,"../../components/errorbars":1095,"d3":101}],1339:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -106422,7 +106616,7 @@ module.exports = {
     }
 };
 
-},{}],1338:[function(require,module,exports){
+},{}],1340:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -106443,7 +106637,7 @@ module.exports = function(traceIn, traceOut, layout, coerce) {
     Lib.coerceFont(coerce, 'textfont', layout.font);
 };
 
-},{"../../lib":1143}],1339:[function(require,module,exports){
+},{"../../lib":1145}],1341:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -106488,7 +106682,7 @@ module.exports = function handleXYDefaults(traceIn, traceOut, coerce) {
     return len;
 };
 
-},{}],1340:[function(require,module,exports){
+},{}],1342:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -106645,7 +106839,7 @@ module.exports = {
     }
 };
 
-},{"../../constants/gl_markers":1130,"../../lib/extend":1138,"../scatter/attributes":1318}],1341:[function(require,module,exports){
+},{"../../constants/gl_markers":1132,"../../lib/extend":1140,"../scatter/attributes":1320}],1343:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -106674,7 +106868,7 @@ module.exports = function calc(gd, trace) {
     return cd;
 };
 
-},{"../scatter/arrays_to_calcdata":1317,"../scatter/marker_colorscale_calc":1332}],1342:[function(require,module,exports){
+},{"../scatter/arrays_to_calcdata":1319,"../scatter/marker_colorscale_calc":1334}],1344:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -106745,7 +106939,7 @@ function calculateErrors(data, scaleFactor) {
 
 module.exports = calculateErrors;
 
-},{"../../components/errorbars/compute_error":1091}],1343:[function(require,module,exports){
+},{"../../components/errorbars/compute_error":1093}],1345:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -107204,7 +107398,7 @@ function createLineWithMarkers(scene, data) {
 
 module.exports = createLineWithMarkers;
 
-},{"../../constants/gl3d_dashes":1129,"../../constants/gl_markers":1130,"../../lib":1143,"../../lib/gl_format_color":1141,"../../lib/str2rgbarray":1155,"../scatter/make_bubble_size_func":1331,"./calc_errors":1342,"delaunay-triangulate":105,"gl-error3d":140,"gl-line3d":210,"gl-mesh3d":270,"gl-scatter3d":922}],1344:[function(require,module,exports){
+},{"../../constants/gl3d_dashes":1131,"../../constants/gl_markers":1132,"../../lib":1145,"../../lib/gl_format_color":1143,"../../lib/str2rgbarray":1157,"../scatter/make_bubble_size_func":1333,"./calc_errors":1344,"delaunay-triangulate":107,"gl-error3d":142,"gl-line3d":212,"gl-mesh3d":272,"gl-scatter3d":924}],1346:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -107289,7 +107483,7 @@ function handleXYZDefaults(traceIn, traceOut, coerce) {
     return len;
 }
 
-},{"../../components/errorbars/defaults":1092,"../../lib":1143,"../scatter/line_defaults":1328,"../scatter/marker_defaults":1333,"../scatter/subtypes":1337,"../scatter/text_defaults":1338,"./attributes":1340}],1345:[function(require,module,exports){
+},{"../../components/errorbars/defaults":1094,"../../lib":1145,"../scatter/line_defaults":1330,"../scatter/marker_defaults":1335,"../scatter/subtypes":1339,"../scatter/text_defaults":1340,"./attributes":1342}],1347:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -107327,7 +107521,7 @@ Scatter3D.meta = {
 
 module.exports = Scatter3D;
 
-},{"../../constants/gl_markers":1130,"../../plots/gl3d":1202,"../scatter/colorbar":1321,"./attributes":1340,"./calc":1341,"./convert":1343,"./defaults":1344}],1346:[function(require,module,exports){
+},{"../../constants/gl_markers":1132,"../../plots/gl3d":1204,"../scatter/colorbar":1323,"./attributes":1342,"./calc":1343,"./convert":1345,"./defaults":1346}],1348:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -107426,7 +107620,7 @@ module.exports = {
     }
 };
 
-},{"../../lib/extend":1138,"../../plots/attributes":1164,"../scatter/attributes":1318}],1347:[function(require,module,exports){
+},{"../../lib/extend":1140,"../../plots/attributes":1166,"../scatter/attributes":1320}],1349:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -107449,7 +107643,7 @@ module.exports = function calc(gd, trace) {
     return cd;
 };
 
-},{"../scatter/marker_colorscale_calc":1332}],1348:[function(require,module,exports){
+},{"../scatter/marker_colorscale_calc":1334}],1350:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -107522,7 +107716,7 @@ function handleLonLatLocDefaults(traceIn, traceOut, coerce) {
     return len;
 }
 
-},{"../../lib":1143,"../scatter/line_defaults":1328,"../scatter/marker_defaults":1333,"../scatter/subtypes":1337,"../scatter/text_defaults":1338,"./attributes":1346}],1349:[function(require,module,exports){
+},{"../../lib":1145,"../scatter/line_defaults":1330,"../scatter/marker_defaults":1335,"../scatter/subtypes":1339,"../scatter/text_defaults":1340,"./attributes":1348}],1351:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -107557,7 +107751,7 @@ ScatterGeo.meta = {
 
 module.exports = ScatterGeo;
 
-},{"../../plots/geo":1187,"../scatter/colorbar":1321,"./attributes":1346,"./calc":1347,"./defaults":1348,"./plot":1350}],1350:[function(require,module,exports){
+},{"../../plots/geo":1189,"../scatter/colorbar":1323,"./attributes":1348,"./calc":1349,"./defaults":1350,"./plot":1352}],1352:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -107857,7 +108051,7 @@ function makeEventDataFunc(trace) {
     };
 }
 
-},{"../../components/color":1065,"../../components/drawing":1087,"../../lib/array_to_calc_item":1134,"../../lib/geo_location_utils":1140,"../../lib/topojson_utils":1157,"../../plots/cartesian/axes":1166,"../../plots/cartesian/graph_interact":1173,"../scatter/subtypes":1337,"./attributes":1346,"d3":99}],1351:[function(require,module,exports){
+},{"../../components/color":1067,"../../components/drawing":1089,"../../lib/array_to_calc_item":1136,"../../lib/geo_location_utils":1142,"../../lib/topojson_utils":1159,"../../plots/cartesian/axes":1168,"../../plots/cartesian/graph_interact":1175,"../scatter/subtypes":1339,"./attributes":1348,"d3":101}],1353:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -107958,7 +108152,7 @@ module.exports = {
     }
 };
 
-},{"../../constants/gl2d_dashes":1128,"../../constants/gl_markers":1130,"../../lib/extend":1138,"../scatter/attributes":1318}],1352:[function(require,module,exports){
+},{"../../constants/gl2d_dashes":1130,"../../constants/gl_markers":1132,"../../lib/extend":1140,"../scatter/attributes":1320}],1354:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -108550,7 +108744,7 @@ function createLineWithMarkers(scene, data) {
 
 module.exports = createLineWithMarkers;
 
-},{"../../components/errorbars":1093,"../../constants/gl2d_dashes":1128,"../../constants/gl_markers":1130,"../../lib":1143,"../../lib/gl_format_color":1141,"../../lib/str2rgbarray":1155,"../../plots/cartesian/axes":1166,"../scatter/get_trace_color":1325,"../scatter/make_bubble_size_func":1331,"../scatter/subtypes":1337,"fast-isnumeric":107,"gl-error2d":108,"gl-line2d":177,"gl-scatter2d":798,"gl-scatter2d-fancy":763}],1353:[function(require,module,exports){
+},{"../../components/errorbars":1095,"../../constants/gl2d_dashes":1130,"../../constants/gl_markers":1132,"../../lib":1145,"../../lib/gl_format_color":1143,"../../lib/str2rgbarray":1157,"../../plots/cartesian/axes":1168,"../scatter/get_trace_color":1327,"../scatter/make_bubble_size_func":1333,"../scatter/subtypes":1339,"fast-isnumeric":109,"gl-error2d":110,"gl-line2d":179,"gl-scatter2d":800,"gl-scatter2d-fancy":765}],1355:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -108607,7 +108801,7 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor, layout
     errorBarsSupplyDefaults(traceIn, traceOut, defaultColor, {axis: 'x', inherit: 'y'});
 };
 
-},{"../../components/errorbars/defaults":1092,"../../lib":1143,"../scatter/constants":1322,"../scatter/fillcolor_defaults":1324,"../scatter/line_defaults":1328,"../scatter/marker_defaults":1333,"../scatter/subtypes":1337,"../scatter/xy_defaults":1339,"./attributes":1351}],1354:[function(require,module,exports){
+},{"../../components/errorbars/defaults":1094,"../../lib":1145,"../scatter/constants":1324,"../scatter/fillcolor_defaults":1326,"../scatter/line_defaults":1330,"../scatter/marker_defaults":1335,"../scatter/subtypes":1339,"../scatter/xy_defaults":1341,"./attributes":1353}],1356:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -108643,7 +108837,7 @@ ScatterGl.meta = {
 
 module.exports = ScatterGl;
 
-},{"../../plots/gl2d":1199,"../scatter/colorbar":1321,"../scatter3d/calc":1341,"./attributes":1351,"./convert":1352,"./defaults":1353}],1355:[function(require,module,exports){
+},{"../../plots/gl2d":1201,"../scatter/colorbar":1323,"../scatter3d/calc":1343,"./attributes":1353,"./convert":1354,"./defaults":1355}],1357:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -108778,7 +108972,7 @@ module.exports = {
     }
 };
 
-},{"../../lib/extend":1138,"../../plots/attributes":1164,"../scatter/attributes":1318}],1356:[function(require,module,exports){
+},{"../../lib/extend":1140,"../../plots/attributes":1166,"../scatter/attributes":1320}],1358:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -108877,7 +109071,7 @@ module.exports = function calc(gd, trace) {
     return cd;
 };
 
-},{"../../lib":1143,"../../plots/cartesian/axes":1166,"../scatter/marker_colorscale_calc":1332,"../scatter/subtypes":1337,"fast-isnumeric":107}],1357:[function(require,module,exports){
+},{"../../lib":1145,"../../plots/cartesian/axes":1168,"../scatter/marker_colorscale_calc":1334,"../scatter/subtypes":1339,"fast-isnumeric":109}],1359:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -108974,7 +109168,7 @@ module.exports = function supplyDefaults(traceIn, traceOut, defaultColor, layout
     coerce('hoverinfo', (layout._dataLength === 1) ? 'a+b+c+text' : undefined);
 };
 
-},{"../../lib":1143,"../scatter/constants":1322,"../scatter/fillcolor_defaults":1324,"../scatter/line_defaults":1328,"../scatter/line_shape_defaults":1330,"../scatter/marker_defaults":1333,"../scatter/subtypes":1337,"../scatter/text_defaults":1338,"./attributes":1355}],1358:[function(require,module,exports){
+},{"../../lib":1145,"../scatter/constants":1324,"../scatter/fillcolor_defaults":1326,"../scatter/line_defaults":1330,"../scatter/line_shape_defaults":1332,"../scatter/marker_defaults":1335,"../scatter/subtypes":1339,"../scatter/text_defaults":1340,"./attributes":1357}],1360:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -109024,7 +109218,7 @@ module.exports = function hoverPoints(pointData, xval, yval, hovermode) {
     return scatterPointData;
 };
 
-},{"../../plots/cartesian/axes":1166,"../scatter/hover":1326}],1359:[function(require,module,exports){
+},{"../../plots/cartesian/axes":1168,"../scatter/hover":1328}],1361:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -109060,7 +109254,7 @@ ScatterTernary.meta = {
 
 module.exports = ScatterTernary;
 
-},{"../../plots/ternary":1222,"../scatter/colorbar":1321,"./attributes":1355,"./calc":1356,"./defaults":1357,"./hover":1358,"./plot":1360,"./select":1361,"./style":1362}],1360:[function(require,module,exports){
+},{"../../plots/ternary":1224,"../scatter/colorbar":1323,"./attributes":1357,"./calc":1358,"./defaults":1359,"./hover":1360,"./plot":1362,"./select":1363,"./style":1364}],1362:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -109106,7 +109300,7 @@ module.exports = function plot(ternary, data) {
     scatterPlot(ternary.graphDiv, plotinfo, calcdata);
 };
 
-},{"../scatter/plot":1334}],1361:[function(require,module,exports){
+},{"../scatter/plot":1336}],1363:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -109141,7 +109335,7 @@ module.exports = function selectPoints(searchInfo, polygon) {
     return selection;
 };
 
-},{"../scatter/select":1335}],1362:[function(require,module,exports){
+},{"../scatter/select":1337}],1364:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -109170,7 +109364,7 @@ module.exports = function style(gd) {
     scatterStyle(gd);
 };
 
-},{"../scatter/style":1336}],1363:[function(require,module,exports){
+},{"../scatter/style":1338}],1365:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -109419,7 +109613,7 @@ module.exports = {
     }
 };
 
-},{"../../components/color":1065,"../../components/colorscale/attributes":1071,"../../lib/extend":1138}],1364:[function(require,module,exports){
+},{"../../components/color":1067,"../../components/colorscale/attributes":1073,"../../lib/extend":1140}],1366:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -109443,7 +109637,7 @@ module.exports = function calc(gd, trace) {
     }
 };
 
-},{"../../components/colorscale/calc":1072}],1365:[function(require,module,exports){
+},{"../../components/colorscale/calc":1074}],1367:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -109490,7 +109684,7 @@ module.exports = function colorbar(gd, cd) {
         .options(trace.colorbar)();
 };
 
-},{"../../components/colorbar/draw":1068,"../../components/colorscale/get_scale":1076,"../../lib":1143,"../../plots/plots":1215,"d3":99,"fast-isnumeric":107}],1366:[function(require,module,exports){
+},{"../../components/colorbar/draw":1070,"../../components/colorscale/get_scale":1078,"../../lib":1145,"../../plots/plots":1217,"d3":101,"fast-isnumeric":109}],1368:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -109853,7 +110047,7 @@ function createSurfaceTrace(scene, data) {
 
 module.exports = createSurfaceTrace;
 
-},{"../../lib/str2rgbarray":1155,"gl-surface3d":1020,"ndarray":1048,"ndarray-fill":1026,"ndarray-homography":1042,"ndarray-ops":1043,"tinycolor2":1059}],1367:[function(require,module,exports){
+},{"../../lib/str2rgbarray":1157,"gl-surface3d":1022,"ndarray":1050,"ndarray-fill":1028,"ndarray-homography":1044,"ndarray-ops":1045,"tinycolor2":1061}],1369:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -109970,7 +110164,7 @@ function mapLegacy(traceIn, oldAttr, newAttr) {
     }
 }
 
-},{"../../components/colorscale/defaults":1074,"../../lib":1143,"./attributes":1363}],1368:[function(require,module,exports){
+},{"../../components/colorscale/defaults":1076,"../../lib":1145,"./attributes":1365}],1370:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -110013,4 +110207,4 @@ Surface.meta = {
 
 module.exports = Surface;
 
-},{"../../plots/gl3d":1202,"./attributes":1363,"./calc":1364,"./colorbar":1365,"./convert":1366,"./defaults":1367}]},{},[10]);
+},{"../../plots/gl3d":1204,"./attributes":1365,"./calc":1366,"./colorbar":1367,"./convert":1368,"./defaults":1369}]},{},[11]);
