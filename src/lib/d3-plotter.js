@@ -1,6 +1,7 @@
 'use strict';
 
 var d3 = require('plotly.js').d3;
+var diff = require('array-diff')({compress: true, unique: true});
 
 module.exports = Plotter;
 
@@ -163,7 +164,14 @@ function Plotter () {
       var getY = opts.getY;
       var x = opts.x;
       var y = opts.y;
+      var keys = opts.keys;
       var data = opts.data;
+
+      var oldKeys = data.slice(0);
+      var oldX = x.slice(0);
+      var oldY = y.slice(0);
+
+      var keyFunc = keys ? function (d) {return d;} : undefined;
 
       if (opts.getX && opts.getY) {
         var transformAccessor = function (d, i) {
@@ -200,7 +208,7 @@ function Plotter () {
               .attr('class', 'lines');
 
           this.points = this.tracePoints.selectAll('circle')
-              .data(data)
+              .data(data, keyFunc)
 
           this.traceLines.selectAll('path').data([data]).enter()
               .append('path')
@@ -217,15 +225,16 @@ function Plotter () {
               //.attr('cy', yAccessor)
         },
 
-        updateData: function (newData, newX, newY, duration) {
+        updateData: function (newData, newX, newY, duration, keys) {
           duration = duration === undefined ? 250 : duration;
 
           x = newX;
           y = newY;
           data = newData;
+          var keyDiff = diff(oldKeys, data);
 
           this.points = this.tracePoints.selectAll('circle')
-              .data(data)
+              .data(data, keyFunc)
 
           this.points.enter().append('circle')
               .attr('opacity', 0)
@@ -250,11 +259,79 @@ function Plotter () {
               //.attr('transform', transformAccessor)
 
           //join.exit().remove();
-          this.traceLines.selectAll('path').data([data])
+
+          // Compute pre-update path:
+          var fromPoints = [];
+          var toPoints = [];
+          for (var i = 0, oldIdx = 0, newIdx = 0; i < keyDiff.length; i++) {
+            var changeset = keyDiff[i];
+            var type = changeset[0];
+            var changes = changeset[1];
+            if (type === '=') {
+              for (var j = 0; j < changes.length; j++) {
+                fromPoints.push([oldX[oldIdx], oldY[oldIdx]]);
+                toPoints.push([oldX[oldIdx], oldY[oldIdx]]);
+                newIdx++;
+                oldIdx++;
+              }
+            } else if (type === '-') {
+              for (var j = 0; j < changes.length; j++) {
+                var x1 = oldX[oldIdx - 1];
+                var y1 = oldY[oldIdx - 1];
+                var x2 = oldX[oldIdx + changes.length];
+                var y2 = oldY[oldIdx + changes.length];
+                var t = 0;
+                for (var j = 0; j < changes.length; j++) {
+                  t = (j + 1) / (changes.length + 1);
+                  var xm = x1 + (x2 - x1) * t;
+                  var ym = y1 + (y2 - y1) * t;
+                  fromPoints.push([oldX[oldIdx], oldY[oldIdx]]);
+                  toPoints.push([xm, ym]);
+                  oldIdx++;
+                }
+              }
+            } else if (type === '+') {
+              var x1 = oldX[oldIdx - 1];
+              var y1 = oldY[oldIdx - 1];
+              var x2 = oldX[oldIdx];
+              var y2 = oldY[oldIdx];
+              var t = 0;
+              for (var j = 0; j < changes.length; j++) {
+                t = (j + 1) / (changes.length + 1);
+                var xm = x1 + (x2 - x1) * t;
+                var ym = y1 + (y2 - y1) * t;
+                fromPoints.push([xm, ym]);
+                toPoints.push([x[newIdx], y[newIdx]]);
+                newIdx++;
+              }
+            }
+          }
+
+          var fromX = function (d, i) { return self.xScale(fromPoints[i][0]); };
+          var fromY = function (d, i) { return self.yScale(fromPoints[i][1]); };
+          var fromLine = d3.svg.line().x(fromX).y(fromY);
+
+          var toX = function (d, i) { return self.xScale(toPoints[i][0]); };
+          var toY = function (d, i) { return self.yScale(toPoints[i][1]); };
+          var toLine = d3.svg.line().x(toX).y(toY);
+
+          var fromPath = fromLine(fromPoints)
+          var toPath = toLine(toPoints);
+
+          this.traceLines.selectAll('path').attr('d', fromPath);
+
+          this.traceLines.selectAll('path').data([0])
               .transition()
                   .duration(duration)
-                  .attr('d', makeline(data))
+                  .attr('d', toPath)
+              .transition()
+                  .duration(0)
+                  .attr('d', makeline(data));
 
+
+          oldKeys = data.slice(0);
+          oldX = x.slice(0);
+          oldY = y.slice(0);
         },
 
         update: function (duration) {
