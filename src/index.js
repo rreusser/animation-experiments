@@ -15,6 +15,7 @@ var handler;
 function setPlotType (plotType) {
   Plotly.purge(plot);
 
+  console.log('handler:', handler);
   if (handler && handler.teardown) {
     handler.teardown();
   }

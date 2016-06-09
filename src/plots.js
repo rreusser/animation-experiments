@@ -10,4 +10,6 @@ module.exports = [
   require('./plots/box-plot'),
   require('./plots/gapminder'),
   require('./plots/object-constancy'),
+  require('./plots/tonext'),
+  require('./plots/line-join'),
 ];

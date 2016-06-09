@@ -1,6 +1,6 @@
 'use strict';
 
-var d3 = require('d3');
+var d3 = require('plotly.js').d3;
 
 module.exports = Plotter;
 
@@ -186,20 +186,29 @@ function Plotter () {
       var xAccessor = function (d, i) { return self.xScale(x[i]) }
       var yAccessor = function (d, i) { return self.yScale(y[i]) }
 
-      var makeline = d3.svg.line().x(xAccessor).y(yAccessor).interpolate('cardinal');
+      var makeline = d3.svg.line().x(xAccessor).y(yAccessor);
 
       var trace = {
         initialize: function () {
           this.plot = self.graphRoot.append('g')
               .attr('class', 'trace')
 
-          this.points = this.plot.selectAll('circle')
+          this.tracePoints = this.plot.append('g')
+              .attr('class', 'points');
+
+          this.traceLines = this.plot.append('g')
+              .attr('class', 'lines');
+
+          this.points = this.tracePoints.selectAll('circle')
               .data(data)
 
-          //this.line = this.plot.append('path')
-              //.attr('d', makeline(data))
-              //.style('fill', 'none')
-              //.style('stroke', '#aaa');
+          this.traceLines.selectAll('path').data([data]).enter()
+              .append('path')
+                  .attr('d', function (d) {
+                    return makeline(d);
+                  })
+                  .style('fill', 'none')
+                  .style('stroke', '#aaa');
 
           this.points.enter().append('circle')
               .attr('r', 3)
@@ -208,22 +217,27 @@ function Plotter () {
               //.attr('cy', yAccessor)
         },
 
-        updateData: function (newData, newX, newY) {
+        updateData: function (newData, newX, newY, duration) {
+          duration = duration === undefined ? 250 : duration;
+
           x = newX;
           y = newY;
           data = newData;
 
-          this.points = this.plot.selectAll('circle')
+          this.points = this.tracePoints.selectAll('circle')
               .data(data)
 
-          //this.line = this.plot.append('path')
-              //.attr('d', makeline(data))
-              //.style('fill', 'none')
-              //.style('stroke', '#aaa');
-
           this.points.enter().append('circle')
+              .attr('opacity', 0)
+              .transition()
+                  .duration(duration)
+                  .attr('opacity', 1)
 
-          this.points.exit().remove();
+          this.points.exit()
+              .transition()
+                  .duration(duration)
+                  .style('opacity', 0)
+                  .remove();
 
           this.points
               .attr('r', 3)
@@ -236,6 +250,11 @@ function Plotter () {
               //.attr('transform', transformAccessor)
 
           //join.exit().remove();
+          this.traceLines.selectAll('path').data([data])
+              .transition()
+                  .duration(duration)
+                  .attr('d', makeline(data))
+
         },
 
         update: function (duration) {
@@ -253,8 +272,8 @@ function Plotter () {
       return trace;
     },
 
-    updateData: function (i, data, x, y) {
-      this.traces[i].updateData(data, x, y);
+    updateData: function (i, data, x, y, duration) {
+      this.traces[i].updateData(data, x, y, duration);
     },
 
     updateTraces: function (duration) {

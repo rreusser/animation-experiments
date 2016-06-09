@@ -6,7 +6,7 @@ var shuffle = require('fisher-yates/inplace');
 module.exports = {
   name: 'Object Constancy',
 
-  n: 4,
+  n: 400,
   x: [],
   y: [],
   keys: [],
@@ -48,7 +48,7 @@ module.exports = {
   actionLabels: ['Shuffle and append', 'Shuffle and remove'],
 
   actions: [
-    function (gd) {Plotly.animate(gd, this.getFrame(1), {duration: 500});},
-    function (gd) {Plotly.animate(gd, this.getFrame(-1), {duration: 500});}
+    function (gd) {Plotly.animate(gd, this.getFrame(1), {duration: 2000, cascade: 2000});},
+    function (gd) {Plotly.animate(gd, this.getFrame(-1), {duration: 2000, cascade: 2000});}
   ]
 }
