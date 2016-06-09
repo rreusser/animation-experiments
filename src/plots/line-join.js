@@ -5,6 +5,8 @@ var plotter = require('../lib/d3-plotter');
 var timer = require('../lib/timer');
 var debug = require('../lib/debug');
 
+window.d3 = d3;
+
 window.plot = module.exports = {
   name: 'Line Join (D3)',
   keyCnt: 0,
@@ -148,10 +150,10 @@ window.plot = module.exports = {
 
   actions: [
     function () {
-      this.addPoints(Math.floor(1 + Math.random() * 3));
+      this.addPoints(Math.floor(1 + Math.random() * 8));
     },
     function () {
-      this.removePoints(Math.floor(1 + Math.random() * 3));
+      this.removePoints(Math.floor(1 + Math.random() * 8));
     }
   ],
 
