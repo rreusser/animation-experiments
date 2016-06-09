@@ -12299,7 +12299,10 @@ function Plotter () {
       var getY = opts.getY;
       var x = opts.x;
       var y = opts.y;
+      var keys = opts.keys;
       var data = opts.data;
+
+      var keyFunc = keys ? function (d) {return d;} : undefined;
 
       if (opts.getX && opts.getY) {
         var transformAccessor = function (d, i) {
@@ -12336,7 +12339,7 @@ function Plotter () {
               .attr('class', 'lines');
 
           this.points = this.tracePoints.selectAll('circle')
-              .data(data)
+              .data(data, keyFunc)
 
           this.traceLines.selectAll('path').data([data]).enter()
               .append('path')
@@ -12353,7 +12356,7 @@ function Plotter () {
               //.attr('cy', yAccessor)
         },
 
-        updateData: function (newData, newX, newY, duration) {
+        updateData: function (newData, newX, newY, duration, keys) {
           duration = duration === undefined ? 250 : duration;
 
           x = newX;
@@ -12361,7 +12364,7 @@ function Plotter () {
           data = newData;
 
           this.points = this.tracePoints.selectAll('circle')
-              .data(data)
+              .data(data, keyFunc)
 
           this.points.enter().append('circle')
               .attr('opacity', 0)
@@ -12851,11 +12854,21 @@ var debug = require('../lib/debug');
 
 window.plot = module.exports = {
   name: 'Line Join (D3)',
+  keyCnt: 0,
+
+  nextKey: function () {
+    return this.keyCnt++;
+  },
 
   plot: function (gd) {
     var i;
     this.x = [1, 0, -1, 0, 1];
     this.y = [0, 1, 0, -1, 0];
+    this.keys = [];
+
+    for (i = 0; i < this.x.length; i++) {
+      this.keys[i] = this.nextKey();
+    }
 
     for (i = 0; i < this.x.length; i++) {
       var x = this.x[i];
@@ -12881,9 +12894,10 @@ window.plot = module.exports = {
         yaxis: {bounds: [-1.5, 1.5]}
       })
       .add({
-        data: this.x,
+        data: this.keys,
         x: this.x,
         y: this.y,
+        keys: true,
       })
 
     /*d3.select('.trace').append('g').classed('line', true)
@@ -12896,8 +12910,9 @@ window.plot = module.exports = {
   },
 
   radFunc: function (x, y) {
-    var th = Math.atan2(x, y);
-    return 1 + 0.5 * Math.sin(th * 3.0);
+    var th = Math.atan2(y, x);
+    var zero = Math.abs(th)  < 1e-4 || Math.abs(th - 2 * Math.PI) < 1e-4;
+    return 1 + 0.5 * (Math.sin(th * 5.0) + 0.1 * Math.sin(th * 10.0));
   },
 
   addPoint: function () {
@@ -12936,8 +12951,9 @@ window.plot = module.exports = {
 
     this.x.splice(idx, 0, xm);
     this.y.splice(idx, 0, ym);
+    this.keys.splice(idx, 0, this.nextKey());
 
-    this.plotter.updateData(0, this.x, this.x, this.y, 800);
+    this.plotter.updateData(0, this.keys, this.x, this.y, 800);
   },
 
   removePoint: function () {
@@ -12960,8 +12976,9 @@ window.plot = module.exports = {
 
     this.x.splice(idx, 1);
     this.y.splice(idx, 1);
+    this.keys.splice(idx, 1);
 
-    this.plotter.updateData(0, this.x, this.x, this.y, 800);
+    this.plotter.updateData(0, this.keys, this.x, this.y, 800);
   },
 
   actionLabels: ['Add Point', 'Remove Point'],
