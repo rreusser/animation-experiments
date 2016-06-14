@@ -6,7 +6,7 @@ var shuffle = require('fisher-yates/inplace');
 module.exports = {
   name: 'Object Constancy',
 
-  n: 4,
+  n: 40,
   x: [],
   y: [],
   keys: [],
