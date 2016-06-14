@@ -6,13 +6,14 @@ var shuffle = require('fisher-yates/inplace');
 module.exports = {
   name: 'Object Constancy',
 
-  n: 400,
+  n: 4,
   x: [],
   y: [],
   keys: [],
+  duration: 500,
 
   plot: function (gd) {
-    Plotly.plot(gd, this.getFrame(), this.layout);
+    Plotly.plot(gd, this.getFrame(), this.layout, {scrollZoom: true});
   },
 
   getFrame: function (ndiff) {
@@ -48,7 +49,7 @@ module.exports = {
   actionLabels: ['Shuffle and append', 'Shuffle and remove'],
 
   actions: [
-    function (gd) {Plotly.animate(gd, this.getFrame(1), {duration: 2000, cascade: 2000});},
-    function (gd) {Plotly.animate(gd, this.getFrame(-1), {duration: 2000, cascade: 2000});}
+    function (gd) {Plotly.animate(gd, this.getFrame(1), {duration: this.duration, cascade: this.duration / 2});},
+    function (gd) {Plotly.animate(gd, this.getFrame(-1), {duration: this.duration, cascade: this.duration / 2});}
   ]
 }
