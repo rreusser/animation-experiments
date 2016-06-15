@@ -13991,21 +13991,87 @@ Timer.prototype.stop = function () {
 
 module.exports = [
   require('./plots/animated-scatter'),
-  require('./plots/lorenz-attractor-d3'),
-  require('./plots/lorenz-attractor-plotly'),
-  require('./plots/simulation'),
-  require('./plots/keyed-scatter'),
+  require('./plots/animated-log-scatter'),
+  require('./plots/tonext'),
+  require('./plots/error-bars'),
+  require('./plots/error-bars-2'),
+  //require('./plots/keyed-scatter'),
   require('./plots/subplot-scatter'),
   require('./plots/box-plot'),
   require('./plots/gapminder'),
   require('./plots/object-constancy'),
-  require('./plots/tonext'),
   require('./plots/line-join'),
-  require('./plots/error-bars'),
-  require('./plots/error-bars-2'),
+  require('./plots/lorenz-attractor-d3'),
+  require('./plots/lorenz-attractor-plotly'),
+  require('./plots/simulation'),
 ];
 
-},{"./plots/animated-scatter":20,"./plots/box-plot":21,"./plots/error-bars":23,"./plots/error-bars-2":22,"./plots/gapminder":24,"./plots/keyed-scatter":25,"./plots/line-join":26,"./plots/lorenz-attractor-d3":27,"./plots/lorenz-attractor-plotly":28,"./plots/object-constancy":29,"./plots/simulation":30,"./plots/subplot-scatter":31,"./plots/tonext":32}],20:[function(require,module,exports){
+},{"./plots/animated-log-scatter":20,"./plots/animated-scatter":21,"./plots/box-plot":22,"./plots/error-bars":24,"./plots/error-bars-2":23,"./plots/gapminder":25,"./plots/line-join":26,"./plots/lorenz-attractor-d3":27,"./plots/lorenz-attractor-plotly":28,"./plots/object-constancy":29,"./plots/simulation":30,"./plots/subplot-scatter":31,"./plots/tonext":32}],20:[function(require,module,exports){
+'use strict';
+
+var Plotly = require('plotly.js');
+
+module.exports = {
+  name: 'Animated Log Scatter',
+
+  n: 31,
+  x1: [],
+  x2: [],
+  y1: [],
+  y2: [],
+
+  randomizeData (output) {
+    var phase = Math.random() * Math.PI * 2;
+
+    for (var i = 0; i < this.n; i++) {
+      var t = i / (this.n - 1);
+      output[i] = 10 + Math.sin(Math.PI * t + phase) + 0.2 * Math.sin(Math.PI * 4 * t) + (Math.random() - 1) * 0.2;
+    }
+  },
+
+  initializeX () {
+    for (var i = 0; i < this.n; i++) {
+      var t = (i + 1) / (this.n);
+      this.x1[i] = this.x2[i] = t;
+    }
+  },
+
+  plot: function (gd) {
+    this.initializeX();
+    this.randomizeData(this.y1)
+    this.randomizeData(this.y2)
+
+    Plotly.plot(gd, [
+      {
+        x: this.x1,
+        y: this.y1,
+        mode: 'markers+lines',
+      }, {
+        x: this.x2,
+        y: this.y2,
+        mode: 'markers+lines',
+      }
+    ], {
+      xaxis: {
+        type: 'log'
+      },
+      yaxis: {
+        type: 'log',
+      }
+    }, {scrollZoom: true});
+ },
+
+  actionLabel: 'Animate',
+
+  action: function (gd) {
+    this.randomizeData(this.y1)
+    this.randomizeData(this.y2)
+
+    Plotly.animate(gd, [{y: this.y1}, {y: this.y2}], {duration: 500, easing: 'cubic-in-out'}, [0, 1]);
+  }
+}
+
+},{"plotly.js":44}],21:[function(require,module,exports){
 'use strict';
 
 var Plotly = require('plotly.js');
@@ -14063,7 +14129,7 @@ module.exports = {
   }
 }
 
-},{"plotly.js":44}],21:[function(require,module,exports){
+},{"plotly.js":44}],22:[function(require,module,exports){
 'use strict';
 
 var Plotly = require('plotly.js');
@@ -14092,7 +14158,7 @@ module.exports = {
   }
 };
 
-},{"plotly.js":44}],22:[function(require,module,exports){
+},{"plotly.js":44}],23:[function(require,module,exports){
 'use strict';
 
 var Plotly = require('plotly.js');
@@ -14165,7 +14231,7 @@ module.exports = {
   }
 }
 
-},{"plotly.js":44}],23:[function(require,module,exports){
+},{"plotly.js":44}],24:[function(require,module,exports){
 'use strict';
 
 var Plotly = require('plotly.js');
@@ -14248,7 +14314,7 @@ module.exports = {
   }
 }
 
-},{"plotly.js":44}],24:[function(require,module,exports){
+},{"plotly.js":44}],25:[function(require,module,exports){
 'use strict';
 
 var Plotly = require('plotly.js');
@@ -14345,64 +14411,7 @@ module.exports = {
   }
 }
 
-},{"clone":10,"d3":11,"plotly.js":44}],25:[function(require,module,exports){
-'use strict';
-
-var Plotly = require('plotly.js');
-
-module.exports = {
-  name: 'Keyed Scatter',
-
-  n: 31,
-  x1: [],
-  x2: [],
-  y1: [],
-  y2: [],
-
-  randomizeData (output) {
-    var phase = Math.random() * Math.PI * 2;
-
-    for (var i = 0; i < this.n; i++) {
-      var t = i / (this.n - 1);
-      output[i] = Math.sin(Math.PI * t + phase) + 0.2 * Math.sin(Math.PI * 4 * t) + (Math.random() - 1) * 0.2;
-    }
-  },
-
-  initializeX () {
-    for (var i = 0; i < this.n; i++) {
-      var t = i / (this.n - 1);
-      this.x1[i] = this.x2[i] = t;
-    }
-  },
-
-  plot: function (gd) {
-    this.initializeX();
-    this.randomizeData(this.y1)
-    this.randomizeData(this.y2)
-
-    Plotly.plot(gd, [
-      {
-        x: this.x1, y: this.y1,
-        mode: 'markers+lines',
-      }, {
-        x: this.x2, y: this.y2,
-        mode: 'markers+lines',
-      }
-    ], {}, {scrollZoom: true});
-
-  },
-
-  actionLabel: 'Animate',
-
-  action: function (gd) {
-    this.randomizeData(this.y1)
-    this.randomizeData(this.y2)
-
-    Plotly.animate(gd, [{y: this.y2}], {duration: 500, easing: 'cubic-in-out'}, [1]);
-  }
-}
-
-},{"plotly.js":44}],26:[function(require,module,exports){
+},{"clone":10,"d3":11,"plotly.js":44}],26:[function(require,module,exports){
 'use strict';
 
 var d3 = require('plotly.js').d3;
