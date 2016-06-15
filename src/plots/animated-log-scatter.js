@@ -3,7 +3,7 @@
 var Plotly = require('plotly.js');
 
 module.exports = {
-  name: 'Animated Scatter',
+  name: 'Animated Log Scatter',
 
   n: 31,
   x1: [],
@@ -16,13 +16,13 @@ module.exports = {
 
     for (var i = 0; i < this.n; i++) {
       var t = i / (this.n - 1);
-      output[i] = Math.sin(Math.PI * t + phase) + 0.2 * Math.sin(Math.PI * 4 * t) + (Math.random() - 1) * 0.2;
+      output[i] = 5 + Math.pow(Math.sin(Math.PI * t + phase) + 2.2 * Math.sin(Math.PI * 4 * t) + (Math.random() - 1) * 2.2, 4);
     }
   },
 
   initializeX () {
     for (var i = 0; i < this.n; i++) {
-      var t = i / (this.n - 1);
+      var t = (i + 1) / (this.n);
       this.x1[i] = this.x2[i] = t;
     }
   },
@@ -42,7 +42,15 @@ module.exports = {
         y: this.y2,
         mode: 'markers+lines',
       }
-    ], {}, {scrollZoom: true});
+    ], {
+      xaxis: {
+        type: 'log',
+      },
+      yaxis: {
+        type: 'log',
+        range: [0, 3]
+      }
+    }, {scrollZoom: true});
  },
 
   actionLabel: 'Animate',
