@@ -12,4 +12,5 @@ module.exports = [
   require('./plots/object-constancy'),
   require('./plots/tonext'),
   require('./plots/line-join'),
+  require('./plots/error-bars'),
 ];
