@@ -13,4 +13,5 @@ module.exports = [
   require('./plots/tonext'),
   require('./plots/line-join'),
   require('./plots/error-bars'),
+  require('./plots/error-bars-2'),
 ];
