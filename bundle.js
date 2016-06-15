@@ -14059,7 +14059,7 @@ module.exports = {
     this.randomizeData(this.y1)
     this.randomizeData(this.y2)
 
-    Plotly.animate(gd, [{y: this.y1}, {y: this.y2}], {duration: 50000, easing: 'cubic-in-out'}, [0, 1]);
+    Plotly.animate(gd, [{y: this.y1}, {y: this.y2}], {duration: 500, easing: 'cubic-in-out'}, [0, 1]);
   }
 }
 
