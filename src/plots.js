@@ -6,6 +6,8 @@ module.exports = [
   require('./plots/tonext'),
   require('./plots/error-bars'),
   require('./plots/error-bars-2'),
+  require('./plots/error-bars-3'),
+  //require('./plots/polar'),
   //require('./plots/keyed-scatter'),
   require('./plots/subplot-scatter'),
   require('./plots/box-plot'),
