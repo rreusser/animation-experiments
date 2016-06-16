@@ -14357,7 +14357,7 @@ module.exports = {
 
   layout: {
     xaxis: {range: [0, 5]},
-    yaxis: {range: [-1.5, 1.5]},
+    yaxis: {range: [-2 * window.innerHeight / window.innerWidth, 2 * window.innerHeight / window.innerWidth]},
   },
 
   plot: function (gd) {
@@ -14396,7 +14396,7 @@ module.exports = {
         'error_y.array': this.dy,
         'error_x.array': this.dx,
         key: this.key,
-      }], {duration: 500}, [0]);
+      }], {duration: 250}, [0]);
     }
   ]
 };
