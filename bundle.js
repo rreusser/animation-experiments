@@ -14338,8 +14338,8 @@ module.exports = {
     var k = 0;
 
     for (i = 0; i < this.n; i++) {
-      this.x[i] = k * 0.1 + 2 * (Math.random() - 0.5) * 0.01;
-      this.y[i] = Math.sin(k * 0.2) + 2 * (Math.random() - 0.5) * 0.01;
+      this.x[i] = k * 0.1 + 2 * (Math.random() - 0.5) * 0.03;
+      this.y[i] = Math.sin(k * 0.2) + 2 * (Math.random() - 0.5) * 0.03;
 
       this.key[i] = k;
 
@@ -14367,6 +14367,7 @@ module.exports = {
       x: this.x,
       y: this.y,
       key: this.key,
+      fill: 'tozeroy',
       mode: 'lines+markers',
       error_x: {
         array: this.dx,
@@ -14396,7 +14397,7 @@ module.exports = {
         'error_y.array': this.dy,
         'error_x.array': this.dx,
         key: this.key,
-      }], {duration: 250}, [0]);
+      }], {duration: 500}, [0]);
     }
   ]
 };
