@@ -15086,7 +15086,7 @@ module.exports = {
     this.rangeNum = (this.rangeNum + 1) % this.range.length;
     var range = this.range[this.rangeNum];
 
-    Plotly.animate(gd, [], {duration: 500, easing: 'cubic-in-out'}, [], {
+    Plotly.animate(gd, [], {duration: 1000, easing: 'cubic-in-out'}, [], {
       'xaxis.range': range.x.slice(0),
       'yaxis.range': range.y.slice(0),
     });
@@ -65128,8 +65128,10 @@ module.exports = {
         role: 'info',
         description: [
             'Sets the x component of the arrow tail about the arrow head.',
-            'A positive (negative) component corresponds to an arrow pointing',
-            'from right to left (left to right)'
+            'If `axref` is `pixel`, a positive (negative) ',
+            'component corresponds to an arrow pointing',
+            'from right to left (left to right).',
+            'If `axref` is an axis, this is a value on that axis.'
         ].join(' ')
     },
     ay: {
@@ -65138,8 +65140,44 @@ module.exports = {
         role: 'info',
         description: [
             'Sets the y component of the arrow tail about the arrow head.',
-            'A positive (negative) component corresponds to an arrow pointing',
-            'from bottom to top (top to bottom)'
+            'If `ayref` is `pixel`, a positive (negative) ',
+            'component corresponds to an arrow pointing',
+            'from bottom to top (top to bottom).',
+            'If `ayref` is an axis, this is a value on that axis.'
+        ].join(' ')
+    },
+    axref: {
+        valType: 'enumerated',
+        dflt: 'pixel',
+        values: [
+            'pixel',
+            cartesianConstants.idRegex.x.toString()
+        ],
+        role: 'info',
+        description: [
+            'Indicates in what terms the tail of the annotation (ax,ay) ',
+            'is specified. If `pixel`, `ax` is a relative offset in pixels ',
+            'from `x`. If set to an x axis id (e.g. *x* or *x2*), `ax` is ',
+            'specified in the same terms as that axis. This is useful ',
+            'for trendline annotations which should continue to indicate ',
+            'the correct trend when zoomed.'
+        ].join(' ')
+    },
+    ayref: {
+        valType: 'enumerated',
+        dflt: 'pixel',
+        values: [
+            'pixel',
+            cartesianConstants.idRegex.y.toString()
+        ],
+        role: 'info',
+        description: [
+            'Indicates in what terms the tail of the annotation (ax,ay) ',
+            'is specified. If `pixel`, `ay` is a relative offset in pixels ',
+            'from `y`. If set to a y axis id (e.g. *y* or *y2*), `ay` is ',
+            'specified in the same terms as that axis. This is useful ',
+            'for trendline annotations which should continue to indicate ',
+            'the correct trend when zoomed.'
         ].join(' ')
     },
     // positioning
@@ -65303,6 +65341,8 @@ function handleAnnotationDefaults(annIn, fullLayout) {
         coerce('arrowwidth', ((borderOpacity && borderWidth) || 1) * 2);
         coerce('ax');
         coerce('ay');
+        coerce('axref');
+        coerce('ayref');
 
         // if you have one part of arrow length you should have both
         Lib.noneOrAll(annIn, annOut, ['ax', 'ay']);
@@ -65320,6 +65360,10 @@ function handleAnnotationDefaults(annIn, fullLayout) {
         // xref, yref
         var axRef = Axes.coerceRef(annIn, annOut, tdMock, axLetter);
 
+        //todo: should be refactored in conjunction with Axes
+        // axref, ayref
+        var aaxRef = Axes.coerceARef(annIn, annOut, tdMock, axLetter);
+
         // x, y
         var defaultPosition = 0.5;
         if(axRef !== 'paper') {
@@ -65333,6 +65377,11 @@ function handleAnnotationDefaults(annIn, fullLayout) {
                 if(ax.type === 'date') {
                     newval = Lib.dateTime2ms(annIn[axLetter]);
                     if(newval !== false) annIn[axLetter] = newval;
+
+                    if(aaxRef === axRef) {
+                        var newvalB = Lib.dateTime2ms(annIn['a' + axLetter]);
+                        if(newvalB !== false) annIn['a' + axLetter] = newvalB;
+                    }
                 }
                 else if((ax._categories || []).length) {
                     newval = ax._categories.indexOf(annIn[axLetter]);
@@ -65663,8 +65712,8 @@ annotations.draw = function(gd, index, opt, value) {
 
         var annotationIsOffscreen = false;
         ['x', 'y'].forEach(function(axLetter) {
-            var ax = Axes.getFromId(gd,
-                    options[axLetter + 'ref'] || axLetter),
+            var axRef = options[axLetter + 'ref'] || axLetter,
+                ax = Axes.getFromId(gd, axRef),
                 dimAngle = (textangle + (axLetter === 'x' ? 0 : 90)) * Math.PI / 180,
                 annSize = outerwidth * Math.abs(Math.cos(dimAngle)) +
                           outerheight * Math.abs(Math.sin(dimAngle)),
@@ -65679,8 +65728,16 @@ annotations.draw = function(gd, index, opt, value) {
                 // anyway to get its bounding box)
                 if(!ax.autorange && ((options[axLetter] - ax.range[0]) *
                                      (options[axLetter] - ax.range[1]) > 0)) {
-                    annotationIsOffscreen = true;
-                    return;
+                    if(options['a' + axLetter + 'ref'] === axRef) {
+                        if((options['a' + axLetter] - ax.range[0]) *
+                            (options['a' + axLetter] - ax.range[1]) > 0) {
+                            annotationIsOffscreen = true;
+                        }
+                    } else {
+                        annotationIsOffscreen = true;
+                    }
+
+                    if(annotationIsOffscreen) return;
                 }
                 annPosPx[axLetter] = ax._offset + ax.l2p(options[axLetter]);
                 alignPosition = 0.5;
@@ -65694,13 +65751,17 @@ annotations.draw = function(gd, index, opt, value) {
             }
 
             var alignShift = 0;
-            if(options.showarrow) {
-                alignShift = options['a' + axLetter];
+            if(options['a' + axLetter + 'ref'] === axRef) {
+                annPosPx['aa' + axLetter] = ax._offset + ax.l2p(options['a' + axLetter]);
+            } else {
+                if(options.showarrow) {
+                    alignShift = options['a' + axLetter];
+                }
+                else {
+                    alignShift = annSize * shiftFraction(alignPosition, anchor);
+                }
+                annPosPx[axLetter] += alignShift;
             }
-            else {
-                alignShift = annSize * shiftFraction(alignPosition, anchor);
-            }
-            annPosPx[axLetter] += alignShift;
 
             // save the current axis type for later log/linear changes
             options['_' + axLetter + 'type'] = ax && ax.type;
@@ -65720,8 +65781,21 @@ annotations.draw = function(gd, index, opt, value) {
         // make sure the arrowhead (if there is one)
         // and the annotation center are visible
         if(options.showarrow) {
-            arrowX = Lib.constrain(annPosPx.x - options.ax, 1, fullLayout.width - 1);
-            arrowY = Lib.constrain(annPosPx.y - options.ay, 1, fullLayout.height - 1);
+            if(options.axref === options.xref) {
+                //we don't want to constrain if the tail is absolute
+                //or the slope (which is meaningful) will change.
+                arrowX = annPosPx.x;
+            } else {
+                arrowX = Lib.constrain(annPosPx.x - options.ax, 1, fullLayout.width - 1);
+            }
+
+            if(options.ayref === options.yref) {
+                //we don't want to constrain if the tail is absolute
+                //or the slope (which is meaningful) will change.
+                arrowY = annPosPx.y;
+            } else {
+                arrowY = Lib.constrain(annPosPx.y - options.ay, 1, fullLayout.height - 1);
+            }
         }
         annPosPx.x = Lib.constrain(annPosPx.x, 1, fullLayout.width - 1);
         annPosPx.y = Lib.constrain(annPosPx.y, 1, fullLayout.height - 1);
@@ -65740,8 +65814,19 @@ annotations.draw = function(gd, index, opt, value) {
         annbg.call(Drawing.setRect, borderwidth / 2, borderwidth / 2,
             outerwidth - borderwidth, outerheight - borderwidth);
 
-        var annX = Math.round(annPosPx.x - outerwidth / 2),
+        var annX = 0, annY = 0;
+        if(options.axref === options.xref) {
+            annX = Math.round(annPosPx.aax - outerwidth / 2);
+        } else {
+            annX = Math.round(annPosPx.x - outerwidth / 2);
+        }
+
+        if(options.ayref === options.yref) {
+            annY = Math.round(annPosPx.aay - outerheight / 2);
+        } else {
             annY = Math.round(annPosPx.y - outerheight / 2);
+        }
+
         ann.call(Lib.setTranslate, annX, annY);
 
         var annbase = 'annotations[' + index + ']';
@@ -65759,11 +65844,22 @@ annotations.draw = function(gd, index, opt, value) {
             // looks like there may be a cross-browser solution, see
             // http://stackoverflow.com/questions/5364980/
             //    how-to-get-the-width-of-an-svg-tspan-element
-            var arrowX0 = annPosPx.x + dx,
-                arrowY0 = annPosPx.y + dy,
+            var arrowX0, arrowY0;
+
+            if(options.axref === options.xref) {
+                arrowX0 = annPosPx.aax + dx;
+            } else {
+                arrowX0 = annPosPx.x + dx;
+            }
+
+            if(options.ayref === options.yref) {
+                arrowY0 = annPosPx.aay + dy;
+            } else {
+                arrowY0 = annPosPx.y + dy;
+            }
 
                 // create transform matrix and related functions
-                transform =
+            var transform =
                     Lib.rotationXYMatrix(textangle, arrowX0, arrowY0),
                 applyTransform = Lib.apply2DTransform(transform),
                 applyTransform2 = Lib.apply2DTransform2(transform),
@@ -65862,6 +65958,18 @@ annotations.draw = function(gd, index, opt, value) {
                             (options.y + dy / ya._m) :
                             (1 - ((arrowY + dy - gs.t) / gs.h));
 
+                        if(options.axref === options.xref) {
+                            update[annbase + '.ax'] = xa ?
+                              (options.ax + dx / xa._m) :
+                              ((arrowX + dx - gs.l) / gs.w);
+                        }
+
+                        if(options.ayref === options.yref) {
+                            update[annbase + '.ay'] = ya ?
+                              (options.ay + dy / ya._m) :
+                              (1 - ((arrowY + dy - gs.t) / gs.h));
+                        }
+
                         anng.attr({
                             transform: 'rotate(' + textangle + ',' +
                                    xcenter + ',' + ycenter + ')'
@@ -65904,8 +66012,18 @@ annotations.draw = function(gd, index, opt, value) {
                     ann.call(Lib.setTranslate, x0 + dx, y0 + dy);
                     var csr = 'pointer';
                     if(options.showarrow) {
-                        update[annbase + '.ax'] = options.ax + dx;
-                        update[annbase + '.ay'] = options.ay + dy;
+                        if(options.axref === options.xref) {
+                            update[annbase + '.ax'] = xa.p2l(xa.l2p(options.ax) + dx);
+                        } else {
+                            update[annbase + '.ax'] = options.ax + dx;
+                        }
+
+                        if(options.ayref === options.yref) {
+                            update[annbase + '.ay'] = ya.p2l(ya.l2p(options.ay) + dy);
+                        } else {
+                            update[annbase + '.ay'] = options.ay + dy;
+                        }
+
                         drawArrow(dx, dy);
                     }
                     else {
@@ -70763,14 +70881,14 @@ module.exports = function draw(gd) {
     var bg = legend.selectAll('rect.bg')
         .data([0]);
 
-    bg.enter().append('rect')
-        .attr({
-            'class': 'bg',
-            'shape-rendering': 'crispEdges'
-        })
-        .call(Color.stroke, opts.bordercolor)
-        .call(Color.fill, opts.bgcolor)
-        .style('stroke-width', opts.borderwidth + 'px');
+    bg.enter().append('rect').attr({
+        'class': 'bg',
+        'shape-rendering': 'crispEdges'
+    });
+
+    bg.call(Color.stroke, opts.bordercolor);
+    bg.call(Color.fill, opts.bgcolor);
+    bg.style('stroke-width', opts.borderwidth + 'px');
 
     var scrollBox = legend.selectAll('g.scrollbox')
         .data([0]);
@@ -80343,8 +80461,6 @@ Plotly.animate = function animate (gd, newData, transitionOpts, traces, newLayou
     transitionOpts.cascade = transitionOpts.cascade === undefined ? 0 : transitionOpts.cascade;
     transitionOpts.leadingEdgeRestyle = transitionOpts.leadingEdgeRestyle === undefined ? false : transitionOpts.leadingEdgeRestyle;
 
-    gd = getGraphDiv(gd);
-
     if(isNumeric(traces)) traces = [traces];
     else if(!Array.isArray(traces) || !traces.length) {
         traces = gd._fullData.map(function (v,i) {return i;});
@@ -80354,46 +80470,46 @@ Plotly.animate = function animate (gd, newData, transitionOpts, traces, newLayou
 
     var animatedTraces = [];
 
-    for (i = 0; i < traces.length; i++) {
-        var traceIdx = traces[i];
-        var trace = gd._fullData[traceIdx];
-        var module = trace._module;
+    function beginAnimation () {
+        for (i = 0; i < traces.length; i++) {
+            var traceIdx = traces[i];
+            var trace = gd._fullData[traceIdx];
+            var module = trace._module;
 
-        if (!module.animatable) {
-            continue;
+            if (!module.animatable) {
+                continue;
+            }
+
+            animatedTraces.push(traceIdx);
+
+            newTraceData = newData[i];
+            curData = gd.data[traces[i]];
+
+            for (var ai in newTraceData) {
+                var value = newTraceData[ai];
+                Lib.nestedProperty(curData, ai).set(value);
+            }
+
+            var traceIdx = traces[i];
+            if (gd.data[traceIdx].marker && gd.data[traceIdx].marker.size) {
+                gd._fullData[traceIdx].marker.size = gd.data[traceIdx].marker.size
+            }
+            if (gd.data[traceIdx].error_y && gd.data[traceIdx].error_y.array) {
+                gd._fullData[traceIdx].error_y.array = gd.data[traceIdx].error_y.array
+            }
+            if (gd.data[traceIdx].error_x && gd.data[traceIdx].error_x.array) {
+                gd._fullData[traceIdx].error_x.array = gd.data[traceIdx].error_x.array
+            }
+            gd._fullData[traceIdx].x = gd.data[traceIdx].x;
+            gd._fullData[traceIdx].y = gd.data[traceIdx].y;
+            gd._fullData[traceIdx].z = gd.data[traceIdx].z;
+            gd._fullData[traceIdx].key = gd.data[traceIdx].key;
         }
 
-        animatedTraces.push(traceIdx);
+        doCalcdata(gd, animatedTraces);
 
-        newTraceData = newData[i];
-        curData = gd.data[traces[i]];
-
-        for (var ai in newTraceData) {
-            var value = newTraceData[ai];
-            Lib.nestedProperty(curData, ai).set(value);
-        }
-
-        var traceIdx = traces[i];
-        if (gd.data[traceIdx].marker && gd.data[traceIdx].marker.size) {
-            gd._fullData[traceIdx].marker.size = gd.data[traceIdx].marker.size
-        }
-        if (gd.data[traceIdx].error_y && gd.data[traceIdx].error_y.array) {
-            gd._fullData[traceIdx].error_y.array = gd.data[traceIdx].error_y.array
-        }
-        if (gd.data[traceIdx].error_x && gd.data[traceIdx].error_x.array) {
-            gd._fullData[traceIdx].error_x.array = gd.data[traceIdx].error_x.array
-        }
-        gd._fullData[traceIdx].x = gd.data[traceIdx].x;
-        gd._fullData[traceIdx].y = gd.data[traceIdx].y;
-        gd._fullData[traceIdx].z = gd.data[traceIdx].z;
-        gd._fullData[traceIdx].key = gd.data[traceIdx].key;
-        gd._fullData[traceIdx].r = gd.data[traceIdx].r;
-        gd._fullData[traceIdx].t = gd.data[traceIdx].t;
+        ErrorBars.calc(gd);
     }
-
-    doCalcdata(gd, animatedTraces);
-
-    ErrorBars.calc(gd);
 
     /*function doSetPositions () {
 		var subplots = Plots.getSubplotIds(fullLayout, 'cartesian');
@@ -80419,6 +80535,8 @@ Plotly.animate = function animate (gd, newData, transitionOpts, traces, newLayou
 
     var restyleList = [];
     var relayoutList = [];
+    var completionTimeout = null;
+    var completion = null;
 
     function doAnimations () {
         var a, i, j;
@@ -80437,9 +80555,26 @@ Plotly.animate = function animate (gd, newData, transitionOpts, traces, newLayou
 
         if (!transitionOpts.leadingEdgeRestyle) {
             return new Promise(function(resolve, reject) {
-                setTimeout(resolve, transitionOpts.duration);
+                completion = resolve;
+                completionTimeout = setTimeout(resolve, transitionOpts.duration);
             });
         }
+    }
+
+    function executeInterrupt () {
+        var ret;
+        clearTimeout(completionTimeout);
+
+        if (completion) {
+            console.log('complete!');
+            completion();
+        }
+
+        if (gd._animationInterrupt) {
+            ret = gd._animationInterrupt();
+            gd._animationInterrupt = null;
+        }
+        return ret;
     }
 
     /*for (var i = 0; i < animatedTraces.length; i++) {
@@ -80487,7 +80622,7 @@ Plotly.animate = function animate (gd, newData, transitionOpts, traces, newLayou
         }
     }
 
-    var seq = [Plots.previousPromises];
+    var seq = [Plots.previousPromises, executeInterrupt, beginAnimation];
     seq.push(doAnimations);
     seq = seq.concat(restyleList);
 
@@ -82959,6 +83094,26 @@ axes.coerceRef = function(containerIn, containerOut, gd, axLetter, dflt) {
     };
 
     // xref, yref
+    return Lib.coerce(containerIn, containerOut, attrDef, refAttr);
+};
+
+//todo: duplicated per github PR 610. Should be consolidated with axes.coerceRef.
+// find the list of possible axes to reference with an axref or ayref attribute
+// and coerce it to that list
+axes.coerceARef = function(containerIn, containerOut, gd, axLetter, dflt) {
+    var axlist = gd._fullLayout._has('gl2d') ? [] : axes.listIds(gd, axLetter),
+        refAttr = 'a' + axLetter + 'ref',
+        attrDef = {};
+
+    // data-ref annotations are not supported in gl2d yet
+
+    attrDef[refAttr] = {
+        valType: 'enumerated',
+        values: axlist.concat(['pixel']),
+        dflt: dflt || 'pixel' || axlist[0]
+    };
+
+    // axref, ayref
     return Lib.coerce(containerIn, containerOut, attrDef, refAttr);
 };
 
@@ -87684,7 +87839,9 @@ module.exports = {
         dflt: 0,
         role: 'style',
         description: [
-            'Sets the number of ticks.',
+            'Specifies the maximum number of ticks for the particular axis.',
+            'The actual number of ticks will be chosen automatically to be',
+            'less than or equal to `nticks`.',
             'Has an effect only if `tickmode` is set to *auto*.'
         ].join(' ')
     },
@@ -89219,6 +89376,13 @@ module.exports = function transitionAxes(gd, newLayout, transitionConfig) {
 
     return new Promise(function (resolve, reject) {
         var t1, t2, raf;
+
+        gd._animationInterrupt = function () {
+            reject();
+            cancelAnimationFrame(raf);
+            raf = null;
+            transitionTail();
+        };
 
         function doFrame () {
             t2 = Date.now();
@@ -98311,7 +98475,9 @@ proto.makeFramework = function() {
     _this.plotContainer.selectAll('.backplot,.frontplot,.grids')
         .call(Drawing.setClipUrl, clipId);
 
-    _this.initInteractions();
+    if(!_this.graphDiv._context.staticPlot) {
+        _this.initInteractions();
+    }
 };
 
 var w_over_h = Math.sqrt(4 / 3);
@@ -101798,7 +101964,9 @@ module.exports = extendFlat({},
             dflt: 0,
             role: 'style',
             description: [
-                'Sets the number of contour levels.',
+                'Sets the maximum number of contour levels. The actual number',
+                'of contours will be chosen automatically to be less than or',
+                'equal to the value of `ncontours`.',
                 'Has an effect only if `autocontour` is *true*.'
             ].join(' ')
         },
@@ -109027,7 +109195,8 @@ module.exports = function selectPoints(searchInfo, polygon) {
         y;
 
     // TODO: include lines? that would require per-segment line properties
-    if(!subtypes.hasMarkers(trace) && ! subtypes.hasText(trace)) return;
+    var hasOnlyLines = (!subtypes.hasMarkers(trace) && !subtypes.hasText(trace));
+    if(trace.visible !== true || hasOnlyLines) return;
 
     var opacity = Array.isArray(marker.opacity) ? 1 : marker.opacity;
 
