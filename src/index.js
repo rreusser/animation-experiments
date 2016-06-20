@@ -24,6 +24,7 @@ function setPlotType (plotType) {
 
   body.replaceChild(newPlot, plot);
   plot = newPlot;
+  window.gd = newPlot;
 
   handler = plotHandlerIndex[plotType];
 

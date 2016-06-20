@@ -8,6 +8,7 @@ module.exports = [
   require('./plots/error-bars-2'),
   require('./plots/error-bars-3'),
   require('./plots/error-bars-4'),
+  require('./plots/scale-transition'),
   //require('./plots/polar'),
   //require('./plots/keyed-scatter'),
   require('./plots/subplot-scatter'),
