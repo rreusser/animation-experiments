@@ -14902,7 +14902,7 @@ module.exports = {
 
   plot: function (gd) {
     this.debug = debug();
-    this.lorenz = lorenz().initialize({n: 500});
+    this.lorenz = lorenz().initialize({n: 300});
 
     this.gd = gd;
 
@@ -14921,7 +14921,10 @@ module.exports = {
         range: [0, 40],
         autorange: false,
       },
-    }, {scrollZoom: true});
+      dragmode: 'pan'
+    }, {
+      scrollZoom: true,
+    });
 
     this.timer = timer()
       .onframe(function (frame, dt) {
@@ -15018,10 +15021,10 @@ module.exports = {
 
   range: [
     {x: [0, 1], y: [0, 1]},
-    {x: [0, 0.1], y: [0, 0.1]},
-    {x: [0.2, 0.3], y: [0.2, 0.3]},
-    {x: [0.3, 0.5], y: [0.3, 0.5]},
-    {x: [0.8, 1.0], y: [0.8, 1.0]},
+    {x: [0, 0.2], y: [0, 0.2]},
+    {x: [0.2, 0.4], y: [0.2, 0.4]},
+    {x: [0.3, 0.7], y: [0.3, 0.7]},
+    {x: [0.7, 1.0], y: [0.7, 1.0]},
   ],
 
   rangeNum: 0,
@@ -15049,6 +15052,10 @@ module.exports = {
     this.initializeX();
     this.randomizeData(this.y1)
     this.randomizeData(this.y2)
+
+    this.x1[0] = 0;
+    this.y1[0] = 0;
+    this.y2[0] = 0;
 
     Plotly.plot(gd, [
       {
@@ -108434,7 +108441,7 @@ module.exports = function linePoints(d, opts) {
     function getTolerance(pt) {
         var xFrac = pt[0] / xa._length,
             yFrac = pt[1] / ya._length;
-        return (1 + 10 * Math.max(0, -xFrac, xFrac - 1, -yFrac, yFrac - 1)) * baseTolerance * 0;
+        return (1 + 10 * Math.max(0, -xFrac, xFrac - 1, -yFrac, yFrac - 1)) * baseTolerance;
     }
 
     function ptDist(pt1, pt2) {
