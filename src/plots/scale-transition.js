@@ -14,8 +14,8 @@ module.exports = {
     {x: [0, 1], y: [0, 1]},
     {x: [0, 0.2], y: [0, 0.2]},
     {x: [0.2, 0.4], y: [0.2, 0.4]},
-    {x: [0.4, 0.8], y: [0.4, 0.8]},
-    {x: [0.8, 1.0], y: [0.8, 1.0]},
+    {x: [0.3, 0.7], y: [0.3, 0.7]},
+    {x: [0.7, 1.0], y: [0.7, 1.0]},
   ],
 
   rangeNum: 0,
@@ -43,6 +43,10 @@ module.exports = {
     this.initializeX();
     this.randomizeData(this.y1)
     this.randomizeData(this.y2)
+
+    this.x1[0] = 0;
+    this.y1[0] = 0;
+    this.y2[0] = 0;
 
     Plotly.plot(gd, [
       {
