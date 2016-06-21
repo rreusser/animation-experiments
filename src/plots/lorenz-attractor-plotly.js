@@ -49,7 +49,7 @@ module.exports = {
 
   plot: function (gd) {
     this.debug = debug();
-    this.lorenz = lorenz().initialize({n: 500});
+    this.lorenz = lorenz().initialize({n: 300});
 
     this.gd = gd;
 
@@ -68,7 +68,10 @@ module.exports = {
         range: [0, 40],
         autorange: false,
       },
-    }, {scrollZoom: true});
+      dragmode: 'pan'
+    }, {
+      scrollZoom: true,
+    });
 
     this.timer = timer()
       .onframe(function (frame, dt) {
