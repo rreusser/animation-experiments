@@ -1,6 +1,7 @@
 'use strict';
 
 module.exports = [
+  require('./plots/slider'),
   require('./plots/animated-scatter'),
   require('./plots/animated-log-scatter'),
   require('./plots/tonext'),
@@ -9,6 +10,7 @@ module.exports = [
   require('./plots/error-bars-3'),
   require('./plots/error-bars-4'),
   require('./plots/scale-transition'),
+  require('./plots/subplot-removal'),
   //require('./plots/polar'),
   //require('./plots/keyed-scatter'),
   require('./plots/subplot-scatter'),
@@ -19,4 +21,5 @@ module.exports = [
   require('./plots/lorenz-attractor-d3'),
   require('./plots/lorenz-attractor-plotly'),
   require('./plots/simulation'),
+  require('./plots/mock'),
 ];

@@ -49,7 +49,7 @@ module.exports = {
 
   plot: function (gd) {
     this.debug = debug();
-    this.lorenz = lorenz().initialize({n: 300});
+    this.lorenz = lorenz().initialize({n: 3});
 
     this.gd = gd;
 
@@ -61,11 +61,11 @@ module.exports = {
       }
     ], {
       xaxis: {
-        range: [-30, 30],
+        range: [-300, 300],
         autorange: false,
       },
       yaxis: {
-        range: [0, 40],
+        range: [0, 400],
         autorange: false,
       },
       dragmode: 'pan'
