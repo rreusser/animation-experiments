@@ -41,7 +41,7 @@ module.exports = {
     return [{
       x: this.x,
       y: this.y,
-      key: this.keys,
+      identifier: this.keys,
       mode: 'markers',
     }]
   },
@@ -49,7 +49,7 @@ module.exports = {
   actionLabels: ['Shuffle and append', 'Shuffle and remove'],
 
   actions: [
-    function (gd) {Plotly.animate(gd, this.getFrame(1), {duration: this.duration, cascade: this.duration / 2});},
-    function (gd) {Plotly.animate(gd, this.getFrame(-1), {duration: this.duration, cascade: this.duration / 2});}
+    function (gd) {Plotly.transition(gd, this.getFrame(1), null, {duration: this.duration, cascade: this.duration / 2});},
+    function (gd) {Plotly.transition(gd, this.getFrame(-1), null, {duration: this.duration, cascade: this.duration / 2});}
   ]
 }

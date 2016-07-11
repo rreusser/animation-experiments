@@ -81,14 +81,13 @@ module.exports = {
     //this.randomizeData(this.y2, 3.5)
     this.randomizeData(this.y3, 5)
 
-    Plotly.animate(gd, [
-      {y: this.y1},
-      //{y: this.y2},
-      {y: this.y3}
-    ], {duration: 500, easing: 'cubic-in-out'}, [
-      0,
-      //1,
-      2
-    ]);
+    Plotly.transition(gd, [
+          {y: this.y1},
+          {y: this.y3}
+        ],
+        null,
+        [0, 2],
+        {duration: 500, easing: 'cubic-in-out'}
+    );
   }
 }

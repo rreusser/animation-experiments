@@ -90,6 +90,6 @@ module.exports = {
     var year = years[this.idx];
     console.log('year =', year)
 
-    Plotly.animate(this.gd, this.byYear[year], {duration: 500, easing: 'cubic-in-out'});
+    Plotly.transition(this.gd, this.byYear[year], null, {duration: 500, easing: 'cubic-in-out'});
   }
 }

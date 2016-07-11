@@ -84,9 +84,6 @@ module.exports = {
     this.rangeNum = (this.rangeNum + 1) % this.range.length;
     var range = this.range[this.rangeNum];
 
-    Plotly.animate(gd, [], {duration: 1000, easing: 'cubic-in-out'}, [], {
-      'xaxis.range': range.x.slice(0),
-      'yaxis.range': range.y.slice(0),
-    });
+    Plotly.transition(gd, null, {'xaxis.range': range.x.slice(0), 'yaxis.range': range.y.slice(0)}, null, {duration: 1000, easing: 'cubic-in-out'});
   }
 }

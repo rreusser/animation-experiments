@@ -50,7 +50,7 @@ module.exports = {
     Plotly.plot(gd, [{
       x: this.x,
       y: this.y,
-      key: this.key,
+      identifier: this.key,
       fill: 'tozeroy',
       mode: 'lines+markers',
       error_x: {
@@ -75,13 +75,13 @@ module.exports = {
       this.n = 20 + Math.floor(Math.random() * 5);
       this.randomize();
 
-      Plotly.animate(gd, [{
+      Plotly.transition(gd, [{
         x: this.x,
         y: this.y,
         'error_y.array': this.dy,
         'error_x.array': this.dx,
-        key: this.key,
-      }], {duration: 500}, [0]);
+        identifier: this.key,
+      }], null, null, {duration: 500});
     }
   ]
 };

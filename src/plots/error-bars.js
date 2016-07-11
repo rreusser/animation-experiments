@@ -76,6 +76,6 @@ module.exports = {
   action: function (gd) {
     this.randomizeData();
 
-    Plotly.animate(gd, [{y: this.error.y}, {y: this.trace.y}], {duration: 500, easing: 'cubic-in-out'}, [0, 1]);
+    Plotly.transition(gd, [{y: this.error.y}, {y: this.trace.y}], null, null, {duration: 500, easing: 'cubic-in-out'});
   }
 }

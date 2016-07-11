@@ -49,7 +49,7 @@ module.exports = {
 
   plot: function (gd) {
     this.debug = debug();
-    this.lorenz = lorenz().initialize({n: 3});
+    this.lorenz = lorenz().initialize({n: 300});
 
     this.gd = gd;
 
@@ -61,11 +61,11 @@ module.exports = {
       }
     ], {
       xaxis: {
-        range: [-300, 300],
+        range: [-30, 30],
         autorange: false,
       },
       yaxis: {
-        range: [0, 400],
+        range: [0, 40],
         autorange: false,
       },
       dragmode: 'pan'
@@ -77,7 +77,7 @@ module.exports = {
       .onframe(function (frame, dt) {
         this.lorenz.compute();
 
-        Plotly.animate(this.gd, [{x: this.lorenz.x, y: this.lorenz.z}], {duration: 0}, [0]);
+        Plotly.transition(this.gd, [{x: this.lorenz.x, y: this.lorenz.z}], null, [0], {duration: 0});
 
         this.debug.tick();
       }.bind(this))

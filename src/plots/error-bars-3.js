@@ -70,7 +70,7 @@ module.exports = {
       this.createSpeeds();
       this.createError();
 
-      Plotly.animate(gd, [{x: this.x, y: this.y, 'error_y.array': this.dy}], {duration: 500}, [0]);
+      Plotly.transition(gd, [{x: this.x, y: this.y, 'error_y.array': this.dy}], null, null, {duration: 500});
     }
   ]
 };

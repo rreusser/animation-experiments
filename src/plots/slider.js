@@ -46,4 +46,8 @@ module.exports = {
             this.onChange();
         }.bind(this));
     },
+
+    teardown: function() {
+        this.slider.remove();
+    }
 };
