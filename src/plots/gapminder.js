@@ -97,6 +97,7 @@ module.exports = {
 
     plot: function (gd) {
         this.byYear = {};
+        this.gd = gd;
         this.loadAndConvertToJSON(this.onload.bind(this));
     },
 }
