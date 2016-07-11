@@ -12,42 +12,6 @@ module.exports = {
     byYear: {},
     initialYear: '1952',
 
-    createSlider: function() {
-        this.container = document.createElement('div');
-
-        this.container.style.position = 'absolute';
-        this.container.style.zIndex = 1000;
-        this.container.style.bottom = '10px';
-        this.container.style.left = '20px';
-
-        this.label = document.createElement('span');
-        this.label.textContent = this.initialYear;
-
-        this.slider = document.createElement('input');
-        this.slider.type = 'range';
-        this.slider.min = 0;
-        this.slider.max = gd._frameData._frames.length - 1;
-        this.slider.step = 1;
-        this.slider.value = 0;
-        this.slider.style.width = '200px';
-
-        this.slider.oninput = this.onChange.bind(this);
-
-
-        this.container.appendChild(this.slider);
-        this.container.appendChild(this.label);
-
-        document.body.appendChild(this.container);
-    },
-
-    onChange: function() {
-        var frameNum = parseInt(this.slider.value);
-        var frameName = this.gd._frameData._frames[frameNum].name;
-        this.label.textContent = frameName;
-
-        Plotly.animate(gd, frameName, {duration: 400, ease: 'cubic-in-out'});
-    },
-
     layout: {
         xaxis: {
             title: 'Life Expectancy',
@@ -60,7 +24,13 @@ module.exports = {
         margin: {
             t: 20
         },
-        hovermode: 'closest'
+        hovermode: 'closest',
+        slider: {
+            visible: true,
+            plotlycommand: 'animate',
+            args: ['slider.value', {duration: 400, ease: 'cubic-in-out'}],
+            initialValue: '1952',
+        }
     },
 
     loadAndConvertToJSON: function (onload) {
@@ -102,7 +72,9 @@ module.exports = {
         }
 
         this.frames = [];
+        this.layout.slider.values = [];
         for (var key in this.byYear) {
+            this.layout.slider.values.push(key);
             this.frames.push({
                 data: this.byYear[key],
                 name: key,
@@ -112,7 +84,7 @@ module.exports = {
         this.createPlot(this.byYear[this.initialYear]).then(function() {
             Plotly.addFrames(this.gd, this.frames);
         }.bind(this)).then(function() {
-            this.createSlider();
+            //this.createSlider();
         }.bind(this));
     },
 
