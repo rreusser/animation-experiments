@@ -83,17 +83,13 @@ module.exports = {
 
         this.createPlot(this.byYear[this.initialYear]).then(function() {
             Plotly.addFrames(this.gd, this.frames);
-        }.bind(this)).then(function() {
-            //this.createSlider();
         }.bind(this));
     },
 
     createPlot: function (data) {
         return Plotly.plot(
             this.gd,
-            data.map(function(d) {
-                return Lib.extendDeep({}, d);
-            }),
+            data.map(function(d) {return Lib.extendDeep({}, d);}),
             this.layout,
             { scrollZoom: true }
         );
@@ -101,11 +97,6 @@ module.exports = {
 
     plot: function (gd) {
         this.byYear = {};
-        window.gd = this.gd = gd;
         this.loadAndConvertToJSON(this.onload.bind(this));
     },
-
-    teardown: function() {
-        this.container.remove();
-    }
 }
