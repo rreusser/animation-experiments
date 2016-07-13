@@ -14714,31 +14714,11 @@ module.exports = {
 
 var Plotly = require('plotly.js');
 
-var mock = require('plotly.js/test/image/mocks/ternary_fill.json');
+var mock = require('plotly.js/test/image/mocks/scatter_fill_self_next.json');
 
 module.exports = {
     name: 'mock',
     plot: function (gd) {
-        /*mock.data.push({
-            x: [1, 2, 3],
-            y: [3, 5, 6],
-            type: 'scatter',
-            xaxis: 'x',
-            yaxis: 'y',
-        });
-
-        mock.data.push({
-            r: [1, 2, 3],
-            t: [1, 2, 3],
-            type: 'scatter',
-        });
-
-        mock.data.push({
-            values: [19, 26, 55],
-            labels: ['Residential', 'Non-Residential', 'Utility'],
-            type: 'pie'
-        });*/
-
         mock.layout.width = window.innerWidth;
         mock.layout.height = window.innerHeight;
 
@@ -14746,7 +14726,7 @@ module.exports = {
     },
 }
 
-},{"plotly.js":49,"plotly.js/test/image/mocks/ternary_fill.json":1390}],31:[function(require,module,exports){
+},{"plotly.js":49,"plotly.js/test/image/mocks/scatter_fill_self_next.json":1390}],31:[function(require,module,exports){
 'use strict';
 
 var Plotly = require('plotly.js');
@@ -75237,8 +75217,6 @@ function shapeBounds(ax, v0, v1, path, paramsToUse) {
 
 'use strict';
 
-var colorAttributes = require('../color/attributes');
-
 module.exports = {
     visible: {
         valType: 'boolean',
@@ -75251,7 +75229,7 @@ module.exports = {
     }
 };
 
-},{"../color/attributes":1078}],1143:[function(require,module,exports){
+},{}],1143:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -75262,15 +75240,17 @@ module.exports = {
 
 'use strict';
 
+var Plotly = require('../../plotly');
+
 module.exports = function createSlider(gd) {
     var fullLayout = gd._fullLayout,
         options = fullLayout.slider,
         width = fullLayout._size.w,
-        height = (fullLayout.height - fullLayout.margin.b - fullLayout.margin.t),
+        //height = (fullLayout.height - fullLayout.margin.b - fullLayout.margin.t),
         labelWidth = options.labelWidth === undefined ? 100 : options.labelWidth,
         initialValue = options.initialValue === undefined ? '' : options.initialValue,
-        x = fullLayout.margin.l,
-        y = fullLayout.height - height - fullLayout.margin.b;
+        x = fullLayout.margin.l;
+        //y = fullLayout.height - height - fullLayout.margin.b;
 
     var sliderContainer = document.createElement('div');
     sliderContainer.className = 'slider';
@@ -75298,7 +75278,7 @@ module.exports = function createSlider(gd) {
         var value = options.values[parseInt(slider.value)];
 
         var outArgs = [gd];
-        for (var i = 0; i < options.args.length; i++) {
+        for(var i = 0; i < options.args.length; i++) {
             var arg = options.args[i];
             if(typeof arg === 'string') {
                 arg = arg.replace(/\bslider.value\b/, value, 'g');
@@ -75306,11 +75286,11 @@ module.exports = function createSlider(gd) {
             outArgs[i + 1] = arg;
         }
 
-        var cmd = Plotly[options.plotlycommand]
+        var cmd = Plotly[options.plotlycommand];
 
         label.textContent = value.toString();
 
-        if (cmd) {
+        if(cmd) {
             cmd.apply(null, outArgs);
         }
     };
@@ -75320,7 +75300,7 @@ module.exports = function createSlider(gd) {
     fullLayout._container[0][0].appendChild(sliderContainer);
 };
 
-},{}],1144:[function(require,module,exports){
+},{"../../plotly":1182}],1144:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -75331,14 +75311,12 @@ module.exports = function createSlider(gd) {
 
 'use strict';
 
-var Lib = require('../../lib');
-
 
 module.exports = function supplyLayoutDefaults(layoutIn, layoutOut) {
     layoutOut.slider = layoutIn.slider;
 };
 
-},{"../../lib":1162}],1145:[function(require,module,exports){
+},{}],1145:[function(require,module,exports){
 /**
 * Copyright 2012-2016, Plotly, Inc.
 * All rights reserved.
@@ -109877,16 +109855,16 @@ function plotOne(gd, idx, plotinfo, cdscatter, cdscatterAll, element, transition
                     fullpath += 'Z' + thispath;
                     revpath = thisrevpath + 'Z' + revpath;
                 }
-                if(subTypes.hasLines(trace) && pts.length > 1) {
-                    var lineJoin = tr.selectAll('.js-line').data([cdscatter]);
-
-                    lineJoin.enter()
-                        .append('path').classed('js-line', true).attr('d', thispath);
-
-                    transition(lineJoin).attr('d', thispath);
-                }
             }
 
+            if(subTypes.hasLines(trace) && pts.length > 1) {
+                var lineJoin = tr.selectAll('.js-line').data([cdscatter]);
+
+                lineJoin.enter()
+                    .append('path').classed('js-line', true).attr('d', fullpath);
+
+                transition(lineJoin).attr('d', fullpath);
+            }
             //lineJoin.exit().remove();
 
             if(ownFillEl3) {
@@ -113883,29 +113861,28 @@ module.exports={
 
 },{}],1390:[function(require,module,exports){
 module.exports={
-    "data": [
+    "data":[
         {
-            "a": [0.4, 0.4, 0.2, 0.4],
-            "b":[0.2, 0.4, 0.4, 0.2],
-            "type": "scatterternary",
+            "x": [1, 2, 3, 1, null, 4, 5, 6],
+            "y": [2, 3, 2, 2, null, 3, 4, 3],
+            "fill": "tonext",
+            "line":{"shape": "spline"}
+        },
+        {
+            "x": [-1, 4, 9, null, 0, 1, 2],
+            "y": [1, 6, 1, null, 5, 6, 5],
             "fill": "tonext"
         },
         {
-            "a":[0.5, 0.5, 0, 0.5],
-            "b":[0, 0.5, 0.5, 0],
-            "type": "scatterternary",
-            "fill": "tonext"
-        },
-        {
-            "a": [0.8, 0.6, 0.6, 0.8, null, 0.1, 0.1, 0.3, 0.1, null, 0.1, 0.1, 0.3, 0.1],
-            "b": [0.1, 0.1, 0.3, 0.1, null, 0.8, 0.6, 0.6, 0.8, null, 0.3, 0.1, 0.1, 0.3],
-            "type": "scatterternary",
+            "x": [6, 7, 8],
+            "y": [5, 6, 5],
             "fill": "toself"
         }
     ],
-    "layout": {
-        "height": 400,
-        "width": 500
+    "layout":{
+        "title": "Fill toself and tonext",
+        "width": 400,
+        "height": 400
     }
 }
 
