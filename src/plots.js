@@ -5,6 +5,7 @@ module.exports = [
   require('./plots/animated-scatter'),
   require('./plots/animated-log-scatter'),
   require('./plots/tonext'),
+  require('./plots/tozero'),
   require('./plots/error-bars'),
   require('./plots/error-bars-2'),
   require('./plots/error-bars-3'),
