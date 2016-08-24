@@ -1,6 +1,6 @@
 'use strict';
 
-var d3 = require('d3');
+var d3 = require('plotly.js').d3;
 
 module.exports = Debugger;
 

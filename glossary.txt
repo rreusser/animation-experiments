@@ -1,3 +1,0 @@
-calcData: data computed onto the scale of the axis, i.e. log converted to linear data—but not to pixel values.
-
-Axes.expand: autoscale button. get range of data & scale to it.

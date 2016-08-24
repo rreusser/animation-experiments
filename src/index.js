@@ -13,7 +13,7 @@ var plotHandlerIndex = {};
 var handler;
 
 function setPlotType (plotType) {
-  Plotly.purge(plot);
+  //Plotly.purge(plot);
 
   if (handler && handler.teardown) {
     handler.teardown();

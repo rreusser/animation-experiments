@@ -2,8 +2,12 @@
 
 var Plotly = require('plotly.js');
 
+function randomColor () {
+    return 'rgb(' + Math.round(Math.random() * 255) + ',' + Math.round(Math.random() * 255) + ',' + Math.round(Math.random() * 255) + ')';
+}
+
 module.exports = {
-  name: 'Animated Scatter',
+  name: 'Color change',
 
   n: 31,
   x1: [],
@@ -38,17 +42,28 @@ module.exports = {
         y: this.y1,
         mode: 'markers+lines',
         line: {
-            simplify: false
+            simplify: false,
+            color: randomColor()
         }
       }, {
         x: this.x2,
         y: this.y2,
         mode: 'markers+lines',
         line: {
-            simplify: false
+            simplify: false,
+            color: randomColor()
         }
       }
-    ], {}, {scrollZoom: true});
+    ], {
+        xaxis: {
+            autorange: false,
+            range: [0, 1]
+        },
+        yaxis: {
+            autorange: false,
+            range: [-2, 2]
+        }
+    }, {scrollZoom: true});
  },
 
   actionLabel: 'Animate',
@@ -57,6 +72,12 @@ module.exports = {
     this.randomizeData(this.y1)
     this.randomizeData(this.y2)
 
-    Plotly.transition(gd, [{y: this.y1}, {y: this.y2}], null, null, {duration: 500, easing: 'cubic-in-out'});
+    Plotly.transition(gd, [{
+        y: this.y1,
+        'line.color': randomColor()
+    }, {
+        y: this.y2,
+        'line.color': randomColor()
+    }], null, null, {duration: 500, easing: 'cubic-in-out'});
   }
 }

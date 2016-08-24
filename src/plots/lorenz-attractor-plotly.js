@@ -77,7 +77,7 @@ module.exports = {
       .onframe(function (frame, dt) {
         this.lorenz.compute();
 
-        Plotly.transition(this.gd, [{x: this.lorenz.x, y: this.lorenz.z}], null, [0], {duration: 0});
+        Plotly.transition(this.gd, [{x: this.lorenz.x, y: this.lorenz.z}], null, [0], {duration: 0, redraw: false});
 
         this.debug.tick();
       }.bind(this))

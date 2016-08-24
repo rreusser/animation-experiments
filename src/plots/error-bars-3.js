@@ -53,7 +53,10 @@ module.exports = {
     Plotly.plot(gd, [{
       x: this.x,
       y: this.y,
-      line: {width: 1},
+      line: {
+        width: 1,
+        simplify: false,
+      },
       error_y: {
         width: 0,
         array: this.dy,

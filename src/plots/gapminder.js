@@ -1,7 +1,7 @@
 'use strict';
 
 var Plotly = require('plotly.js');
-var d3 = require('d3');
+var d3 = Plotly.d3;
 
 module.exports = {
     name: 'Gapminder',

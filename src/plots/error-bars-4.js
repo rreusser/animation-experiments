@@ -4,7 +4,7 @@ var Plotly = require('plotly.js');
 
 module.exports = {
   name: 'Error Bars 4',
-  n: 20,
+  n: 3,
 
   x: [],
   y: [],
@@ -17,30 +17,34 @@ module.exports = {
     var i;
     this.x = [];
     this.y = [];
-    this.dx = [0.05];
-    this.dy = [0.05];
+    this.key = [];
+    this.dx = [];
+    this.dy = [];
     var k = 0;
 
     for (i = 0; i < this.n; i++) {
-      this.x[i] = k * 0.1 + 2 * (Math.random() - 0.5) * 0.03;
-      this.y[i] = Math.sin(k * 0.2) + 2 * (Math.random() - 0.5) * 0.03;
+      this.x[i] = k * 0.1 + 2 * (Math.random() - 0.5) * 0.08;
+      this.y[i] = Math.sin(k * 0.2) + 2 * (Math.random() - 0.5) * 0.08;
 
       this.key[i] = k;
 
       k += Math.floor(1 + Math.pow(Math.random(), 2) * 4);
     }
 
-    for (i = 1; i < this.n; i++) {
-      this.dx[i] = Math.max(0.02, this.dx[i - 1] + (Math.random() - 0.5) * 0.02);
-      this.dy[i] = Math.max(0.02, this.dy[i - 1] + (Math.random() - 0.5) * 0.02);
-    }
     for (i = 0; i < this.n; i++) {
-      this.dy[i] *= 4;
+      this.dx[i] = Math.max(0.02, 0.02 + (Math.random() - 0.5) * 0.02);
+      this.dy[i] = Math.max(0.02, 0.02 + (Math.random() - 0.5) * 0.02) * 4;
     }
+
+    console.log('this.x.length:', this.x.length);
+    console.log('this.y.length:', this.y.length);
+    console.log('this.dx.length:', this.dx.length);
+    console.log('this.dy.length:', this.dy.length);
+    console.log('this.key.length:', this.key.length);
   },
 
   layout: {
-    xaxis: {range: [0, 5]},
+    xaxis: {range: [-0.5, 1]},
     yaxis: {range: [-2 * window.innerHeight / window.innerWidth, 2 * window.innerHeight / window.innerWidth]},
   },
 
@@ -72,7 +76,7 @@ module.exports = {
   actionLabels: ['Randomize'],
   actions: [
     function (gd) {
-      this.n = 20 + Math.floor(Math.random() * 5);
+      this.n = 3 + Math.floor(Math.random() * 3);
       this.randomize();
 
       Plotly.transition(gd, [{
@@ -81,7 +85,7 @@ module.exports = {
         'error_y.array': this.dy,
         'error_x.array': this.dx,
         identifier: this.key,
-      }], null, null, {duration: 500});
+      }], null, null, {duration: 1500});
     }
   ]
 };

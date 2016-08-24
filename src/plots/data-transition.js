@@ -3,7 +3,7 @@
 var Plotly = require('plotly.js');
 
 window.plotData = module.exports = {
-  name: 'Scale transition',
+  name: 'Data transition',
 
   n: 201,
   x1: [],
@@ -32,7 +32,7 @@ window.plotData = module.exports = {
 
   plot: function (gd) {
     this.range = [
-      {x: [0, this.n / 4], y: [0, this.n / 4]},
+      {x: [0, this.n / 1], y: [0, this.n / 1]},
       {x: [0, this.n / 2], y: [0, this.n / 2]},
       {x: [0, this.n], y: [0, this.n]},
     ];
@@ -81,18 +81,14 @@ window.plotData = module.exports = {
     this.rangeNum = (this.rangeNum + 1) % this.range.length;
     var range = this.range[this.rangeNum];
 
-    //this.randomizeData(this.y1)
-    //this.randomizeData(this.y2)
+    this.randomizeData(this.y1)
+    this.randomizeData(this.y2)
 
     Plotly.transition(gd,
+        //null,
+        [{y: this.y1}, {y: this.y2}],
         null,
-        //[{y: this.y1}, {y: this.y2}],
-    {
-        'xaxis.range': range.x.slice(0),
-        'yaxis.range': range.y.slice(0)
-    },
-        null,
-        //[0, 1],
+        [0, 1],
     {
         duration: 1000,
         easing: 'cubic-in-out'
