@@ -3,6 +3,7 @@
 module.exports = [
   //require('./plots/slider'),
   require('./plots/animated-scatter'),
+  require('./plots/frame-animation'),
   require('./plots/color-change'),
   require('./plots/3d'),
   require('./plots/animated-log-scatter'),

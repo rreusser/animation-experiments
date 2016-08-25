@@ -53,7 +53,7 @@ module.exports = {
 
   _onRAF: function () {
     this.updateY();
-    Plotly.transition(this.gd, [{y: this.y}], null, null, {duration: 0});
+    Plotly.transition(this.gd, [{y: this.y}], null, null, {duration: 0, redraw: false});
 
     this.raf = requestAnimationFrame(this.onRAF);
   },
