@@ -73,11 +73,22 @@ module.exports = {
       scrollZoom: true,
     });
 
+    /*gd.on('plotly_animating', function () {
+        console.log('plotly_animating');
+      }).on('plotly_animated', function() {
+        console.log('plotly_animated');
+      });*/
+
     this.timer = timer()
       .onframe(function (frame, dt) {
+        if (frame % 60 !== 0) return;
         this.lorenz.compute();
 
-        Plotly.transition(this.gd, [{x: this.lorenz.x, y: this.lorenz.z}], null, [0], {duration: 0, redraw: false});
+        Plotly.animate(this.gd, {
+          data: [{x: this.lorenz.x, y: this.lorenz.z}],
+          layout: null,
+          traces: [0]
+        }, {transitionduration: 0, frameduration: 0, redraw: false});
 
         this.debug.tick();
       }.bind(this))

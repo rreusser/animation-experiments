@@ -63,7 +63,7 @@ window.pl = module.exports = {
     ], {
       scene: {
         zaxis: {
-          range: [-3, 3],
+          range: [-3.1, 3.1],
           autorange: false,
           fixedrange: true,
         }
@@ -78,7 +78,7 @@ window.pl = module.exports = {
     this.raf = requestAnimationFrame(animate);
   },
 
-  destroy: function () {
+  teardown: function () {
     cancelAnimationFrame(this.raf);
   },
 

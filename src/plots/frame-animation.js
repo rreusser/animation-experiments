@@ -7,13 +7,13 @@ module.exports = {
 
   plot: function (gd) {
     var frames = [];
-    for (var i = 0; i < 20; i++) {
+    for (var i = 0; i < 10; i++) {
       frames.push({
         name: 'frame' + i,
         group: i % 2 === 0 ? 'even' : 'odd',
         data: [{
           x: i % 2 === 0 ? [0, 2] : [1, 3],
-          y: [Math.random(), Math.random()]
+          y: [i / 10, (i + 1) / 10]
         }]
       });
     }
@@ -28,10 +28,13 @@ module.exports = {
       return Plotly.addFrames(gd, frames);
     }).then(function() {
       gd.on('plotly_animating', function () {
-        console.log('animating...');
+        console.log('plotly_animating');
       });
       gd.on('plotly_animated', function () {
-        console.log('animated!');
+        console.log('plotly_animated');
+      });
+      gd.on('plotly_animationinterrupted', function () {
+        console.log('plotly_animationinterrupted');
       });
     });
  },
@@ -40,10 +43,20 @@ module.exports = {
 
   actions: [
     function (gd) {
-      Plotly.animate(gd, 'even', {frameduration: 200, duration: 100});
+      Plotly.animate(gd, 'even', {frameduration: 200, duration: 100}, {immediate: true})
+        .then(function() {
+          console.log('even animation complete');
+        }, function() {
+          console.log('even animation interrupted');
+        });
     },
     function (gd) {
-      Plotly.animate(gd, 'odd', {frameduration: 200, duration: 100});
+      Plotly.animate(gd, 'odd', {frameduration: 200, duration: 100}, {immediate: false})
+        .then(function() {
+          console.log('odd animation complete');
+        }, function() {
+          console.log('odd animation interrupted');
+        });
     }
   ]
 }
