@@ -43,7 +43,15 @@ module.exports = {
 
   actions: [
     function (gd) {
-      Plotly.animate(gd, 'even', {frameduration: 200, duration: 100}, {immediate: true})
+      Plotly.animate(gd, 'even', {
+          frame: {
+            duration: 200
+          },
+          transition: {
+            duration: 100
+          },
+          immediate: true
+        })
         .then(function() {
           console.log('even animation complete');
         }, function() {
@@ -51,7 +59,11 @@ module.exports = {
         });
     },
     function (gd) {
-      Plotly.animate(gd, 'odd', {frameduration: 200, duration: 100}, {immediate: false})
+      Plotly.animate(gd, 'odd', {
+          frame: {duration: 200},
+          transition: {duration: 200},
+          immediate: false
+        })
         .then(function() {
           console.log('odd animation complete');
         }, function() {

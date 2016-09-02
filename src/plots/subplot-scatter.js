@@ -39,14 +39,19 @@ module.exports = {
   actionLabel: 'Animate',
 
   action: function (gd) {
-    Plotly.transition(gd, [
-      {y: [
-        '2.2',
-        1.7 + Math.random(),
-        3.5 + Math.random()
-      ]}
-    ], null, [1], {
-      duration: 500
+    Plotly.animate(gd, {
+      data: [
+        {y: [
+          '2.2',
+          1.7 + Math.random(),
+          3.5 + Math.random()
+        ]}
+      ],
+      traces: [1]
+    }, {
+      transition: {
+        duration: 500
+      }
     });
   }
 }

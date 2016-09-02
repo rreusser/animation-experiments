@@ -3,7 +3,7 @@
 var Plotly = require('plotly.js');
 
 module.exports = {
-  name: 'Polar scatter',
+  name: 'Polar',
 
   n: 360,
   r1: [],
@@ -52,6 +52,14 @@ module.exports = {
     this.randomizeData(this.t1)
     this.randomizeData(this.t2)
 
-    Plotly.animate(gd, [{t: this.r1}, {t: this.r2}], {duration: 500, easing: 'cubic-in-out'}, [0, 1]);
+    Plotly.animate(gd, {
+      data: [{t: this.r1}, {t: this.r2}],
+      traces: [0, 1],
+    }, {
+      transition: {
+        duration: 500,
+        easing: 'cubic-in-out'
+      }
+    });
   }
 }

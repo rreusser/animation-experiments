@@ -84,6 +84,6 @@ window.pl = module.exports = {
 
   update: function () {
     this.compute();
-    Plotly.transition(this.gd, [{z: this.z}], null, null, {duration: 0});
+    Plotly.animate(this.gd, {data: [{z: this.z}]}, {transition: {duration: 0}});
   }
 }

@@ -61,6 +61,13 @@ module.exports = {
     this.randomizeData(this.y1)
     this.randomizeData(this.y2)
 
-    Plotly.transition(gd, [{y: this.y1}, {y: this.y2}], null, null, {duration: 500, easing: 'cubic-in-out'});
+    Plotly.animate(gd, {
+      data: [{y: this.y1}, {y: this.y2}]
+    }, {
+      transition: {
+        duration: 500,
+        easing: 'cubic-in-out'
+      }
+    });
   }
 }

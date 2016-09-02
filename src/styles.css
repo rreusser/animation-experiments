@@ -15,8 +15,8 @@ html, body {
 #controls {
   display: none;
   position: absolute;
-  top: 5px;
-  left: 5px;
+  bottom: 5px;
+  right: 5px;
   z-index: 10000;
   border: 1px solid black;
   padding: 10px;

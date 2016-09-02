@@ -49,7 +49,23 @@ module.exports = {
   actionLabels: ['Shuffle and append', 'Shuffle and remove'],
 
   actions: [
-    function (gd) {Plotly.transition(gd, this.getFrame(1), null, null, {duration: this.duration, cascade: this.duration / 2});},
-    function (gd) {Plotly.transition(gd, this.getFrame(-1), null, null, {duration: this.duration, cascade: this.duration / 2});}
+    function (gd) {
+      Plotly.animate(gd, {
+        data: this.getFrame(1)
+      }, {
+        transition: {
+          duration: this.duration
+        }
+      })
+    },
+    function (gd) {
+      Plotly.animate(gd, {
+        data: this.getFrame(-1)
+      }, {
+        transition: {
+          duration: this.duration
+        }
+      })
+    }
   ]
 }

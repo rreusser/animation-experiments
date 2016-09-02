@@ -75,7 +75,7 @@ window.plotData = module.exports = {
     }, {scrollZoom: true});
  },
 
-  actionLabel: 'Zoom in/out',
+  actionLabel: 'Transition',
 
   action: function (gd) {
     this.rangeNum = (this.rangeNum + 1) % this.range.length;
@@ -84,14 +84,14 @@ window.plotData = module.exports = {
     this.randomizeData(this.y1)
     this.randomizeData(this.y2)
 
-    Plotly.transition(gd,
-        //null,
-        [{y: this.y1}, {y: this.y2}],
-        null,
-        [0, 1],
-    {
+    Plotly.animate(gd, {
+      data: [{y: this.y1}, {y: this.y2}],
+      traces: [0, 1]
+    }, {
+      transition: {
         duration: 1000,
         easing: 'cubic-in-out'
+      }
     });
   }
 }

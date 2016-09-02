@@ -87,12 +87,19 @@ module.exports = {
     this.randomizeSize(this.r1)
     this.randomizeSize(this.r2)
 
-    Plotly.transition(gd, [{
-        y: this.y1,
-        'marker.size': this.r1,
+    Plotly.animate(gd, {
+      data: [{
+          y: this.y1,
+          'marker.size': this.r1,
+      }, {
+          y: this.y2,
+          'marker.size': this.r2,
+      }]
     }, {
-        y: this.y2,
-        'marker.size': this.r2,
-    }], null, null, {duration: 500, easing: 'cubic-in-out'});
+      transition: {
+        duration: 1000,
+        easing: 'elastic-in'
+      }
+    });
   }
 }

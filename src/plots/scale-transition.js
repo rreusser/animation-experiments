@@ -84,18 +84,16 @@ window.plotData = module.exports = {
     //this.randomizeData(this.y1)
     //this.randomizeData(this.y2)
 
-    Plotly.transition(gd,
-        null,
-        //[{y: this.y1}, {y: this.y2}],
-    {
+    Plotly.animate(gd, {
+      layout: {
         'xaxis.range': range.x.slice(0),
         'yaxis.range': range.y.slice(0)
-    },
-        null,
-        //[0, 1],
-    {
+      }
+    }, {
+      transition: {
         duration: 1000,
         easing: 'cubic-in-out'
+      }
     });
   }
 }

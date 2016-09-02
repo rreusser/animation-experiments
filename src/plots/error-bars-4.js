@@ -79,13 +79,17 @@ module.exports = {
       this.n = 3 + Math.floor(Math.random() * 3);
       this.randomize();
 
-      Plotly.transition(gd, [{
-        x: this.x,
-        y: this.y,
-        'error_y.array': this.dy,
-        'error_x.array': this.dx,
-        identifier: this.key,
-      }], null, null, {duration: 1500});
+      Plotly.animate(gd, {
+        data: [{
+          x: this.x,
+          y: this.y,
+          'error_y.array': this.dy,
+          'error_x.array': this.dx,
+          ids: this.key,
+        }]
+      }, {
+        transition: {duration: 1500}
+      });
     }
   ]
 };
