@@ -39,18 +39,17 @@ module.exports = {
     });
  },
 
-  actionLabels: ['Evens', 'Odds'],
+  actionLabels: ['Evens (immediate)', 'Odds (afterall)', 'Evens (next)', 'Next frame (next)', 'Next frame (immediate)'],
+
+  timing: 2000,
+  index: 0,
 
   actions: [
     function (gd) {
       Plotly.animate(gd, 'even', {
-          frame: {
-            duration: 200
-          },
-          transition: {
-            duration: 100
-          },
-          immediate: true
+          frame: {duration: this.timing},
+          transition: {duration: this.timing * 0.9},
+          mode: 'immediate'
         })
         .then(function() {
           console.log('even animation complete');
@@ -60,15 +59,53 @@ module.exports = {
     },
     function (gd) {
       Plotly.animate(gd, 'odd', {
-          frame: {duration: 200},
-          transition: {duration: 200},
-          immediate: false
+          frame: {duration: this.timing},
+          transition: {duration: this.timing * 0.9},
+          mode: 'afterall'
         })
         .then(function() {
           console.log('odd animation complete');
         }, function() {
           console.log('odd animation interrupted');
         });
-    }
+    },
+    function (gd) {
+      Plotly.animate(gd, 'even', {
+          frame: {duration: this.timing},
+          transition: {duration: this.timing * 0.9},
+          mode: 'next'
+        })
+        .then(function() {
+          console.log('even animation complete');
+        }, function() {
+          console.log('even animation interrupted');
+        });
+    },
+    function (gd) {
+      this.index = (this.index + 1) % gd._transitionData._frames.length;
+      Plotly.animate(gd, ['frame' + this.index], {
+          frame: {duration: this.timing},
+          transition: {duration: this.timing * 0.9},
+          mode: 'next'
+        })
+        .then(function() {
+          console.log('single frame complete');
+        }, function() {
+          console.log('single frame interrupted');
+        });
+    },
+    function (gd) {
+      this.index = (this.index + 1) % gd._transitionData._frames.length;
+      Plotly.animate(gd, ['frame' + this.index], {
+          frame: {duration: this.timing},
+          transition: {duration: this.timing * 0.9},
+          mode: 'immediate'
+        })
+        .then(function() {
+          console.log('single frame complete');
+        }, function() {
+          console.log('single frame interrupted');
+        });
+    },
   ]
 }
