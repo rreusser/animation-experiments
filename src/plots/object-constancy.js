@@ -28,6 +28,7 @@ module.exports = {
 
     // Randomize existing points:
     shuffle(this.keys);
+    this.keys = this.keys.slice(0);
 
     // Re-circle:
     for (var i = 0; i < this.n; i++) {

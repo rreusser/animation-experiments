@@ -19,6 +19,7 @@
   "dependencies": {
     "clone": "^1.0.2",
     "fisher-yates": "^1.0.3",
+    "mathjs": "^3.5.1",
     "parameterize": "0.0.7",
     "plotly.js": "file:../plotly.js",
     "stats.js": "^0.16.0"

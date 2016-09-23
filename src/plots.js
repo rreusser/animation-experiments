@@ -31,5 +31,6 @@ module.exports = [
   require('./plots/lorenz-attractor-d3'),
   require('./plots/lorenz-attractor-plotly'),
   require('./plots/simulation'),
+  require('./plots/complex'),
   //require('./plots/mock'),
 ];
