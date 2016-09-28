@@ -1,53 +1,89 @@
 'use strict';
 
 var Plotly = require('plotly.js');
-var Lib = require('plotly.js/src/lib');
-
-var mock = require('plotly.js/test/image/mocks/animation.json');
 
 module.exports = {
-    name: 'Slider',
+  name: 'Slider',
 
-    createSlider: function() {
-        this.slider = document.createElement('input');
-        this.slider.type = 'range';
-        this.slider.min = 0;
-        this.slider.max = gd._frameData._frames.length - 1;
-        this.slider.step = 1;
-        this.slider.value = 0;
+  plot: function (gd) {
+    Plotly.plot(gd, [
+      {
+        x: [1, 2, 3],
+        y: [2, 1, 3],
+        mode: 'markers+lines',
+        line: {
+            simplify: false
+        }
+      }
+    ], {
+      legend: {
+        xanchor: 'right',
+        x: -0.2,
+        y: 1,
+        yanchor: 'top',
+      },
+      margin: {
+        pad: 10,
+      },
+      sliders: [
+        {
+          active: 0, // 1,2,3 -> index of active step
 
-        this.slider.style.position = 'absolute';
-        this.slider.style.zIndex = 1000;
-        this.slider.style.bottom = '10px';
-        this.slider.style.left = '20px';
+          steps: [
+            {method: 'animate', args: [], label: '1970'},
+            {method: 'animate', args: [], label: '1971'},
+            {method: 'animate', args: [], label: '1972'},
+            {method: 'animate', args: [], label: '1973'},
+            {method: 'animate', args: [], label: '1974'},
+            {method: 'animate', args: [], label: '1975'},
+            {method: 'animate', args: [], label: '1976'},
+            {method: 'animate', args: [], label: '1977'},
+          ],
 
-        this.slider.oninput = this.onChange.bind(this);
+          visible: true,  // or false
+          x: 0,
+          xanchor: 'left',
+          y: -0.1,
+          yanchor: 'top',
 
-        document.body.appendChild(this.slider);
-    },
+          xpad: 20,
+          ypad: 30,
 
-    onChange: function() {
-        var frameNum = parseInt(this.slider.value);
-        var frameName = this.gd._frameData._frames[frameNum].name;
+          font: {},
+          borderwidth: 0,
+          bordercolor: '#eee',
+          color: '#BEC8D9',
 
-        Plotly.animate(gd, frameName);
-    },
+          ticks: '',
+          ticklen: '',
+          tickcolor: ''
+        },
+        /*{
+          active: 0, // 1,2,3 -> index of active step
 
-    plot: function (gd) {
-        this.gd = gd;
-        Plotly.plot(gd,
-            mock.data,
-            mock.layout,
-            {scrollZoom: true}
-        ).then(function() {
-            Plotly.addFrames(gd,mock.frames)
-        }).then(function() {
-            this.createSlider();
-            this.onChange();
-        }.bind(this));
-    },
+          steps: [
+            {method: 'animate', args: [], label: 'pos1'},
+            {method: 'animate', args: [], label: 'pos2'},
+            {method: 'animate', args: [], label: 'pos3'},
+            {method: 'animate', args: [], label: 'pos4'},
+          ],
 
-    teardown: function() {
-        this.slider.remove();
-    }
-};
+          visible: true,  // or false
+          x: 0.5,
+          xanchor: 'center',
+          y: -0.1,
+          yanchor: 'top',
+
+          font: {},
+          borderwidth: 0,
+          bordercolor: '#eee',
+          color: '#BEC8D9',
+
+          ticks: '',
+          ticklen: '',
+          tickcolor: ''
+        }*/
+      ]
+    });
+  },
+}

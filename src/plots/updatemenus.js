@@ -36,7 +36,7 @@ module.exports = {
           y: 0.66,
           yanchor: 'top',
           xanchor: 'left',
-          orientation: 'h'
+          direction: 'right'
         },
         {
           buttons: [
@@ -50,8 +50,7 @@ module.exports = {
           y: 0.33,
           yanchor: 'top',
           xanchor: 'left',
-          orientation: 'h',
-          openreverse: true,
+          direction: 'left',
         },
         {
           buttons: [
@@ -65,8 +64,7 @@ module.exports = {
           y: 0.0,
           yanchor: 'top',
           xanchor: 'left',
-          orientation: 'v',
-          openreverse: true,
+          direction: 'up',
         },
         {
           buttons: [
@@ -96,16 +94,13 @@ module.exports = {
           y: 1.01,
           yanchor: 'bottom',
           xanchor: 'left',
-          orientation: 'h',
+          direction: 'right',
           showactive: false,
         },
         {
           buttons: [
             {label: 'red', method: 'restyle', args: ['marker.color', 'red']},
             {label: 'blue', method: 'restyle', args: ['marker.color', 'blue']},
-            {label: 'green', method: 'restyle', args: ['marker.color', 'green']},
-            {label: 'yellow', method: 'restyle', args: ['marker.color', 'yellow']},
-            {label: 'orange', method: 'restyle', args: ['marker.color', 'orange']},
           ],
           type: 'buttons',
           x: 1,
@@ -117,16 +112,13 @@ module.exports = {
           buttons: [
             {label: 'red', method: 'restyle', args: ['marker.color', 'red']},
             {label: 'blue', method: 'restyle', args: ['marker.color', 'blue']},
-            {label: 'green', method: 'restyle', args: ['marker.color', 'green']},
-            {label: 'yellow', method: 'restyle', args: ['marker.color', 'yellow']},
-            {label: 'orange', method: 'restyle', args: ['marker.color', 'orange']},
           ],
           type: 'buttons',
           x: 1,
           y: 0.02,
           yanchor: 'top',
           xanchor: 'right',
-          orientation: 'h'
+          direction: 'right'
         },
         {
           buttons: [
@@ -158,9 +150,6 @@ module.exports = {
           buttons: [
             {label: 'red', method: 'restyle', args: ['marker.color', 'red']},
             {label: 'blue', method: 'restyle', args: ['marker.color', 'blue']},
-            {label: 'green', method: 'restyle', args: ['marker.color', 'green']},
-            {label: 'yellow', method: 'restyle', args: ['marker.color', 'yellow']},
-            {label: 'orange', method: 'restyle', args: ['marker.color', 'orange']},
           ],
           x: 0.6,
           y: 0.4,
@@ -172,9 +161,6 @@ module.exports = {
           buttons: [
             {label: 'red', method: 'restyle', args: ['marker.color', 'red']},
             {label: 'blue', method: 'restyle', args: ['marker.color', 'blue']},
-            {label: 'green', method: 'restyle', args: ['marker.color', 'green']},
-            {label: 'yellow', method: 'restyle', args: ['marker.color', 'yellow']},
-            {label: 'orange', method: 'restyle', args: ['marker.color', 'orange']},
           ],
           type: 'buttons',
           x: 0.6,

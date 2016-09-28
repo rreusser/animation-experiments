@@ -9,32 +9,66 @@ module.exports = {
   plot: function (gd) {
     this.gd = gd;
     d3.json('data/gapminder-with-frames.json', function(err, d) {
-      d.layout.updatemenus = [{
-        x: 0.05,
-        y: 1.05,
-        yanchor: 'top',
-        xanchor: 'right',
+      d.layout.sliders = [{
+        active: 0, // 1,2,3 -> index of active step
 
-        buttons: d.frames.map(function(f) {
-          console.log('f', f);
+        steps: d.frames.map(function(f) {
           return {
             method: 'animate',
-            args: [[f.name], {transition: {duration: 500}, frame: {duration: 500, redraw: false}}],
+            args: [[f.name], {
+              mode: 'immediate',
+              transition: {
+                duration: 500
+              },
+              frame: {
+                duration: 500,
+                redraw: false
+              }
+            }],
             label: f.name
           }
-        }).slice(0, 10)
-      }, {
-        x: 0.06,
-        y: 1.05,
-        yanchor: 'top',
+        }),
+
+        visible: true,  // or false
+        x: 0.1,
+        len: 0.9,
         xanchor: 'left',
+        y: -0.2,
+        yanchor: 'top',
+
+        updateevent: 'plotly_animatingframe',
+        updatevalue: 'name',
+
+        xpad: 0,
+        ypad: 10,
+
+        font: {},
+        borderwidth: 0,
+        bordercolor: '#eee',
+        color: '#BEC8D9',
+
+        ticks: '',
+        ticklen: '',
+        tickcolor: ''
+      }];
+
+      d.layout.updatemenus = [{
+        x: 0.08,
+        y: -0.22,
+        yanchor: 'top',
+        xanchor: 'right',
         showactive: false,
+        direction: 'left',
         type: 'buttons',
         buttons: [{
           method: 'animate',
-          args: [null, {transition: {duration: 500}, frame: {duration: 500, redraw: false}}],
+          args: [null, {transition: {duration: 400, easing: 'quadratic-in-out'}, frame: {duration: 400, redraw: false}}],
           label: 'Play',
-        }]
+        }, /*{
+          method: 'animate',
+          args: [[], {mode: 'immediate'}],
+          label: 'Pause',
+        }*/]
       }];
 
       Plotly.plot(gd, d.data, d.layout, d.config).then(function() {
