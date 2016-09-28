@@ -29,7 +29,6 @@ module.exports = {
           }
         }),
 
-        visible: true,  // or false
         x: 0.1,
         len: 0.9,
         xanchor: 'left',
@@ -41,15 +40,6 @@ module.exports = {
 
         xpad: 0,
         ypad: 10,
-
-        font: {},
-        borderwidth: 0,
-        bordercolor: '#eee',
-        color: '#BEC8D9',
-
-        ticks: '',
-        ticklen: '',
-        tickcolor: ''
       }];
 
       d.layout.updatemenus = [{
