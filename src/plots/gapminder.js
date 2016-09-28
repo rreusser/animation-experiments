@@ -38,6 +38,8 @@ module.exports = {
         updateevent: 'plotly_animatingframe',
         updatevalue: 'name',
 
+        transition: {duration: 500, easing: 'cubic-in-out'},
+
         xpad: 0,
         ypad: 10,
       }];
