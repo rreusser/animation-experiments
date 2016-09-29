@@ -65,6 +65,12 @@ module.exports = {
           yanchor: 'top',
           xanchor: 'left',
           direction: 'up',
+          pad: {
+            t: 30,
+            l: 10,
+            r: 10,
+            b: 10
+          }
         },
         {
           buttons: [

@@ -32,21 +32,31 @@ module.exports = {
         x: 0.1,
         len: 0.9,
         xanchor: 'left',
-        y: -0.2,
+        y: 0,
         yanchor: 'top',
+
+        currentvalue: {
+          visible: true,
+          prefix: 'Year:',
+          anchor: 'end'
+        },
 
         updateevent: 'plotly_animatingframe',
         updatevalue: 'name',
 
         transition: {duration: 500, easing: 'cubic-in-out'},
 
-        xpad: 0,
-        ypad: 10,
+        pad: {
+          t: 50,
+          r: 0,
+          b: 10,
+          l: 0,
+        }
       }];
 
       d.layout.updatemenus = [{
         x: 0.08,
-        y: -0.22,
+        y: 0,
         yanchor: 'top',
         xanchor: 'right',
         showactive: false,
@@ -56,11 +66,7 @@ module.exports = {
           method: 'animate',
           args: [null, {transition: {duration: 400, easing: 'quadratic-in-out'}, frame: {duration: 400, redraw: false}}],
           label: 'Play',
-        }, /*{
-          method: 'animate',
-          args: [[], {mode: 'immediate'}],
-          label: 'Pause',
-        }*/]
+        }]
       }];
 
       Plotly.plot(gd, d.data, d.layout, d.config).then(function() {
