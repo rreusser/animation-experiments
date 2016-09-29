@@ -18,10 +18,10 @@ module.exports = {
             args: [[f.name], {
               mode: 'immediate',
               transition: {
-                duration: 500
+                duration: 300
               },
               frame: {
-                duration: 500,
+                duration: 300,
                 redraw: false
               }
             }],
@@ -38,13 +38,18 @@ module.exports = {
         currentvalue: {
           visible: true,
           prefix: 'Year:',
-          anchor: 'end'
+          xanchor: 'right',
+          font: {
+            size: 20,
+          }
         },
 
         updateevent: 'plotly_animatingframe',
         updatevalue: 'name',
 
-        transition: {duration: 500, easing: 'cubic-in-out'},
+        transition: {duration: 300, easing: 'cubic-in-out'},
+
+        font: {},
 
         pad: {
           t: 50,
@@ -62,9 +67,12 @@ module.exports = {
         showactive: false,
         direction: 'left',
         type: 'buttons',
+        pad: {
+          t: 87,
+        },
         buttons: [{
           method: 'animate',
-          args: [null, {transition: {duration: 400, easing: 'quadratic-in-out'}, frame: {duration: 400, redraw: false}}],
+          args: [null, {transition: {duration: 300, easing: 'quadratic-in-out'}, frame: {duration: 500, redraw: false}}],
           label: 'Play',
         }]
       }];
@@ -74,8 +82,4 @@ module.exports = {
       });
     });
   },
-
-  teardown: function () {
-    this.gd.style.paddingTop = '50px';
-  }
 }
