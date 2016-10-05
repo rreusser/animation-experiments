@@ -60,7 +60,7 @@ module.exports = {
       }];
 
       d.layout.updatemenus = [{
-        x: 0.08,
+        x: 0.1,
         y: 0,
         yanchor: 'top',
         xanchor: 'right',
@@ -69,6 +69,7 @@ module.exports = {
         type: 'buttons',
         pad: {
           t: 87,
+          r: 10,
         },
         buttons: [{
           method: 'animate',
