@@ -11,6 +11,9 @@ module.exports = {
         x: [1, 2, 3],
         y: [2, 1, 3],
         mode: 'markers+lines',
+        marker: {
+          color: 'red',
+        },
         line: {
             simplify: false
         }
@@ -30,14 +33,12 @@ module.exports = {
           active: 0, // 1,2,3 -> index of active step
 
           steps: [
-            {method: 'animate', args: [], label: '1970'},
-            {method: 'animate', args: [], label: '1971'},
-            {method: 'animate', args: [], label: '1972'},
-            {method: 'animate', args: [], label: '1973'},
-            {method: 'animate', args: [], label: '1974'},
-            {method: 'animate', args: [], label: '1975'},
-            {method: 'animate', args: [], label: '1976'},
-            {method: 'animate', args: [], label: '1977'},
+            {method: 'restyle', args: ['marker.color', 'red', [0]], label: 'R'},
+            {method: 'restyle', args: ['marker.color', 'orange', [0]], label: 'O'},
+            {method: 'restyle', args: ['marker.color', 'yellow', [0]], label: 'Y'},
+            {method: 'restyle', args: ['marker.color', 'green', [0]], label: 'G'},
+            {method: 'restyle', args: ['marker.color', 'blue', [0]], label: 'B'},
+            {method: 'restyle', args: ['marker.color', 'purple', [0]], label: 'V'},
           ],
 
           visible: true,  // or false
@@ -49,14 +50,6 @@ module.exports = {
           xpad: 20,
           ypad: 30,
 
-          font: {},
-          borderwidth: 0,
-          bordercolor: '#eee',
-          color: '#BEC8D9',
-
-          ticks: '',
-          ticklen: '',
-          tickcolor: ''
         },
         /*{
           active: 0, // 1,2,3 -> index of active step

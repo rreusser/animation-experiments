@@ -5,6 +5,8 @@ var selector = document.getElementById('selector');
 var plot = document.getElementById('plot');
 var parameterize = require('parameterize');
 
+window.Lib = require('plotly.js/src/lib');
+
 window.Plotly = require('plotly.js');
 
 var plotHandlers = require('./plots');
