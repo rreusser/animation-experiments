@@ -30,7 +30,7 @@ module.exports = {
       },
       sliders: [
         {
-          active: 0, // 1,2,3 -> index of active step
+          active: 1, // 1,2,3 -> index of active step
 
           steps: [
             {method: 'restyle', args: ['marker.color', 'red', [0]], label: 'R'},

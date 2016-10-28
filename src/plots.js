@@ -3,6 +3,9 @@
 module.exports = [
   //require('./plots/slider'),
   require('./plots/animated-scatter'),
+  require('./plots/filter-transform'),
+  require('./plots/annotations'),
+  require('./plots/images'),
   require('./plots/slider'),
   require('./plots/binding'),
   require('./plots/text'),
