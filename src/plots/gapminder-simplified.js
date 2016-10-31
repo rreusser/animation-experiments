@@ -141,6 +141,11 @@ module.exports = {
                     "type": "buttons",
                     "transition": {"duration": 500},
                     "showactive": false,
+                    "yanchor": "top",
+                    "xanchor": "right",
+                    "y": 0,
+                    "x": -0.02,
+                    "pad": {"t": 40},
                     "buttons": [{
                         "label": "Play",
                         "method": "animate",
