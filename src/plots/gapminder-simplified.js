@@ -145,7 +145,7 @@ module.exports = {
                     "xanchor": "right",
                     "y": 0,
                     "x": -0.02,
-                    "pad": {"t": 40},
+                    "pad": {"t": 50},
                     "buttons": [{
                         "label": "Play",
                         "method": "animate",
@@ -155,6 +155,11 @@ module.exports = {
                             "transition": {"duration": 500}
                         }]
                     }]
+                }],
+                "sliders": [{
+                    "yanchor": "top",
+                    "y": 0,
+                    "pad": {"t": 20}
                 }]
             }
         });
