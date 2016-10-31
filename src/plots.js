@@ -37,6 +37,7 @@ module.exports = [
   require('./plots/box-plot'),
   require('./plots/gapminder'),
   require('./plots/gapminder-filtered'),
+  require('./plots/gapminder-simplified'),
   require('./plots/object-constancy'),
   require('./plots/line-join'),
   require('./plots/lorenz-attractor-d3'),
