@@ -46,6 +46,15 @@ module.exports = {
                     ]
                 },
                 "transforms": [{
+                    "type": "populate-slider",
+                    "sliderindex": 0,
+                    "framegroup": "frames-by-year",
+                    "animationopts": {
+                        "mode": "immediate",
+                        "frame": {"redraw": false},
+                        "transition": {"duration": 400}
+                    }
+                }, {
                     "type": "filter",
                     "target": [
                         "1957", "1957", "1957", "1957", "1957",
@@ -55,15 +64,6 @@ module.exports = {
                     ],
                     "operation": "{}",
                     "value": ["1952"]
-                }, {
-                    "type": "populate-slider",
-                    "sliderindex": 0,
-                    "framegroup": "frames-by-year",
-                    "animationopts": {
-                        "mode": "immediate",
-                        "frame": {"redraw": false},
-                        "transition": {"duration": 400}
-                    }
                 }]
             },
             {
@@ -104,6 +104,15 @@ module.exports = {
                     ]
                 },
                 "transforms": [{
+                    "type": "populate-slider",
+                    "sliderindex": 0,
+                    "framegroup": "frames-by-year",
+                    "animationopts": {
+                        "mode": "immediate",
+                        "frame": {"redraw": false},
+                        "transition": {"duration": 400}
+                    }
+                }, {
                     "type": "filter",
                     "target": [
                         "1952", "1952", "1952", "1952", "1952",
@@ -113,15 +122,6 @@ module.exports = {
                     ],
                     "operation": "{}",
                     "value": ["1952"]
-                }, {
-                    "type": "populate-slider",
-                    "sliderindex": 0,
-                    "framegroup": "frames-by-year",
-                    "animationopts": {
-                        "mode": "immediate",
-                        "frame": {"redraw": false},
-                        "transition": {"duration": 400}
-                    }
                 }]
             }],
             "layout":{
