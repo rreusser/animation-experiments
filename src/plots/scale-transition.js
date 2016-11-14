@@ -72,7 +72,11 @@ window.plotData = module.exports = {
         domain: [0.55, 1],
         range: [0, this.n],
       }
-    }, {scrollZoom: true});
+    }, {scrollZoom: true}).then(function () {
+      gd.on('plotly_relayout', function () {
+        console.log('relayout!');
+      });
+    });
  },
 
   actionLabel: 'Zoom in/out',

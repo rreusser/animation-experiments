@@ -139,7 +139,6 @@ module.exports = {
                 },
                 "updatemenus": [{
                     "type": "buttons",
-                    "transition": {"duration": 500},
                     "showactive": false,
                     "yanchor": "top",
                     "xanchor": "right",
@@ -159,7 +158,8 @@ module.exports = {
                 "sliders": [{
                     "yanchor": "top",
                     "y": 0,
-                    "pad": {"t": 20}
+                    "pad": {"t": 20},
+                    "transition": {"duration": 500},
                 }]
             }
         });
