@@ -2,4 +2,4 @@
 
 > plotly.js animation experiments
 
-http://rickyreusser.com/animation-experiments
+https://rreusser.github.io/animation-experiments
